@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% ui_label 'news' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / <span>{% ui_label 'news' current_lang %}</span>
+        </div>
+    </div>
+</section>
+
+<section class="section news-list-section">
+    <div class="container">
+        <div class="news-grid">
+            {% for item in all_news %}
+            <article class="news-card">
+                <div class="news-card-img-wrapper">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                    {% else %}
+                    <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
+                    {% endif %}
+                    <span class="news-card-date"><i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}</span>
+                </div>
+                <div class="news-card-content">
+                    <h3 class="news-card-title"><a href="{% url 'news_detail' item.pk %}">{% render_lang item 'title' current_lang %}</a></h3>
+                    <p class="news-card-excerpt">{% render_lang item 'content' current_lang|slice:":150" %}...</p>
+                    <div class="news-card-footer">
+                        <a href="{% url 'news_detail' item.pk %}" class="news-card-more">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
+                        <span class="news-card-views"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <p class="no-data">Häzirki wagtda täzelik ýok.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

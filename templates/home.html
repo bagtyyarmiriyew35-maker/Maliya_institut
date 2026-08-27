@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<!-- Hero Slider -->
+<section class="hero-slider-section">
+    <div class="slider-container">
+        {% for slide in sliders %}
+        <div class="slide {% if forloop.first %}active{% endif %}" style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('{{ slide.image.url }}');">
+            <div class="container slide-content">
+                <h1 class="slide-title">{% render_lang slide 'title' current_lang %}</h1>
+                <p class="slide-subtitle">{% render_lang slide 'subtitle' current_lang %}</p>
+                {% if slide.link %}
+                <a href="{{ slide.link }}" class="btn btn-primary">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right-long"></i></a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('/static/images/default_banner.jpg'); background-color: #0a5c36;">
+            <div class="container slide-content">
+                <h1 class="slide-title">Türkmen Döwlet Maliýe Instituty</h1>
+                <p class="slide-subtitle">Bilim - bagtyýarlyk, ösüş we rowaçlyk.</p>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Slider Controls -->
+        {% if sliders|length > 1 %}
+        <div class="slider-dots" id="sliderDots">
+            {% for slide in sliders %}
+            <span class="dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Latest News Section -->
+<section class="section news-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tagline">{% ui_label 'news' current_lang %}</span>
+            <h2 class="section-title">{% ui_label 'news' current_lang %}</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="news-grid">
+            {% for item in news_list %}
+            <article class="news-card">
+                <div class="news-card-img-wrapper">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                    {% else %}
+                    <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
+                    {% endif %}
+                    <span class="news-card-date"><i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}</span>
+                </div>
+                <div class="news-card-content">
+                    <h3 class="news-card-title"><a href="{% url 'news_detail' item.pk %}">{% render_lang item 'title' current_lang %}</a></h3>
+                    <p class="news-card-excerpt">{% render_lang item 'content' current_lang|slice:":120" %}...</p>
+                    <div class="news-card-footer">
+                        <a href="{% url 'news_detail' item.pk %}" class="news-card-more">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
+                        <span class="news-card-views"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <p class="no-data">Häzirki wagtda täzelik ýok.</p>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'news_list' %}" class="btn btn-secondary">Hemme täzelikler <i class="fa-solid fa-newspaper"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats / Counter Section -->
+<section class="section stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrapper"><i class="fa-solid fa-book-open"></i></div>
+                <div class="stat-number" data-target="{{ stats.books }}">45,000+</div>
+                <div class="stat-label">{% ui_label 'books_count' current_lang %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="stat-number" data-target="{{ stats.majors }}">12</div>
+                <div class="stat-label">{% ui_label 'majors_count' current_lang %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper"><i class="fa-solid fa-chalkboard-user"></i></div>
+                <div class="stat-number" data-target="{{ stats.teachers }}">280+</div>
+                <div class="stat-label">{% ui_label 'teachers_count' current_lang %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper"><i class="fa-solid fa-user-graduate"></i></div>
+                <div class="stat-number" data-target="{{ stats.students }}">3,200+</div>
+                <div class="stat-label">{% ui_label 'students_count' current_lang %}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- History Section -->
+<section class="section history-section" id="taryhy">
+    <div class="container">
+        <div class="history-card">
+            <div class="history-image-col">
+                <div class="history-image-badge"><i class="fa-solid fa-clock-rotate-left"></i> Altyn Taryhymyz</div>
+            </div>
+            <div class="history-content-col">
+                <h2 class="history-title">{% ui_label 'history' current_lang %}</h2>
+                <div class="section-divider left"></div>
+                <p>Türkmen döwlet maliýe instituty Türkmenistanyň Prezidentiniň Permany bilen 2011-nji ýylda döredildi. Gysga wagtyň içinde institutymyz ýurdumyzyň maliýe, bank we salgyt ulgamlary üçin ýokary hünärli ykdysady hünärmenleri taýýarlaýan esasy ylym we bilim merkezleriniň birine öwrüldi.</p>
+                <p>Häzirki wagtda talyplarymyz döwrebap enjamlaşdyrylan binalarda bilim alýarlar we dünýä derejesindäki bilim programmalary, interaktiw tehnologiýalar arkaly öz ylymlaryny baýlaşdyrýarlar.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Weekly Reports / Recent Docs Section -->
+<section class="section reports-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tagline">{% ui_label 'weekly_reports' current_lang %}</span>
+            <h2 class="section-title">{% ui_label 'latest_reports' current_lang %}</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="reports-list">
+            {% for doc in recent_reports %}
+            <div class="report-row">
+                <div class="report-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                <div class="report-info">
+                    <span class="report-category">{% ui_label 'weekly_reports' current_lang %}</span>
+                    <h4 class="report-title">{% render_lang doc 'title' current_lang %}</h4>
+                </div>
+                <div class="report-actions">
+                    <span class="report-date">{{ doc.uploaded_at|date:"d.m.Y" }}</span>
+                    <a href="{{ doc.file.url }}" class="btn btn-outline btn-sm" download><i class="fa-solid fa-download"></i> Download</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="no-data">Hasabat tapylmady.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- International Partners -->
+<section class="section partners-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{% ui_label 'partners' current_lang %}</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="partners-carousel">
+            {% for partner in partners %}
+            <div class="partner-card">
+                <div class="partner-logo-wrapper">
+                    {% if partner.logo %}
+                    <img src="{{ partner.logo.url }}" alt="{% render_lang partner 'name' current_lang %}" class="partner-logo">
+                    {% else %}
+                    <i class="fa-solid fa-building-columns"></i>
+                    {% endif %}
+                </div>
+                <h4 class="partner-name">{% render_lang partner 'name' current_lang %}</h4>
+                <span class="partner-country"><i class="fa-solid fa-earth-americas"></i> {% render_lang partner 'country' current_lang %}</span>
+            </div>
+            {% empty %}
+            <p class="no-data">Halkara hyzmatdaş tapylmady.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% load website_tags %}
+<!DOCTYPE html>
+<html lang="{% if current_lang == 'eng' %}en{% elif current_lang == 'rus' %}ru{% else %}tk{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Türkmen Döwlet Maliýe Instituty</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="container header-container">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="/media/loga.png" alt="TDMai Logo" class="logo-img">
+                <div class="logo-text">
+                    <span class="logo-title">TÜRKMEN DÖWLET</span>
+                    <span class="logo-subtitle">MALIÝE INSTITUTY</span>
+                </div>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <ul>
+                    
+                    {% for p_page in menu_pages %}
+                        {% if p_page.slug == 'faq' %}
+                            <li><a href="{% url 'page_detail' p_page.slug %}">{% render_lang p_page 'title' current_lang %}</a></li>
+                        {% else %}
+                            <li class="dropdown-item">
+                                <a href="#">{% render_lang p_page 'title' current_lang %} <i class="fa-solid fa-chevron-down"></i></a>
+                                <ul class="dropdown-menu">
+                                     <!-- Dynamic Subpages -->
+                                     {% for sub in p_page.subpages.all %}
+                                         {% if sub.subpages.all %}
+                                             <li class="dropdown-submenu-item">
+                                                 <a href="#">{% render_lang sub 'title' current_lang %} <i class="fa-solid fa-chevron-right"></i></a>
+                                                 <ul class="submenu-dropdown">
+                                                     {% for sub_sub in sub.subpages.all %}
+                                                     <li><a href="{% url 'page_detail' sub_sub.slug %}">{% render_lang sub_sub 'title' current_lang %}</a></li>
+                                                     {% endfor %}
+                                                 </ul>
+                                             </li>
+                                         {% else %}
+                                             <li><a href="{% url 'page_detail' sub.slug %}">{% render_lang sub 'title' current_lang %}</a></li>
+                                         {% endif %}
+                                     {% endfor %}
+                                    
+                                    <!-- Special categories for specific sections -->
+                                    {% if p_page.slug == 'institut' %}
+                                        <li class="dropdown-submenu-item">
+                                            <a href="#">{% ui_label 'faculties' current_lang %} <i class="fa-solid fa-chevron-right"></i></a>
+                                            <ul class="submenu-dropdown">
+                                                {% for fac in faculties_menu %}
+                                                <li><a href="{% url 'faculty_detail' fac.pk %}">{% render_lang fac 'name' current_lang %}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown-submenu-item">
+                                            <a href="#">{% ui_label 'departments' current_lang %} <i class="fa-solid fa-chevron-right"></i></a>
+                                            <ul class="submenu-dropdown">
+                                                {% for fac in faculties_menu %}
+                                                    {% if fac.departments.all %}
+                                                    <li class="dropdown-submenu-item">
+                                                        <a href="#">{% render_lang fac 'name' current_lang %} <i class="fa-solid fa-chevron-right"></i></a>
+                                                        <ul class="submenu-dropdown">
+                                                            {% for dept in fac.departments.all %}
+                                                            <li><a href="{% url 'department_detail' dept.pk %}">{% render_lang dept 'name' current_lang %}</a></li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                        <li><a href="{% url 'home' %}#hasabatlar">{% ui_label 'weekly_reports' current_lang %}</a></li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        
+                        {% if p_page.slug == 'ylym' %}
+                            <!-- Olympiads Dropdown injected right after Ylym -->
+                            <li class="dropdown-item">
+                                <a href="{% url 'olympiads' %}">{% ui_label 'olympiads' current_lang %} <i class="fa-solid fa-chevron-down"></i></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="{% url 'olympiads' %}#year-2026">2026</a></li>
+                                    <li><a href="{% url 'olympiads' %}#year-2025">2025</a></li>
+                                    <li><a href="{% url 'olympiads' %}#year-2024">2024</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li><a href="{% url 'news_list' %}">{% ui_label 'news' current_lang %}</a></li>
+                    <li><a href="{% url 'contact' %}">{% ui_label 'contact' current_lang %}</a></li>
+                </ul>
+            </nav>
+            
+            <div class="lang-selector header-lang-selector">
+                <a href="{% url 'set_language' %}?lang=tm" class="lang-btn {% if current_lang == 'tm' %}active{% endif %}">
+                    <img src="/static/images/flag_tm.png" alt="TM" onerror="this.style.display='none'"> TM
+                </a>
+                <a href="{% url 'set_language' %}?lang=eng" class="lang-btn {% if current_lang == 'eng' %}active{% endif %}">
+                    <img src="/static/images/flag_uk.png" alt="EN" onerror="this.style.display='none'"> EN
+                </a>
+                <a href="{% url 'set_language' %}?lang=rus" class="lang-btn {% if current_lang == 'rus' %}active{% endif %}">
+                    <img src="/static/images/flag_rus.png" alt="RU" onerror="this.style.display='none'"> RU
+                </a>
+            </div>
+            
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% if messages %}
+        <div class="container messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <h3 class="footer-title">TDMai</h3>
+                <p class="footer-description">Türkmenistanyň ykdysady we maliýe pudaklary üçin ýokary derejeli hünärmenleri taýýarlaýan öňdebaryjy ýokary okuw mekdebi.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-section-title">{% ui_label 'about' current_lang %}</h4>
+                <ul class="footer-links">
+                    <li><a href="{% url 'home' %}#taryhy">{% ui_label 'history' current_lang %}</a></li>
+                    <li><a href="{% url 'olympiads' %}">{% ui_label 'olympiads' current_lang %}</a></li>
+                    <li><a href="{% url 'news_list' %}">{% ui_label 'news' current_lang %}</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-section-title">{% ui_label 'faculties' current_lang %}</h4>
+                <ul class="footer-links">
+                    {% for fac in faculties_menu|slice:":4" %}
+                    <li>
+                        <a href="{% url 'faculty_detail' fac.pk %}">
+                            {% render_lang fac 'name' current_lang %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="footer-col contact-col">
+                <h4 class="footer-section-title">{% ui_label 'contact' current_lang %}</h4>
+                <ul class="footer-contact-info">
+                    <li><i class="fa-solid fa-location-dot"></i> <span><strong>{% ui_label 'address' current_lang %}:</strong> 744027, Aşgabat ş., 1987 köç. (Hero Atamyrat Niyazow Ave.), 112.</span></li>
+                    <li><i class="fa-solid fa-phone"></i> <span><strong>{% ui_label 'phone' current_lang %}:</strong> +993 12 496309</span></li>
+                    <li><i class="fa-solid fa-envelope"></i> <span><strong>{% ui_label 'email' current_lang %}:</strong> info@tdmai.edu.tm</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container footer-bottom-container">
+                <p>&copy; {% ui_label 'all_rights_reserved' current_lang %} - 2026. Türkmen Döwlet Maliýe Instituty.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

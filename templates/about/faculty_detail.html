@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% render_lang faculty 'name' current_lang %} {% ui_label 'faculty_label' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / <span>{% ui_label 'faculties' current_lang %}</span> / <span>{% render_lang faculty 'name' current_lang %}</span>
+        </div>
+    </div>
+</section>
+
+<section class="section faculty-detail-section">
+    <div class="container faculty-container">
+        <div class="faculty-main-info">
+            <div class="faculty-card-header">
+                <h2>{% render_lang faculty 'name' current_lang %}</h2>
+                <div class="section-divider left"></div>
+            </div>
+            
+            <div class="faculty-body">
+                {% render_lang faculty 'description' current_lang|linebreaks %}
+            </div>
+            
+            <!-- Departments belonging to this faculty -->
+            <div class="faculty-departments-section mt-5">
+                <h3 class="departments-title">{% ui_label 'departments' current_lang %}</h3>
+                <div class="section-divider left mb-4"></div>
+                <div class="departments-grid">
+                    {% for dept in departments %}
+                    <div class="dept-card">
+                        <h4 class="dept-card-title"><a href="{% url 'department_detail' dept.pk %}">{% render_lang dept 'name' current_lang %}</a></h4>
+                        <p class="dept-card-head"><strong>{% ui_label 'head' current_lang %}:</strong> {% render_lang dept 'head_name' current_lang %}</p>
+                        <a href="{% url 'department_detail' dept.pk %}" class="dept-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    {% empty %}
+                    <p class="no-data">Kafedra tapylmady.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Faculty Sidebar Info -->
+        <aside class="faculty-sidebar">
+            <div class="sidebar-widget faculty-dean-widget">
+                <h4 class="widget-title">{% ui_label 'dean' current_lang %}</h4>
+                <div class="section-divider left mb-3"></div>
+                
+                <div class="dean-avatar-wrapper">
+                    {% if faculty.image %}
+                    <img src="{{ faculty.image.url }}" alt="Dean" class="dean-img">
+                    {% else %}
+                    <div class="dean-img-placeholder"><i class="fa-solid fa-user-tie"></i></div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="dean-name">{% render_lang faculty 'dean_name' current_lang %}</h4>
+                <span class="dean-label">{% ui_label 'dean' current_lang %}</span>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

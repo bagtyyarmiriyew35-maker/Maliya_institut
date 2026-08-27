@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% render_lang department 'name' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / 
+            <a href="{% url 'faculty_detail' faculty.pk %}">{% render_lang faculty 'name' current_lang %}</a> / 
+            <span>{% render_lang department 'name' current_lang %}</span>
+        </div>
+    </div>
+</section>
+
+<section class="section department-detail-section">
+    <div class="container department-container">
+        <!-- Main Column -->
+        <div class="department-main">
+            <div class="department-header">
+                <h2>{% render_lang department 'name' current_lang %}</h2>
+                <span class="parent-faculty-badge">{% ui_label 'faculty_label' current_lang %}: <a href="{% url 'faculty_detail' faculty.pk %}">{% render_lang faculty 'name' current_lang %}</a></span>
+                <div class="section-divider left mt-2"></div>
+            </div>
+            
+            <div class="department-body">
+                {% render_lang department 'description' current_lang|linebreaks %}
+            </div>
+            
+            <div class="department-footer mt-5">
+                <a href="{% url 'faculty_detail' faculty.pk %}" class="btn btn-outline"><i class="fa-solid fa-arrow-left-long"></i> {% render_lang faculty 'name' current_lang %} {% ui_label 'faculty_label' current_lang %}</a>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <aside class="department-sidebar">
+            <div class="sidebar-widget head-widget">
+                <h4 class="widget-title">{% ui_label 'head' current_lang %}</h4>
+                <div class="section-divider left mb-3"></div>
+                
+                <div class="head-avatar-wrapper">
+                    <div class="head-img-placeholder"><i class="fa-solid fa-user-gear"></i></div>
+                </div>
+                
+                <h4 class="head-name">{% render_lang department 'head_name' current_lang %}</h4>
+                <span class="head-label">{% ui_label 'head' current_lang %}</span>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

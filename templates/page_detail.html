@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% render_lang page 'title' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / 
+            {% if page.parent %}
+            <span>{% render_lang page.parent 'title' current_lang %}</span> /
+            {% endif %}
+            <span>{% render_lang page 'title' current_lang %}</span>
+        </div>
+    </div>
+</section>
+
+<section class="section page-detail-section">
+    <div class="container detail-container {% if page.slug == 'halkara-hyzmatdaslyk' or page.parent.slug == 'halkara-hyzmatdaslyk' or page.parent.parent.slug == 'halkara-hyzmatdaslyk' %}full-width{% endif %}">
+        <!-- Main Content Column -->
+        <div class="main-detail-content">
+            <article class="article-detail">
+                <h2 class="article-title">{% render_lang page 'title' current_lang %}</h2>
+                <div class="section-divider left mb-4"></div>
+                
+                <div class="article-body">
+                    {% if current_lang == 'eng' %}
+                        {{ page.content_en|default:page.content_tm|safe }}
+                    {% elif current_lang == 'rus' %}
+                        {{ page.content_ru|default:page.content_tm|safe }}
+                    {% else %}
+                        {{ page.content_tm|safe }}
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+        
+        <!-- Sidebar Column -->
+        {% if page.slug != 'halkara-hyzmatdaslyk' and page.parent.slug != 'halkara-hyzmatdaslyk' and page.parent.parent.slug != 'halkara-hyzmatdaslyk' %}
+        <aside class="detail-sidebar">
+            {% if siblings %}
+            <div class="sidebar-widget">
+                <h4 class="widget-title">
+                    {% if page.parent %}
+                        {% render_lang page.parent 'title' current_lang %}
+                    {% else %}
+                        Bölümler
+                    {% endif %}
+                </h4>
+                <div class="section-divider left mb-3"></div>
+                <ul class="widget-news-list">
+                    {% for sib in siblings %}
+                    <li>
+                        <a href="{% url 'page_detail' sib.slug %}">
+                            <span class="widget-news-title">{% render_lang sib 'title' current_lang %}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Quick Contact info widget -->
+            <div class="sidebar-widget">
+                <h4 class="widget-title">{% ui_label 'contact' current_lang %}</h4>
+                <div class="section-divider left mb-3"></div>
+                <ul class="footer-contact-info" style="color: var(--text-color);">
+                    <li><i class="fa-solid fa-phone" style="color: var(--primary-color);"></i> <span>+993 12 496309</span></li>
+                    <li><i class="fa-solid fa-envelope" style="color: var(--primary-color);"></i> <span>info@tdmai.edu.tm</span></li>
+                </ul>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% ui_label 'news' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / <a href="{% url 'news_list' %}">{% ui_label 'news' current_lang %}</a> / <span>{% render_lang news_item 'title' current_lang|slice:":40" %}...</span>
+        </div>
+    </div>
+</section>
+
+<section class="section news-detail-section">
+    <div class="container detail-container">
+        <!-- Main Content -->
+        <div class="main-detail-content">
+            <article class="article-detail">
+                <h1 class="article-title">{% render_lang news_item 'title' current_lang %}</h1>
+                
+                <div class="article-meta">
+                    <span><i class="fa-regular fa-calendar"></i> {{ news_item.published_date|date:"d.m.Y" }}</span>
+                    <span><i class="fa-regular fa-eye"></i> {{ news_item.views_count }}</span>
+                </div>
+                
+                {% if news_item.image %}
+                <div class="article-img-wrapper">
+                    <img src="{{ news_item.image.url }}" alt="{% render_lang news_item 'title' current_lang %}" class="article-img">
+                </div>
+                {% endif %}
+                
+                <div class="article-body">
+                    {% render_lang news_item 'content' current_lang|linebreaks %}
+                </div>
+                
+                <div class="article-footer">
+                    <a href="{% url 'news_list' %}" class="btn btn-outline"><i class="fa-solid fa-arrow-left-long"></i> {% ui_label 'back_to_news' current_lang %}</a>
+                </div>
+            </article>
+        </div>
+        
+        <!-- Sidebar -->
+        <aside class="detail-sidebar">
+            <div class="sidebar-widget">
+                <h4 class="widget-title">{% ui_label 'recent_news' current_lang %}</h4>
+                <div class="section-divider left mb-3"></div>
+                <ul class="widget-news-list">
+                    {% for item in recent_news %}
+                    <li>
+                        <a href="{% url 'news_detail' item.pk %}">
+                            <span class="widget-news-date">{{ item.published_date|date:"d.m.Y" }}</span>
+                            <span class="widget-news-title">{% render_lang item 'title' current_lang %}</span>
+                        </a>
+                    </li>
+                    {% empty %}
+                    <li>Täzelik ýok.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

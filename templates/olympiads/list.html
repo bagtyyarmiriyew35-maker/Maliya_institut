@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+    <div class="container">
+        <h1 class="page-banner-title">{% ui_label 'olympiads' current_lang %}</h1>
+        <div class="breadcrumbs">
+            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / <span>{% ui_label 'olympiads' current_lang %}</span>
+        </div>
+    </div>
+</section>
+
+<section class="section olympiads-section">
+    <div class="container">
+        {% for year in years %}
+        <div class="olympiad-year-block">
+            <h2 class="year-title"><i class="fa-solid fa-trophy"></i> {{ year }}</h2>
+            <div class="section-divider left mb-4"></div>
+            
+            <div class="olympiads-list">
+                {% for oly in grouped_olympiads|get_dict_item:year %}
+                <div class="olympiad-item">
+                    <div class="oly-info">
+                        <h3 class="oly-title">{% render_lang oly 'title' current_lang %}</h3>
+                        {% if oly.description_tm or oly.description_en or oly.description_ru %}
+                        <p class="oly-description">{% render_lang oly 'description' current_lang %}</p>
+                        {% endif %}
+                    </div>
+                    {% if oly.results_pdf %}
+                    <div class="oly-actions">
+                        <a href="{{ oly.results_pdf.url }}" class="btn btn-primary btn-sm" download><i class="fa-solid fa-file-pdf"></i> Netijeleri (PDF)</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="no-data">Häzirki wagtda olimpiada maglumaty ýok.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

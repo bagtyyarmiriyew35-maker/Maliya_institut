@@ -1,0 +1,177 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if section_label %}{{ section_label }}{% else %}Sahypalar{% endif %}{% endblock %}
+{% block breadcrumb %}Sahypalar{% if section_label %} / {{ section_label }}{% endif %}{% endblock %}
+{% block content %}
+
+{% if view_mode == 'overview_cards' %}
+  <!-- 🟢 SCREENSHOT 2 VIEW: SECTION DASHBOARD WITH CATEGORY CARDS GRID -->
+
+  <!-- Top Header with Title and Add Button -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--panel-text); display: flex; align-items: center; gap: 10px;">
+      <i class="{% if section_icon %}{{ section_icon }}{% else %}fa-solid fa-file-lines{% endif %}" style="color: #048848;"></i>
+      {% if section_label %}{{ section_label }}{% else %}Ähli Sahypalar{% endif %}
+      <span class="badge-panel badge-neutral" style="font-size: 13px; margin-left: 8px;">{{ cards|length }} topar</span>
+    </h1>
+
+    <a href="{% url 'panel_page_add' %}{% if current_section %}?section={{ current_section }}{% endif %}" class="btn-panel btn-panel-primary" style="background: #048848; border-radius: 10px; padding: 9px 18px; font-weight: 600;">
+      <i class="fa-solid fa-plus"></i> Täze topar / sahypa goş
+    </a>
+  </div>
+
+
+
+  <!-- Cards Grid (Her sahypa/topar aýratyn bir kart) -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 32px;">
+    {% for card in cards %}
+    <div class="panel-card" style="padding: 24px; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; border: 1px solid var(--panel-border); background: var(--panel-surface); transition: all 0.22s ease;">
+      <!-- Top Row -->
+      <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+        <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.18); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        {% if card.parent_obj %}
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="{% url 'panel_page_edit' card.parent_obj.pk %}" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.35); border-radius: 10px; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;" title="Üýtget (Kalem)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </a>
+          <button class="btn-panel btn-panel-sm btn-delete-trigger" data-form-id="del-card-hdr-{{ card.parent_obj.pk }}" style="background: rgba(248, 81, 73, 0.18); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.35); border-radius: 10px; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;" title="Öçür">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <form id="del-card-hdr-{{ card.parent_obj.pk }}" method="POST" action="{% url 'panel_page_delete' card.parent_obj.pk %}" style="display:none;">{% csrf_token %}</form>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Middle Info -->
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--panel-text); margin-bottom: 4px;">{{ card.title }}</h3>
+        <p style="font-size: 12px; color: var(--panel-text-muted); margin: 0;">{{ card.description }}</p>
+      </div>
+
+      <!-- Bottom Actions Row -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); gap: 10px;">
+        <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 12px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
+          {{ card.count }}
+        </span>
+        <a href="{{ card.manage_url }}" class="btn-panel btn-panel-primary" style="background: #1a7a4a; color: white; border-radius: 20px; padding: 8px 18px; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap;">
+          {{ card.btn_text }}
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; padding: 48px; text-align: center; color: var(--panel-text-muted); background: var(--panel-surface); border-radius: 20px;">
+      <i class="fa-solid fa-folder-open" style="font-size: 36px; margin-bottom: 12px; display: block;"></i>
+      Bu bölümde entek topar ýok.
+    </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+
+  <!-- 🟢 CATEGORY CONTENTS LIST (Aşaky bölümler sanawy) -->
+  <div class="panel-page-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="{% url 'panel_pages_by_section' current_section %}" class="btn-panel btn-panel-ghost" style="border-radius: 50%; width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--panel-surface-2); color: var(--panel-text);" title="Izyna dolanmak">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div>
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--panel-text);">
+          {{ category_title }} Sanawy
+        </h1>
+        <span style="font-size: 13px; color: var(--panel-text-muted);">{{ pages|length }} sany bölüm/sahypa bar</span>
+      </div>
+    </div>
+
+    <a href="{% url 'panel_page_add' %}?section={{ current_section }}{% if active_parent %}&parent={{ active_parent.pk }}{% endif %}" class="btn-panel btn-panel-primary" style="background: #048848; border-radius: 10px; padding: 10px 20px; font-weight: 600; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 8px;">
+      <i class="fa-solid fa-plus"></i> Täze bölüm goş
+    </a>
+  </div>
+
+  <div class="panel-card" style="border-radius: 16px;">
+    <div class="panel-table-wrap" style="overflow-x: auto;">
+      <table class="panel-table" style="width: 100%; border-collapse: collapse; min-width: 650px;">
+        <thead>
+          <tr>
+            <th style="width: 60px; padding: 12px 16px;">ID</th>
+            <th style="padding: 12px 16px;">SÖZBAŞY / ADY</th>
+            <th style="padding: 12px 16px;">SLUG / MAGLUMAT</th>
+            <th style="width: 90px; padding: 12px 16px; text-align: center;">TERTİP</th>
+            <th style="width: 200px; padding: 12px 16px; text-align: center;">AMALLAR (DÜZET / ÖÇÜR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for page in pages %}
+          <tr>
+            <td style="color: var(--panel-text-muted); font-size: 12px; font-weight: 600; padding: 14px 16px;">#{{ page.pk }}</td>
+            <td style="padding: 14px 16px;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                {% if page.image %}
+                  <img src="{{ page.image.url }}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--panel-border);">
+                {% else %}
+                  <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(4, 136, 72, 0.12); color: #048848; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                    <i class="fa-solid fa-file-lines"></i>
+                  </div>
+                {% endif %}
+                <div>
+                  <a href="{% url 'panel_page_edit' page.pk %}" style="color: var(--panel-text); text-decoration: none; display: block;" title="Düzetmek üçin basyň">
+                    <strong style="font-size: 15px; font-weight: 700; color: var(--panel-text);">{{ page.title_tm }}</strong>
+                  </a>
+                  {% if page.title_en %}<span style="color: var(--panel-text-muted); font-size: 12px;">{{ page.title_en|truncatechars:40 }}</span>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td style="padding: 14px 16px;">
+              <code style="background: var(--panel-surface-2); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #58a6ff;">/p/{{ page.slug }}/</code>
+            </td>
+            <td style="text-align: center; padding: 14px 16px;">
+              <span class="panel-order-badge" style="background: var(--panel-surface-2); color: var(--panel-text); font-weight: 700;">{{ page.order }}</span>
+            </td>
+            <td style="text-align: center; padding: 14px 16px; white-space: nowrap;">
+              <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                <!-- Edit / Üýtget Button -->
+                <a href="{% url 'panel_page_edit' page.pk %}" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 8px; padding: 6px 12px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Düzet / Üýtget">
+                  <i class="fa-solid fa-pen-to-square"></i> Üýtget
+                </a>
+
+                <!-- Delete / Öçür Button -->
+                <button class="btn-panel btn-panel-sm btn-delete-trigger" data-form-id="del-page-lst-{{ page.pk }}" style="background: rgba(248, 81, 73, 0.18); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Öçür">
+                  <i class="fa-solid fa-trash-can"></i> Öçür
+                </button>
+                <form id="del-page-lst-{{ page.pk }}" method="POST" action="{% url 'panel_page_delete' page.pk %}" style="display:none;">{% csrf_token %}</form>
+
+                <!-- View / Gör Button -->
+                <a href="/p/{{ page.slug }}/" target="_blank" class="btn-panel btn-panel-sm" style="background: rgba(255, 255, 255, 0.08); color: var(--panel-text-muted); border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center;" title="Sahypada gör">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 48px; color: var(--panel-text-muted);">
+              <i class="fa-solid fa-inbox" style="font-size: 32px; display: block; margin-bottom: 12px; color: #048848;"></i>
+              Bu bölüme entek sahypa goşulmady.
+              <br><br>
+              <a href="{% url 'panel_page_add' %}?section={{ current_section }}{% if active_parent %}&parent={{ active_parent.pk }}{% endif %}" class="btn-panel btn-panel-primary" style="background: #048848; border-radius: 8px; padding: 8px 16px; font-weight: 600; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-plus"></i> Täze bölüm goş
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endif %}
+
+{% endblock %}

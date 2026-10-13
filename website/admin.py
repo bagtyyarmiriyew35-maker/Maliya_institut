@@ -1,5 +1,19 @@
 from django.contrib import admin
-from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage
+from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook
+
+@admin.register(LibraryCategory)
+class LibraryCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name_tm', 'order', 'created_at')
+    list_editable = ('order',)
+    search_fields = ('name_tm', 'name_en', 'name_ru')
+
+
+@admin.register(LibraryBook)
+class LibraryBookAdmin(admin.ModelAdmin):
+    list_display = ('title_tm', 'category', 'year', 'uploaded_at')
+    list_filter = ('category', 'year')
+    search_fields = ('title_tm', 'title_en', 'title_ru')
+
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
@@ -18,10 +32,20 @@ class SliderImageAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('title_tm', 'published_date', 'views_count')
+    list_display = ('title_tm', 'published_date', 'has_image', 'has_video', 'views_count')
     list_filter = ('published_date',)
     search_fields = ('title_tm', 'title_en', 'title_ru', 'content_tm', 'content_en', 'content_ru')
     readonly_fields = ('views_count',)
+
+    def has_image(self, obj):
+        return bool(obj.image)
+    has_image.boolean = True
+    has_image.short_description = "Surat"
+
+    def has_video(self, obj):
+        return bool(obj.video or obj.video_url)
+    has_video.boolean = True
+    has_video.short_description = "Wideo"
 
 
 class DepartmentInline(admin.TabularInline):

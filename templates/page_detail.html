@@ -16,13 +16,19 @@
 </section>
 
 <section class="section page-detail-section">
-    <div class="container detail-container {% if page.slug == 'halkara-hyzmatdaslyk' or page.parent.slug == 'halkara-hyzmatdaslyk' or page.parent.parent.slug == 'halkara-hyzmatdaslyk' %}full-width{% endif %}">
+    <div class="container detail-container full-width">
         <!-- Main Content Column -->
         <div class="main-detail-content">
             <article class="article-detail">
+                {% if page.image %}
+                <div class="article-image-wrap" style="margin-bottom:24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.08);background:#f8f9fa;text-align:center;">
+                    <img src="{{ page.image.url }}" alt="{% render_lang page 'title' current_lang %}" style="max-width:100%;height:auto;max-height:800px;object-fit:contain;display:block;margin:0 auto;">
+                </div>
+                {% endif %}
+
                 <h2 class="article-title">{% render_lang page 'title' current_lang %}</h2>
                 <div class="section-divider left mb-4"></div>
-                
+
                 <div class="article-body">
                     {% if current_lang == 'eng' %}
                         {{ page.content_en|default:page.content_tm|safe }}
@@ -31,46 +37,333 @@
                     {% else %}
                         {{ page.content_tm|safe }}
                     {% endif %}
+
+                    {% if page.pdf_file %}
+                    <!-- Direct Inline Continuous PDF Document Pages (PyPDF2 inspected, no iframe/google viewer) -->
+                    <div class="page-inline-pdf-container" style="margin-top: 24px; margin-bottom: 32px; border-radius: 16px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #525659;">
+                        <!-- PDF Header Toolbar -->
+                        <div class="pdf-toolbar" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: #1e293b; color: white; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
+                                <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 22px;"></i>
+                                <span>{% render_lang page 'title' current_lang %}</span>
+                                {% if pdf_page_count %}
+                                <span style="background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 12px; font-size: 12px; color: #cbd5e1;">
+                                    {{ pdf_page_count }} sahypa
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <!-- Zoom Controls -->
+                                <div style="display: flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;">
+                                    <button type="button" id="pdfZoomOut" style="background: none; border: none; color: white; padding: 6px 12px; cursor: pointer;" title="Keltelt"><i class="fa-solid fa-minus"></i></button>
+                                    <span id="pdfZoomVal" style="font-size: 13px; font-weight: 600; padding: 0 8px;">100%</span>
+                                    <button type="button" id="pdfZoomIn" style="background: none; border: none; color: white; padding: 6px 12px; cursor: pointer;" title="Ulalt"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                
+                                <a href="{{ page.pdf_file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-download"></i> Ýükle
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Continuous PDF Rendered Pages Canvas Container -->
+                        <div id="inlinePdfPagesViewer" style="padding: 24px 16px; overflow-y: auto; max-height: 850px; display: flex; flex-direction: column; align-items: center; gap: 20px; background: #525659;">
+                            <div id="pdfLoadingState" style="color: white; padding: 40px; text-align: center; font-size: 15px;">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 24px; margin-bottom: 10px; display: block; color: #38bdf8;"></i>
+                                PDF sahypalary görkezilýär...
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const pdfUrl = "{{ page.pdf_file.url }}";
+                        const container = document.getElementById('inlinePdfPagesViewer');
+                        const loadingState = document.getElementById('pdfLoadingState');
+                        const zoomInBtn = document.getElementById('pdfZoomIn');
+                        const zoomOutBtn = document.getElementById('pdfZoomOut');
+                        const zoomValEl = document.getElementById('pdfZoomVal');
+                        
+                        if (!pdfUrl || !container || typeof pdfjsLib === 'undefined') return;
+                        
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                        
+                        let currentScale = 1.25;
+                        let pdfDoc = null;
+                        
+                        async function renderAllPages() {
+                            if (!pdfDoc) return;
+                            container.innerHTML = '';
+                            
+                            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                                const page = await pdfDoc.getPage(pageNum);
+                                const viewport = page.getViewport({ scale: currentScale });
+                                
+                                const pageCard = document.createElement('div');
+                                pageCard.className = 'inline-pdf-page-card';
+                                pageCard.style.cssText = 'background: white; border-radius: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; max-width: 100%; margin: 0 auto;';
+                                
+                                const canvas = document.createElement('canvas');
+                                canvas.style.display = 'block';
+                                canvas.style.maxWidth = '100%';
+                                canvas.style.height = 'auto';
+                                
+                                const context = canvas.getContext('2d');
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                
+                                const badge = document.createElement('div');
+                                badge.innerText = pageNum + ' / ' + pdfDoc.numPages;
+                                badge.style.cssText = 'position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; pointer-events: none;';
+                                
+                                pageCard.appendChild(canvas);
+                                pageCard.appendChild(badge);
+                                container.appendChild(pageCard);
+                                
+                                await page.render({
+                                    canvasContext: context,
+                                    viewport: viewport
+                                }).promise;
+                            }
+                        }
+                        
+                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                            pdfDoc = pdf;
+                            if (loadingState) loadingState.remove();
+                            renderAllPages();
+                        }).catch(function(err) {
+                            console.error('PDF rendering error:', err);
+                            if (loadingState) {
+                                loadingState.innerHTML = '<div style="color:#f87171;"><i class="fa-solid fa-triangle-exclamation"></i> PDF resminamasyny ýükläp bolmady.</div>';
+                            }
+                        });
+                        
+                        if (zoomInBtn) {
+                            zoomInBtn.addEventListener('click', function() {
+                                if (currentScale < 2.5) {
+                                    currentScale += 0.25;
+                                    if (zoomValEl) zoomValEl.innerText = Math.round((currentScale / 1.25) * 100) + '%';
+                                    renderAllPages();
+                                }
+                            });
+                        }
+                        
+                        if (zoomOutBtn) {
+                            zoomOutBtn.addEventListener('click', function() {
+                                if (currentScale > 0.5) {
+                                    currentScale -= 0.25;
+                                    if (zoomValEl) zoomValEl.innerText = Math.round((currentScale / 1.25) * 100) + '%';
+                                    renderAllPages();
+                                }
+                            });
+                        }
+                    });
+                    </script>
+                    {% endif %}
+
+                    {% if weekly_reports %}
+                    <div class="reports-list" style="margin-top:24px;">
+                        {% for doc in weekly_reports %}
+                        <div class="report-row" style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--bg-light,#f8f9fa);border-radius:10px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);">
+                            <div style="display:flex;align-items:center;gap:14px;">
+                                <div class="report-icon" style="font-size:24px;color:var(--primary-color,#0a5c36);"><i class="fa-solid fa-file-pdf"></i></div>
+                                <div class="report-info">
+                                    <h4 class="report-title" style="margin:0;font-size:15px;font-weight:600;">
+                                        <a href="{% url 'document_detail' doc.pk %}" style="color:inherit;text-decoration:none;">{% render_lang doc 'title' current_lang %}</a>
+                                    </h4>
+                                    <span class="report-date" style="font-size:12px;color:var(--text-muted,#6c757d);">{{ doc.uploaded_at|date:"d.m.Y" }}</span>
+                                </div>
+                            </div>
+                            <div class="report-actions" style="display:flex;gap:8px;align-items:center;">
+                                <a href="{% url 'document_detail' doc.pk %}" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:13px;text-decoration:none;background:var(--primary-color,#0a5c36);color:#fff;"><i class="fa-solid fa-eye"></i> Okamak</a>
+                                <a href="{{ doc.file.url }}" class="btn btn-outline btn-sm" download style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:13px;text-decoration:none;"><i class="fa-solid fa-download"></i> Ýükle</a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="no-data">Hasabat tapylmady.</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if subpages %}
+                    <style>
+                    .subpages-section {
+                        margin-top: 36px;
+                        padding-top: 28px;
+                        border-top: 1px solid #e2e8f0;
+                    }
+                    .subpages-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                        gap: 22px;
+                    }
+                    .subpage-card-item {
+                        text-decoration: none !important;
+                        color: inherit;
+                        background: #ffffff;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        border-radius: 16px;
+                        overflow: hidden;
+                        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                        display: flex;
+                        flex-direction: column;
+                        position: relative;
+                    }
+                    .subpage-card-item * {
+                        text-decoration: none !important;
+                    }
+                    .subpage-card-item:hover {
+                        transform: translateY(-6px);
+                        box-shadow: 0 16px 28px rgba(4, 136, 72, 0.14), 0 6px 12px rgba(0, 0, 0, 0.04);
+                        border-color: rgba(4, 136, 72, 0.35);
+                    }
+                    .subpage-card-media {
+                        height: 150px;
+                        overflow: hidden;
+                        background: #f8fafc;
+                        position: relative;
+                    }
+                    .subpage-card-media img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        transition: transform 0.4s ease;
+                    }
+                    .subpage-card-item:hover .subpage-card-media img {
+                        transform: scale(1.06);
+                    }
+                    .subpage-card-placeholder {
+                        height: 100%;
+                        background: linear-gradient(135deg, #048848 0%, #065f35 100%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #ffffff;
+                        font-size: 44px;
+                    }
+                    .subpage-card-content {
+                        padding: 20px;
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                    }
+                    .subpage-card-title {
+                        margin: 0 0 10px 0;
+                        font-size: 17px;
+                        font-weight: 700;
+                        color: #1e293b;
+                        line-height: 1.35;
+                        transition: color 0.2s ease;
+                    }
+                    .subpage-card-item:hover .subpage-card-title {
+                        color: #048848;
+                    }
+                    .subpage-card-text {
+                        font-size: 13.5px;
+                        color: #475569;
+                        line-height: 1.55;
+                        margin-bottom: 14px;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                        word-break: break-word;
+                    }
+                    .subpage-card-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
+                        background: rgba(4, 136, 72, 0.08);
+                        color: #048848;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        margin-bottom: 12px;
+                        width: fit-content;
+                    }
+                    .subpage-card-footer {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-top: auto;
+                        padding-top: 14px;
+                        border-top: 1px solid #f1f5f9;
+                        font-size: 13.5px;
+                        font-weight: 600;
+                        color: #048848;
+                    }
+                    .card-arrow {
+                        transition: transform 0.25s ease;
+                    }
+                    .subpage-card-item:hover .card-arrow {
+                        transform: translateX(5px);
+                    }
+                    </style>
+
+                    <div class="subpages-section">
+                        <h3 class="subpages-heading" style="font-size: 20px; font-weight: 700; color: var(--primary-color, #0a5c36); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-layer-group"></i>
+                            {% if current_lang == 'eng' %}
+                                Subsections & Departments
+                            {% elif current_lang == 'rus' %}
+                                Подразделения и кафедры
+                            {% else %}
+                                Degişli bölümler
+                            {% endif %}
+                        </h3>
+                        
+                        <div class="subpages-grid">
+                            {% for sub in subpages %}
+                            <a href="{% url 'page_detail' sub.slug %}" class="subpage-card-item">
+                                <div class="subpage-card-media">
+                                    {% if sub.image %}
+                                        <img src="{{ sub.image.url }}" alt="{% render_lang sub 'title' current_lang %}">
+                                    {% else %}
+                                        <div class="subpage-card-placeholder">
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="subpage-card-content">
+                                    <div>
+                                        <h4 class="subpage-card-title">{% render_lang sub 'title' current_lang %}</h4>
+                                        
+                                        {% if current_lang == 'eng' and sub.content_en %}
+                                            <p class="subpage-card-text">{{ sub.content_en|clean_excerpt:14 }}</p>
+                                        {% elif current_lang == 'rus' and sub.content_ru %}
+                                            <p class="subpage-card-text">{{ sub.content_ru|clean_excerpt:14 }}</p>
+                                        {% elif sub.content_tm %}
+                                            <p class="subpage-card-text">{{ sub.content_tm|clean_excerpt:14 }}</p>
+                                        {% else %}
+                                            <p class="subpage-card-text" style="font-style: italic; color: #94a3b8;">
+                                                {% if current_lang == 'eng' %}Click to view details{% elif current_lang == 'rus' %}Нажмите для просмотра{% else %}Giňişleýin maglumat üçin basyň{% endif %}
+                                            </p>
+                                        {% endif %}
+
+                                        {% if sub.subpages.exists %}
+                                            <div class="subpage-card-badge">
+                                                <i class="fa-solid fa-diagram-project"></i> {{ sub.subpages.count }} sany bölüm
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="subpage-card-footer">
+                                        <span>{% ui_label 'more' current_lang %}</span>
+                                        <i class="fa-solid fa-arrow-right card-arrow"></i>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </article>
         </div>
-        
-        <!-- Sidebar Column -->
-        {% if page.slug != 'halkara-hyzmatdaslyk' and page.parent.slug != 'halkara-hyzmatdaslyk' and page.parent.parent.slug != 'halkara-hyzmatdaslyk' %}
-        <aside class="detail-sidebar">
-            {% if siblings %}
-            <div class="sidebar-widget">
-                <h4 class="widget-title">
-                    {% if page.parent %}
-                        {% render_lang page.parent 'title' current_lang %}
-                    {% else %}
-                        Bölümler
-                    {% endif %}
-                </h4>
-                <div class="section-divider left mb-3"></div>
-                <ul class="widget-news-list">
-                    {% for sib in siblings %}
-                    <li>
-                        <a href="{% url 'page_detail' sib.slug %}">
-                            <span class="widget-news-title">{% render_lang sib 'title' current_lang %}</span>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            
-            <!-- Quick Contact info widget -->
-            <div class="sidebar-widget">
-                <h4 class="widget-title">{% ui_label 'contact' current_lang %}</h4>
-                <div class="section-divider left mb-3"></div>
-                <ul class="footer-contact-info" style="color: var(--text-color);">
-                    <li><i class="fa-solid fa-phone" style="color: var(--primary-color);"></i> <span>+993 12 496309</span></li>
-                    <li><i class="fa-solid fa-envelope" style="color: var(--primary-color);"></i> <span>info@tdmai.edu.tm</span></li>
-                </ul>
-            </div>
-        </aside>
-        {% endif %}
     </div>
 </section>
 {% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'panel/base.html' %}
+{% block title %}Hyzmatdaşlar{% endblock %}
+{% block breadcrumb %}Hyzmatdaşlar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-handshake"></i> Hyzmatdaşlar</h1>
+  <a href="{% url 'panel_partner_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Goş</a>
+</div>
+
+
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>Logo</th><th>Ady</th><th>Ýurdy</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for partner in partners %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            {% if partner.logo %}
+            <img src="{{ partner.logo.url }}" class="panel-table-thumb" alt="" style="object-fit:contain;background:#fff;padding:4px;">
+            {% else %}<div class="panel-table-thumb-placeholder"><i class="fa-solid fa-building"></i></div>{% endif %}
+          </td>
+          <td><strong>{{ partner.name_tm }}</strong></td>
+          <td><span class="text-muted">{{ partner.country_tm|default:"—" }}</span></td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_partner_edit' partner.pk %}" class="btn-panel btn-panel-edit btn-panel-sm"><i class="fa-solid fa-pen"></i> Üýtget</a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-pt-{{ partner.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-pt-{{ partner.pk }}" method="POST" action="{% url 'panel_partner_delete' partner.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Hyzmatdaş tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

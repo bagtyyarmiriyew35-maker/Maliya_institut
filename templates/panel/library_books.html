@@ -1,0 +1,160 @@
+{% extends 'panel/base.html' %}
+{% block title %}Kitaplar Sanawy (Neşir Sanlary){% endblock %}
+{% block breadcrumb %}Elektron Neşirler / Neşir Sanlary{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <h1><i class="fa-solid fa-book-open"></i> Kitaplar Sanawy</h1>
+  </div>
+  <a href="{% url 'panel_library_book_add' %}" class="btn-panel btn-panel-primary">
+    <i class="fa-solid fa-plus"></i> Täze goş
+  </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="panel-card" style="padding:14px 20px; margin-bottom:16px; border-radius:14px;">
+  <form method="GET" class="panel-filter-bar" style="display:flex; align-items:center; gap:12px;">
+    <label style="font-size:13px; font-weight:600; color:#475569;"><i class="fa-solid fa-filter"></i> Kategoriýa boýunça:</label>
+    <select name="category" onchange="this.form.submit()" class="form-control-panel" style="max-width:320px; padding:6px 12px; font-size:13px;">
+      <option value="">— Hemme neşirler —</option>
+      {% for cat in categories %}
+      <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name_tm }} ({{ cat.books.count }})</option>
+      {% endfor %}
+    </select>
+    {% if selected_category %}
+    <a href="{% url 'panel_library_books' %}" class="btn-panel btn-panel-ghost btn-panel-sm"><i class="fa-solid fa-xmark"></i> Arassala</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="panel-card" style="overflow:hidden; border-radius:18px;">
+  <form method="POST" id="bulk-delete-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_selected">
+
+    <div id="bulk-actions" style="display:none; padding:12px 24px; background:#fef2f2; border-bottom:1px solid #fee2e2; align-items:center; justify-content:space-between;">
+      <span style="font-size:13px; font-weight:700; color:#dc2626;"><span id="selected-count">0</span> sany saýlandy</span>
+      <button type="submit" onclick="return confirm('Saýlananlary pozmak isleýärsiňizmi?')" class="btn-panel btn-panel-delete btn-panel-sm" style="background:#ef4444; color:#fff;">
+        <i class="fa-solid fa-trash"></i> Saýlananlary poz
+      </button>
+    </div>
+
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8;">
+            <th style="width:40px; text-align:center;">
+              <input type="checkbox" id="select-all" style="cursor:pointer; width:16px; height:16px; accent-color:#0a5c36;">
+            </th>
+            <th style="width:60px;">ID</th>
+            <th>Sözbaşy / Ady</th>
+            <th>Kategoriýa / Ýyly</th>
+            <th>PDF Faýly</th>
+            <th style="text-align:right; width:140px;">Amallar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for book in books %}
+          <tr>
+            <td style="text-align:center;" onclick="event.stopPropagation()">
+              <input type="checkbox" name="selected_items" value="{{ book.pk }}" class="item-checkbox" style="cursor:pointer; width:16px; height:16px; accent-color:#0a5c36;">
+            </td>
+            <td><strong style="color:#94a3b8; font-size:12px;">#{{ book.id }}</strong></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                {% if book.display_image %}
+                <img src="{{ book.display_image.url }}" alt="Cover" style="width:38px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1; flex-shrink:0;">
+                {% else %}
+                <div style="width:38px; height:48px; border-radius:6px; background:#f8fafc; border:1px dashed #cbd5e1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <i class="fa-solid fa-file-lines" style="color:#94a3b8; font-size:16px;"></i>
+                </div>
+                {% endif %}
+                <div>
+                  <p style="font-weight:700; color:#1e293b; margin:0; font-size:14px;">{{ book.title_tm }}</p>
+                  {% if book.title_en or book.title_ru %}
+                  <p style="font-size:11px; color:#94a3b8; margin:2px 0 0 0;">
+                    {% if book.title_en %}EN: {{ book.title_en }}{% endif %}
+                    {% if book.title_ru %}{% if book.title_en %} | {% endif %}RU: {{ book.title_ru }}{% endif %}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="badge-panel badge-neutral" style="background:#f1f5f9; color:#334155; font-weight:600;">
+                <i class="fa-solid fa-book-bookmark" style="color:#0a5c36;"></i> {{ book.category.name_tm }}
+              </span>
+              {% if book.year %}
+              <span style="font-size:12px; color:#64748b; margin-left:6px; font-weight:600;">{{ book.year }} ý.</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if book.pdf_file %}
+              <a href="{{ book.pdf_file.url }}" target="_blank" style="color:#0284c7; font-size:13px; font-weight:600; text-decoration:none;">
+                <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Gör
+              </a>
+              {% else %}
+              <span style="color:#cbd5e1; font-size:12px; font-style:italic;">Ýok</span>
+              {% endif %}
+            </td>
+            <td style="text-align:right;">
+              <div class="panel-actions" style="justify-content:flex-end;">
+                <a href="{% url 'panel_library_book_edit' book.pk %}" class="btn-panel btn-panel-primary btn-panel-sm" title="Düzet">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <button type="button" class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-book-{{ book.pk }}" title="Öçür">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+              <form id="del-book-{{ book.pk }}" method="POST" action="{% url 'panel_library_book_delete' book.pk %}" style="display:none;">
+                {% csrf_token %}
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding:36px; color:#94a3b8;">
+              <i class="fa-solid fa-book-open" style="font-size:32px; margin-bottom:10px; display:block;"></i>
+              Häzirki wagtda neşir sany tapylmady
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const bulkActionsBar = document.getElementById('bulk-actions');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    function updateBulkActionsVisibility() {
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCountSpan) selectedCountSpan.textContent = selectedCount;
+        if (bulkActionsBar) {
+            bulkActionsBar.style.display = selectedCount > 0 ? 'flex' : 'none';
+        }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = selectedCount === itemCheckboxes.length && itemCheckboxes.length > 0;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            itemCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            updateBulkActionsVisibility();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkActionsVisibility);
+    });
+});
+</script>
+{% endblock %}

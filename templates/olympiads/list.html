@@ -28,8 +28,9 @@
                         {% endif %}
                     </div>
                     {% if oly.results_pdf %}
-                    <div class="oly-actions">
-                        <a href="{{ oly.results_pdf.url }}" class="btn btn-primary btn-sm" download><i class="fa-solid fa-file-pdf"></i> Netijeleri (PDF)</a>
+                    <div class="oly-actions" style="display:flex;gap:8px;align-items:center;">
+                        <a href="{{ oly.results_pdf.url }}" class="btn btn-primary btn-sm open-pdf-modal" data-pdf-url="{{ oly.results_pdf.url }}" data-pdf-title="{% render_lang oly 'title' current_lang %}" style="display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-eye"></i> Okamak</a>
+                        <a href="{{ oly.results_pdf.url }}" class="btn btn-outline btn-sm" download style="display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-download"></i> Ýükle</a>
                     </div>
                     {% endif %}
                 </div>

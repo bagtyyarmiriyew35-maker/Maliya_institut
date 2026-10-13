@@ -1,13 +1,175 @@
 {% extends 'base.html' %}
 {% load website_tags %}
 
+{% block extra_css %}
+<style>
+/* Recent Contents Continuous Slider (4 cards visible) */
+.recent-slider-wrapper {
+    position: relative;
+    width: 100%;
+}
+.recent-slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transition: all 0.25s ease;
+    font-size: 15px;
+}
+.recent-slider-arrow:hover {
+    background: var(--primary-color, #0a5c36);
+    color: #ffffff;
+    border-color: var(--primary-color, #0a5c36);
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 8px 20px rgba(10, 92, 54, 0.3);
+}
+.recent-slider-arrow.prev {
+    left: -20px;
+}
+.recent-slider-arrow.next {
+    right: -20px;
+}
+@media (max-width: 1200px) {
+    .recent-slider-arrow.prev {
+        left: -10px;
+    }
+    .recent-slider-arrow.next {
+        right: -10px;
+    }
+}
+@media (max-width: 768px) {
+    .recent-slider-arrow {
+        display: none;
+    }
+}
+.recent-contents-slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    margin-top: 25px;
+    cursor: grab;
+    touch-action: pan-y;
+}
+.recent-contents-slider-container.is-dragging {
+    cursor: grabbing;
+}
+.recent-contents-slider-container a,
+.recent-contents-slider-container img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.recent-contents-slider-container img {
+    pointer-events: none;
+}
+.journals-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+.journals-slider-nav {
+    display: flex;
+    gap: 10px;
+}
+.journal-nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    font-size: 15px;
+}
+.journal-nav-btn:hover {
+    background: var(--primary-color, #0a5c36);
+    color: #ffffff;
+    border-color: var(--primary-color, #0a5c36);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(10, 92, 54, 0.25);
+}
+.recent-contents-slider-container .recent-contents-slider-track {
+    display: flex;
+    gap: 24px;
+    padding: 10px 4px 24px 4px;
+    will-change: transform;
+    overflow: visible;
+}
+.recent-content-slide-item {
+    flex: 0 0 calc((100% - 72px) / 4);
+    min-width: calc((100% - 72px) / 4);
+    max-width: calc((100% - 72px) / 4);
+    height: auto;
+    box-sizing: border-box;
+    display: flex;
+}
+.recent-content-slide-item .report-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+@media (max-width: 1100px) {
+    .recent-content-slide-item {
+        flex: 0 0 calc((100% - 48px) / 3);
+        min-width: calc((100% - 48px) / 3);
+        max-width: calc((100% - 48px) / 3);
+    }
+}
+@media (max-width: 768px) {
+    .recent-contents-slider-container .recent-contents-slider-track {
+        gap: 16px;
+    }
+    .recent-content-slide-item {
+        flex: 0 0 calc((100% - 16px) / 2);
+        min-width: calc((100% - 16px) / 2);
+        max-width: calc((100% - 16px) / 2);
+    }
+}
+@media (max-width: 520px) {
+    .recent-content-slide-item {
+        flex: 0 0 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Slider -->
 <section class="hero-slider-section">
     <div class="slider-container">
         {% for slide in sliders %}
-        <div class="slide {% if forloop.first %}active{% endif %}" style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('{{ slide.image.url }}');">
-            <div class="container slide-content">
+        <div class="slide {% if forloop.first %}active{% endif %}" {% if slide.image %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('{{ slide.image.url }}');"{% else %}style="background-color: #0b1320;"{% endif %}>
+            {% if slide.video %}
+            <video class="slide-video-bg" autoplay muted playsinline poster="{% if slide.image %}{{ slide.image.url }}{% endif %}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+                <source src="{{ slide.video.url }}" type="video/mp4">
+            </video>
+            <div class="slide-video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.6)); z-index: 2;"></div>
+            {% endif %}
+
+            <div class="container slide-content" style="position: relative; z-index: 3;">
                 <h1 class="slide-title">{% render_lang slide 'title' current_lang %}</h1>
                 <p class="slide-subtitle">{% render_lang slide 'subtitle' current_lang %}</p>
                 {% if slide.link %}
@@ -46,24 +208,37 @@
         
         <div class="news-grid">
             {% for item in news_list %}
-            <article class="news-card">
+            <a href="{% url 'news_detail' item.pk %}" class="news-card">
                 <div class="news-card-img-wrapper">
-                    {% if item.image %}
+                    {% if item.video %}
+                    <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item.image %}poster="{{ item.image.url }}"{% endif %}>
+                        <source src="{{ item.video.url }}" type="video/mp4">
+                        <source src="{{ item.video.url }}" type="video/webm">
+                    </video>
+                    <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
+                    {% elif item.image %}
                     <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                    {% if item.video_url %}
+                    <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
+                    {% endif %}
+                    {% elif item.video_url %}
+                    <div class="news-card-img-placeholder" style="background: #0f172a; color: #58a6ff;"><i class="fa-solid fa-file-video"></i></div>
+                    <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                     {% else %}
                     <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
                     {% endif %}
                     <span class="news-card-date"><i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}</span>
                 </div>
                 <div class="news-card-content">
-                    <h3 class="news-card-title"><a href="{% url 'news_detail' item.pk %}">{% render_lang item 'title' current_lang %}</a></h3>
-                    <p class="news-card-excerpt">{% render_lang item 'content' current_lang|slice:":120" %}...</p>
+                    <h3 class="news-card-title">{% render_lang item 'title' current_lang %}</h3>
+                    {% render_lang item 'content' current_lang as raw_content %}
+                    <p class="news-card-excerpt">{{ raw_content|striptags|truncatechars:150 }}</p>
                     <div class="news-card-footer">
-                        <a href="{% url 'news_detail' item.pk %}" class="news-card-more">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
+                        <span class="news-card-more">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></span>
                         <span class="news-card-views"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span>
                     </div>
                 </div>
-            </article>
+            </a>
             {% empty %}
             <p class="no-data">Häzirki wagtda täzelik ýok.</p>
             {% endfor %}
@@ -76,75 +251,94 @@
 </section>
 
 <!-- Stats / Counter Section -->
-<section class="section stats-section">
+<section class="section stats-section" {% if site_settings.stats_bg_image %}style="background-image: linear-gradient(rgba(10, 92, 54, 0.85), rgba(4, 75, 43, 0.90)), url('{{ site_settings.stats_bg_image.url }}');"{% endif %}>
     <div class="container">
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon-wrapper"><i class="fa-solid fa-book-open"></i></div>
-                <div class="stat-number" data-target="{{ stats.books }}">45,000+</div>
+                <div class="stat-icon-wrapper">
+                    {% if site_settings.stat_books_icon %}
+                    <img src="{{ site_settings.stat_books_icon.url }}" alt="Kitaplar Logo" class="stat-custom-logo">
+                    {% else %}
+                    <i class="fa-solid fa-book-open"></i>
+                    {% endif %}
+                </div>
+                <div class="stat-number" data-display-text="{{ site_settings.stat_books }}">{{ site_settings.stat_books }}</div>
                 <div class="stat-label">{% ui_label 'books_count' current_lang %}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper"><i class="fa-solid fa-graduation-cap"></i></div>
-                <div class="stat-number" data-target="{{ stats.majors }}">12</div>
+                <div class="stat-icon-wrapper">
+                    {% if site_settings.stat_majors_icon %}
+                    <img src="{{ site_settings.stat_majors_icon.url }}" alt="Hünärler Logo" class="stat-custom-logo">
+                    {% else %}
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    {% endif %}
+                </div>
+                <div class="stat-number" data-display-text="{{ site_settings.stat_majors }}">{{ site_settings.stat_majors }}</div>
                 <div class="stat-label">{% ui_label 'majors_count' current_lang %}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper"><i class="fa-solid fa-chalkboard-user"></i></div>
-                <div class="stat-number" data-target="{{ stats.teachers }}">280+</div>
+                <div class="stat-icon-wrapper">
+                    {% if site_settings.stat_teachers_icon %}
+                    <img src="{{ site_settings.stat_teachers_icon.url }}" alt="Mugallymlar Logo" class="stat-custom-logo">
+                    {% else %}
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    {% endif %}
+                </div>
+                <div class="stat-number" data-display-text="{{ site_settings.stat_teachers }}">{{ site_settings.stat_teachers }}</div>
                 <div class="stat-label">{% ui_label 'teachers_count' current_lang %}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper"><i class="fa-solid fa-user-graduate"></i></div>
-                <div class="stat-number" data-target="{{ stats.students }}">3,200+</div>
+                <div class="stat-icon-wrapper">
+                    {% if site_settings.stat_students_icon %}
+                    <img src="{{ site_settings.stat_students_icon.url }}" alt="Talyplar Logo" class="stat-custom-logo">
+                    {% else %}
+                    <i class="fa-solid fa-user-graduate"></i>
+                    {% endif %}
+                </div>
+                <div class="stat-number" data-display-text="{{ site_settings.stat_students }}">{{ site_settings.stat_students }}</div>
                 <div class="stat-label">{% ui_label 'students_count' current_lang %}</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- History Section -->
-<section class="section history-section" id="taryhy">
+<!-- Elektron Neşirler (Publications) Showcase Section (Images 1 & 2) -->
+<section class="journal-showcase-section" id="zurnallar">
     <div class="container">
-        <div class="history-card">
-            <div class="history-image-col">
-                <div class="history-image-badge"><i class="fa-solid fa-clock-rotate-left"></i> Altyn Taryhymyz</div>
+        <div class="journal-showcase-box" id="journalShowcaseBox">
+            <div class="journal-showcase-slides" id="journalShowcaseSlides">
+                {% for book in featured_books %}
+                <div class="journal-showcase-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+                    <a href="{% url 'library_book_detail' book.pk %}" class="journal-showcase-frame" title="{% render_lang book 'title' current_lang %}">
+                        {% if book.display_image %}
+                        <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-showcase-cover">
+                        {% else %}
+                        <div class="journal-showcase-fallback">
+                            <i class="fa-solid fa-book-open" style="font-size: 32px;"></i>
+                            <span>{{ book.title_tm }}</span>
+                        </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="journal-showcase-body">
+                        <a href="{% url 'library_book_detail' book.pk %}" class="journal-showcase-title">
+                            {% render_lang book 'title' current_lang %}
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding: 40px; color: #64748b;">
+                    <p>Häzirki wagtda neşir ýok.</p>
+                </div>
+                {% endfor %}
             </div>
-            <div class="history-content-col">
-                <h2 class="history-title">{% ui_label 'history' current_lang %}</h2>
-                <div class="section-divider left"></div>
-                <p>Türkmen döwlet maliýe instituty Türkmenistanyň Prezidentiniň Permany bilen 2011-nji ýylda döredildi. Gysga wagtyň içinde institutymyz ýurdumyzyň maliýe, bank we salgyt ulgamlary üçin ýokary hünärli ykdysady hünärmenleri taýýarlaýan esasy ylym we bilim merkezleriniň birine öwrüldi.</p>
-                <p>Häzirki wagtda talyplarymyz döwrebap enjamlaşdyrylan binalarda bilim alýarlar we dünýä derejesindäki bilim programmalary, interaktiw tehnologiýalar arkaly öz ylymlaryny baýlaşdyrýarlar.</p>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- Weekly Reports / Recent Docs Section -->
-<section class="section reports-section">
-    <div class="container">
-        <div class="section-header">
-            <span class="section-tagline">{% ui_label 'weekly_reports' current_lang %}</span>
-            <h2 class="section-title">{% ui_label 'latest_reports' current_lang %}</h2>
-            <div class="section-divider"></div>
-        </div>
-        
-        <div class="reports-list">
-            {% for doc in recent_reports %}
-            <div class="report-row">
-                <div class="report-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                <div class="report-info">
-                    <span class="report-category">{% ui_label 'weekly_reports' current_lang %}</span>
-                    <h4 class="report-title">{% render_lang doc 'title' current_lang %}</h4>
-                </div>
-                <div class="report-actions">
-                    <span class="report-date">{{ doc.uploaded_at|date:"d.m.Y" }}</span>
-                    <a href="{{ doc.file.url }}" class="btn btn-outline btn-sm" download><i class="fa-solid fa-download"></i> Download</a>
-                </div>
+            <!-- Sabit durýan "Ählisi" baglanyşygy (slaýder bilen süýşmeýär) -->
+            <div class="journal-showcase-footer">
+                <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-view-all-link">
+                    {% if current_lang == 'eng' %}All{% elif current_lang == 'rus' %}Все{% else %}Ählisi{% endif %}
+                </a>
             </div>
-            {% empty %}
-            <p class="no-data">Hasabat tapylmady.</p>
-            {% endfor %}
         </div>
     </div>
 </section>
@@ -176,4 +370,492 @@
         </div>
     </div>
 </section>
+
+<!-- Soňky goşulan maglumatlar (Recent Added Content) - 10 sany, 4 sany görünýär, üznüksiz aýlanýar -->
+<section class="section reports-section" id="taze-maglumatlar">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{% ui_label 'latest_reports' current_lang %}</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="recent-slider-wrapper">
+            <button type="button" class="recent-slider-arrow prev" id="recentSliderSidePrev" aria-label="Geri" title="Geri">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="recent-contents-slider-container">
+                <div class="recent-contents-slider-track" id="recentContentSliderTrack">
+                    {% for item in recent_contents %}
+                    <div class="recent-content-slide-item">
+                        <a href="{{ item.url }}" class="report-card" draggable="false">
+                            <div class="report-card-media">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" loading="lazy" draggable="false">
+                                {% else %}
+                                    <div class="report-card-placeholder">
+                                        <i class="{{ item.icon }}"></i>
+                                        <span class="pdf-badge">{{ item.badge|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="report-card-body">
+                                <h4 class="report-card-title">{% render_lang item 'title' current_lang %}</h4>
+                                <div class="report-card-footer">
+                                    <span class="report-card-date"><i class="fa-regular fa-calendar"></i> {{ item.date|date:"d.m.Y" }}</span>
+                                    <span class="report-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <p class="no-data">Maglumat tapylmady.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="button" class="recent-slider-arrow next" id="recentSliderSideNext" aria-label="Öňe" title="Öňe">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Bilim Täzelikleri (bilim.tm) Section - 9 sany habar -->
+<section class="section bilim-news-section" id="bilim-tazelikler">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tagline">{% if current_lang == 'eng' %}Education & Science News{% elif current_lang == 'rus' %}Новости образования и науки{% else %}Ylym we bilim habarlary{% endif %}</span>
+            <h2 class="section-title">{% if current_lang == 'eng' %}Latest News{% elif current_lang == 'rus' %}Новости{% else %}Täzelikler{% endif %}</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="bilim-news-grid">
+            {% for item in bilim_news %}
+            <a href="{% url 'bilim_news_detail' item.pk %}" class="bilim-news-card">
+                <div class="bilim-news-img-wrap">
+                    {% if item.display_image %}
+                    <img src="{{ item.display_image }}" alt="{% render_lang item 'title' current_lang %}" class="bilim-news-img" loading="lazy">
+                    {% else %}
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #e2e8f0; color: #94a3b8; font-size: 36px;">
+                        <i class="fa-solid fa-newspaper"></i>
+                    </div>
+                    {% endif %}
+                    <span class="bilim-news-date-badge">
+                        <i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}
+                    </span>
+                </div>
+                <div class="bilim-news-body">
+                    <h3 class="bilim-news-card-title">{% render_lang item 'title' current_lang %}</h3>
+                    {% render_lang item 'description' current_lang as current_desc %}
+                    {% if current_desc %}
+                    <p class="bilim-news-card-desc">{{ current_desc|striptags|truncatechars:140 }}</p>
+                    {% else %}
+                    {% render_lang item 'content' current_lang as current_content %}
+                    <p class="bilim-news-card-desc">{{ current_content|striptags|truncatechars:140 }}</p>
+                    {% endif %}
+                    <div class="bilim-news-footer">
+                        <span class="bilim-news-link">
+                            {% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                        <span class="bilim-news-views">
+                            <i class="fa-regular fa-eye"></i> {{ item.views_count }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-data" style="grid-column: 1 / -1; text-align: center;">Häzirki wagtda täzelik ýok.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. Elektron Neşirler Showcase Slider (Yana süýşýän karusel, her 3 sekuntdan)
+    function initJournalShowcase() {
+        const box = document.getElementById('journalShowcaseBox');
+        if (!box) return;
+
+        const slidesContainer = document.getElementById('journalShowcaseSlides');
+        if (!slidesContainer) return;
+
+        const originalSlides = Array.from(slidesContainer.querySelectorAll('.journal-showcase-slide'));
+        if (originalSlides.length <= 1) return;
+
+        // Bizarar çäksiz aýlanmagy üçin birinji slaýdy ahyryna klonlaýarys
+        const firstClone = originalSlides[0].cloneNode(true);
+        firstClone.classList.remove('active');
+        firstClone.setAttribute('data-clone', 'true');
+        slidesContainer.appendChild(firstClone);
+
+        let currentIndex = 0;
+        let isTransitioning = false;
+        let autoTimer = null;
+        const totalSlides = originalSlides.length;
+
+        function setTrackPosition(index, withTransition) {
+            if (withTransition) {
+                slidesContainer.style.transition = 'transform 1s cubic-bezier(0.25, 1, 0.4, 1)';
+            } else {
+                slidesContainer.style.transition = 'none';
+            }
+            slidesContainer.style.transform = 'translateX(-' + (index * 100) + '%)';
+            if (!withTransition) {
+                void slidesContainer.offsetHeight; // Reflow üpjün edýär
+            }
+        }
+
+        slidesContainer.addEventListener('transitionend', function(e) {
+            if (e.target !== slidesContainer) return;
+            isTransitioning = false;
+
+            // Ahyrky klona ýetende garaşsyz dessine 1-nji slaýda yzyna bökýär
+            if (currentIndex >= totalSlides) {
+                currentIndex = 0;
+                setTrackPosition(0, false);
+            }
+        });
+
+        function nextSlide() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            currentIndex++;
+            setTrackPosition(currentIndex, true);
+        }
+
+        function startAuto() {
+            stopAuto();
+            autoTimer = setInterval(nextSlide, 4000); // Her kart üýtgände arasynda takyk 4 sekunt
+        }
+
+        function stopAuto() {
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+            }
+        }
+
+        box.addEventListener('mouseenter', stopAuto);
+        box.addEventListener('mouseleave', startAuto);
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) stopAuto();
+            else startAuto();
+        });
+
+        setTrackPosition(0, false);
+        startAuto();
+    }
+
+    // 2. Soňky goşulan maglumatlar karuseli (Recent Contents Infinite Responsive Slider)
+    function initRecentContentsSlider() {
+        const rcTrack = document.getElementById('recentContentSliderTrack');
+        if (!rcTrack) return;
+
+        const rcContainer = rcTrack.closest('.recent-contents-slider-container');
+        const prevBtns = [
+            document.getElementById('recentSliderSidePrev')
+        ].filter(Boolean);
+        const nextBtns = [
+            document.getElementById('recentSliderSideNext')
+        ].filter(Boolean);
+
+        // Get original items
+        const rawItems = Array.from(rcTrack.children);
+        if (rawItems.length <= 1) return;
+
+        // Ensure at least 4 items in base set
+        let baseItems = rawItems.slice();
+        while (baseItems.length < 4) {
+            baseItems = baseItems.concat(rawItems.map(el => el.cloneNode(true)));
+        }
+
+        const N = baseItems.length;
+
+        // Build: [Set 1 (Clones)] [Set 2 (Base/Main)] [Set 3 (Clones)]
+        rcTrack.innerHTML = '';
+        const set1 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.setAttribute('data-cloned', 'true');
+            return c;
+        });
+        const set2 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.removeAttribute('data-cloned');
+            return c;
+        });
+        const set3 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.setAttribute('data-cloned', 'true');
+            return c;
+        });
+
+        [...set1, ...set2, ...set3].forEach(item => rcTrack.appendChild(item));
+
+        let currentIndex = N; // Start at first item of main set
+        let isTransitioning = false;
+        let autoSlideTimer = null;
+        let transitionTimeout = null;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let hasDragged = false;
+        let dragDistance = 0;
+        let preventClick = false;
+
+        function getStep() {
+            const all = rcTrack.children;
+            if (all.length < 2) return 280;
+            const r0 = all[0].getBoundingClientRect();
+            const r1 = all[1].getBoundingClientRect();
+            const diff = r1.left - r0.left;
+            return diff > 0 ? diff : (r0.width + 24);
+        }
+
+        function setPosition(index, animate = false, duration = 0.45) {
+            if (animate) {
+                rcTrack.style.transition = `transform ${duration}s cubic-bezier(0.22, 1, 0.36, 1)`;
+            } else {
+                rcTrack.style.transition = 'none';
+            }
+            const step = getStep();
+            const offset = -(index * step);
+            rcTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+        }
+
+        // Set initial position
+        setPosition(currentIndex, false);
+
+        function checkLoopBounds() {
+            if (isDragging) return;
+            let didReset = false;
+            if (currentIndex >= 2 * N) {
+                currentIndex -= N;
+                didReset = true;
+            } else if (currentIndex < N) {
+                currentIndex += N;
+                didReset = true;
+            }
+            if (didReset) {
+                setPosition(currentIndex, false);
+                void rcTrack.offsetHeight;
+            }
+            isTransitioning = false;
+        }
+
+        rcTrack.addEventListener('transitionend', function(e) {
+            if (e.target !== rcTrack) return;
+            checkLoopBounds();
+        });
+
+        function goToNext(count = 1) {
+            if (isDragging) return;
+            if (currentIndex >= 2 * N + 4) {
+                currentIndex -= N;
+                setPosition(currentIndex, false);
+                void rcTrack.offsetHeight;
+            }
+            isTransitioning = true;
+            currentIndex += count;
+            setPosition(currentIndex, true, 0.45);
+            clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(checkLoopBounds, 480);
+        }
+
+        function goToPrev(count = 1) {
+            if (isDragging) return;
+            if (currentIndex <= N - 4) {
+                currentIndex += N;
+                setPosition(currentIndex, false);
+                void rcTrack.offsetHeight;
+            }
+            isTransitioning = true;
+            currentIndex -= count;
+            setPosition(currentIndex, true, 0.45);
+            clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(checkLoopBounds, 480);
+        }
+
+        function startAutoSlide() {
+            stopAutoSlide();
+            autoSlideTimer = setInterval(() => {
+                if (!isDragging && !isTransitioning) {
+                    goToNext(1);
+                }
+            }, 3500);
+        }
+
+        function stopAutoSlide() {
+            if (autoSlideTimer) {
+                clearInterval(autoSlideTimer);
+                autoSlideTimer = null;
+            }
+        }
+
+        // Wire up all Prev & Next buttons
+        nextBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                stopAutoSlide();
+                goToNext(1);
+                startAutoSlide();
+            });
+        });
+
+        prevBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                stopAutoSlide();
+                goToPrev(1);
+                startAutoSlide();
+            });
+        });
+
+        // Hover pause
+        if (rcContainer) {
+            rcContainer.addEventListener('mouseenter', stopAutoSlide);
+            rcContainer.addEventListener('mouseleave', () => {
+                if (!isDragging) startAutoSlide();
+            });
+        }
+
+        // Pointer / Touch / Mouse drag
+        function onDragStart(clientX, clientY) {
+            stopAutoSlide();
+            isDragging = true;
+            hasDragged = false;
+            dragDistance = 0;
+            startX = clientX;
+            startY = clientY;
+            rcTrack.style.transition = 'none';
+            if (rcContainer) rcContainer.classList.add('is-dragging');
+        }
+
+        function onDragMove(clientX, clientY, e) {
+            if (!isDragging) return;
+            const diffX = clientX - startX;
+            const diffY = clientY - startY;
+
+            if (!hasDragged) {
+                if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 8) {
+                    // Vertical page scroll gesture
+                    isDragging = false;
+                    if (rcContainer) rcContainer.classList.remove('is-dragging');
+                    return;
+                }
+                if (Math.abs(diffX) > 6) {
+                    hasDragged = true;
+                    preventClick = true;
+                }
+            }
+
+            if (hasDragged) {
+                if (e && e.cancelable) e.preventDefault();
+                dragDistance = diffX;
+                const step = getStep();
+                const offset = -(currentIndex * step) + dragDistance;
+                rcTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+            }
+        }
+
+        function onDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            if (rcContainer) rcContainer.classList.remove('is-dragging');
+
+            const step = getStep();
+            const threshold = Math.min(step * 0.22, 55);
+
+            if (hasDragged && Math.abs(dragDistance) >= threshold) {
+                const cardsMoved = Math.max(1, Math.round(Math.abs(dragDistance) / step));
+                if (dragDistance < 0) {
+                    goToNext(cardsMoved);
+                } else {
+                    goToPrev(cardsMoved);
+                }
+            } else {
+                setPosition(currentIndex, true, 0.3);
+                setTimeout(checkLoopBounds, 320);
+            }
+
+            setTimeout(() => {
+                preventClick = false;
+                hasDragged = false;
+            }, 200);
+
+            startAutoSlide();
+        }
+
+        // Touch listeners
+        rcTrack.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                onDragStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', function(e) {
+            if (isDragging && e.touches.length === 1) {
+                onDragMove(e.touches[0].clientX, e.touches[0].clientY, e);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', function() {
+            onDragEnd();
+        }, { passive: true });
+
+        // Mouse listeners
+        rcTrack.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            onDragStart(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                onDragMove(e.clientX, e.clientY, e);
+            }
+        });
+
+        window.addEventListener('mouseup', function() {
+            if (isDragging) {
+                onDragEnd();
+            }
+        });
+
+        // Suppress click on links if dragged
+        rcTrack.addEventListener('click', function(e) {
+            if (preventClick || hasDragged) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
+
+        // Responsive resize
+        let resizeTimeout = null;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                setPosition(currentIndex, false);
+            }, 100);
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) stopAutoSlide();
+            else startAutoSlide();
+        });
+
+        startAutoSlide();
+    }
+
+    // Initialize both sliders independently
+    initJournalShowcase();
+    initRecentContentsSlider();
+});
+</script>
+{% endblock %}
+
+

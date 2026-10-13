@@ -1,0 +1,41 @@
+{% extends 'panel/base.html' %}
+{% block title %}Olimpiadalar{% endblock %}
+{% block breadcrumb %}Olimpiadalar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-trophy"></i> Olimpiadalar</h1>
+  <a href="{% url 'panel_olympiad_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Goş</a>
+</div>
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>At</th><th>Ýyl</th><th>PDF netijeleri</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for ol in olympiads %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ ol.title_tm }}</strong></td>
+          <td><span class="badge-panel badge-warning">{{ ol.year }}</span></td>
+          <td>
+            {% if ol.results_pdf %}
+            <a href="{{ ol.results_pdf.url }}" target="_blank" class="btn-panel btn-panel-ghost btn-panel-sm"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_olympiad_edit' ol.pk %}" class="btn-panel btn-panel-edit btn-panel-sm"><i class="fa-solid fa-pen"></i> Üýtget</a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-ol-{{ ol.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-ol-{{ ol.pk }}" method="POST" action="{% url 'panel_olympiad_delete' ol.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Olimpiada tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

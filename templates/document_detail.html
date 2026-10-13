@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load website_tags %}
+
+{% block title %}
+    {% render_lang document 'title' current_lang %} | Türkmen Döwlet Maliýe Instituty
+{% endblock %}
+
+{% block content %}
+<!-- Page Header / Breadcrumb Banner -->
+<div class="page-header" style="background: linear-gradient(135deg, #064e29 0%, #048848 100%); color: white; padding: 40px 0 30px; position: relative;">
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; opacity: 0.85; margin-bottom: 12px; flex-wrap: wrap;">
+            <a href="{% url 'home' %}" style="color: white; text-decoration: none;"><i class="fa-solid fa-house"></i> Baş sahypa</a>
+            <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+            <span>{{ document.get_category_display }}</span>
+            <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+            <span style="opacity: 1; font-weight: 600;">{% render_lang document 'title' current_lang %}</span>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-file-pdf" style="color: #fca5a5;"></i>
+            {% render_lang document 'title' current_lang %}
+        </h1>
+    </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 50px;">
+    <div style="width: 100%;">
+        
+        <!-- Document PDF & Cover Card -->
+        <div class="card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            {% if document.image %}
+            <!-- Header Photo -->
+            <div class="article-image-wrap" style="margin-bottom: 15px; text-align: center;">
+                <img src="{{ document.image.url }}" alt="{% render_lang document 'title' current_lang %}" style="max-width: 100%; height: auto; max-height: 650px; object-fit: contain; display: block; margin: 0 auto; border-radius: 8px;">
+            </div>
+            {% endif %}
+
+            <div class="preview-box" style="border: none; padding: 0; background: transparent;">
+                <div id="file-preview-container" data-url="{{ document.file.url }}" class="preview-content" style="height: 800px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 8px; display: block; background: #ffffff; padding: 10px 0;">
+                    <div style="text-align: center; padding: 60px; color: #64748b;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 28px; margin-bottom: 12px; display: block; color: #048848;"></i>
+                        PDF ýüklenýär...
+                    </div>
+                </div>
+                <div class="preview-footer" style="margin-top: 18px; display: flex; align-items: center; justify-content: flex-end;">
+                    <a href="{{ document.file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2);">
+                        <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if recent_documents %}
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #064e29; margin-bottom: 20px;">
+                {% if current_lang == 'eng' %}Recent Reports & Documents{% elif current_lang == 'rus' %}Sonky resminamalar{% else %}Soňky resminamalar we hasabatlar{% endif %}
+            </h3>
+            <div class="reports-grid">
+                {% for doc in recent_documents %}
+                <a href="{% url 'document_detail' doc.pk %}" class="report-card">
+                    <div class="report-card-media">
+                        {% if doc.image %}
+                            <img src="{{ doc.image.url }}" alt="{% render_lang doc 'title' current_lang %}">
+                        {% else %}
+                            <div class="report-card-placeholder">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <span class="pdf-badge">PDF HASABAT</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="report-card-body">
+                        <h4 class="report-card-title">{% render_lang doc 'title' current_lang %}</h4>
+                        <div class="report-card-footer">
+                            <span class="report-card-date"><i class="fa-regular fa-calendar"></i> {{ doc.uploaded_at|date:"d.m.Y" }}</span>
+                            <span class="report-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- PDF Viewer Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var container = document.getElementById('file-preview-container');
+    if (!container) return;
+    
+    var url = container.getAttribute('data-url');
+    if (!url) return;
+
+    var extension = url.split('?')[0].split('.').pop().toLowerCase();
+
+    function showUnsupported() {
+        container.innerHTML = `
+            <div style="padding: 40px; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                <span style="font-size: 3rem; margin-bottom: 15px; color: #9ca3af;">📁</span>
+                <p style="color: #1e293b; margin-bottom: 10px; font-weight: 500;">Brauzeriňiz bu faýl görnüşini göni synlamagy goldamaýar.</p>
+                <a href="${url}" download style="color: #048848; font-weight: 600; text-decoration: none;">Faýly ýükle</a>
+            </div>
+        `;
+    }
+
+    function loadNativePdf() {
+        container.innerHTML = '<iframe src="' + url + '#toolbar=1&navpanes=0" width="100%" height="800px" style="border: none; border-radius: 8px; width: 100%; height: 800px; display: block; background: #ffffff;" title="PDF"></iframe>';
+    }
+
+    function startPdfRendering() {
+        try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfengine/worker.js";
+
+            var loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(async function(pdf) {
+                container.innerHTML = '';
+                var numPages = pdf.numPages;
+                
+                // Get page 1 first to determine standard dimensions
+                var firstPage = await pdf.getPage(1);
+                var firstViewport = firstPage.getViewport({ scale: 1.0 });
+                var containerWidth = Math.min((container.clientWidth || 860) - 40, 860);
+                if (containerWidth <= 0) containerWidth = 800;
+                var scale = (containerWidth / firstViewport.width) * 1.35;
+
+                var pageWrappers = [];
+                var standardHeight = (firstViewport.height * (containerWidth / firstViewport.width)) + 'px';
+
+                for (let i = 1; i <= numPages; i++) {
+                    var pageWrap = document.createElement('div');
+                    pageWrap.className = 'pdf-page-wrap';
+                    pageWrap.dataset.page = i;
+                    pageWrap.style.width = '100%';
+                    pageWrap.style.maxWidth = '900px';
+                    pageWrap.style.minHeight = standardHeight;
+                    pageWrap.style.margin = '0 auto 20px auto';
+                    pageWrap.style.boxShadow = '0 4px 10px rgba(0,0,0,0.06)';
+                    pageWrap.style.border = '1px solid #e2e8f0';
+                    pageWrap.style.borderRadius = '4px';
+                    pageWrap.style.background = '#ffffff';
+                    pageWrap.style.display = 'flex';
+                    pageWrap.style.justifyContent = 'center';
+                    pageWrap.style.alignItems = 'center';
+                    
+                    var placeholder = document.createElement('div');
+                    placeholder.style.color = '#94a3b8';
+                    placeholder.style.fontSize = '13px';
+                    placeholder.style.padding = '30px';
+                    placeholder.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Sahypa ' + i + '...';
+                    pageWrap.appendChild(placeholder);
+
+                    container.appendChild(pageWrap);
+                    pageWrappers.push(pageWrap);
+                }
+
+                var renderedPages = new Set();
+                var renderingPages = new Set();
+
+                function renderPage(pageNum, wrapper) {
+                    if (renderedPages.has(pageNum) || renderingPages.has(pageNum)) return;
+                    renderingPages.add(pageNum);
+
+                    pdf.getPage(pageNum).then(function(page) {
+                        var viewport = page.getViewport({ scale: scale });
+                        var canvas = document.createElement('canvas');
+                        canvas.style.width = '100%';
+                        canvas.style.height = 'auto';
+                        canvas.style.display = 'block';
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        var ctx = canvas.getContext('2d');
+                        var renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        page.render(renderContext).promise.then(function() {
+                            wrapper.innerHTML = '';
+                            wrapper.appendChild(canvas);
+                            wrapper.style.minHeight = 'auto';
+                            renderedPages.add(pageNum);
+                            renderingPages.delete(pageNum);
+                        }).catch(function() {
+                            renderingPages.delete(pageNum);
+                        });
+                    }).catch(function() {
+                        renderingPages.delete(pageNum);
+                    });
+                }
+
+                // Page 1 and 2 render IMMEDIATELY for instant opening
+                renderPage(1, pageWrappers[0]);
+                if (numPages > 1) {
+                    renderPage(2, pageWrappers[1]);
+                }
+
+                // Lazy render all subsequent pages as user scrolls near them
+                if (window.IntersectionObserver) {
+                    var observer = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting) {
+                                var pNum = parseInt(entry.target.dataset.page, 10);
+                                renderPage(pNum, entry.target);
+                            }
+                        });
+                    }, {
+                        root: container,
+                        rootMargin: '450px 0px'
+                    });
+
+                    pageWrappers.forEach(function(w) {
+                        observer.observe(w);
+                    });
+                } else {
+                    for (let i = 3; i <= numPages; i++) {
+                        renderPage(i, pageWrappers[i - 1]);
+                    }
+                }
+
+            }).catch(function(err) {
+                console.error("PDF Render Error: ", err);
+                loadNativePdf();
+            });
+        } catch(e) {
+            console.error("PDF Exception: ", e);
+            loadNativePdf();
+        }
+    }
+
+    if (extension === 'pdf') {
+        container.innerHTML = '<div style="text-align:center; padding:60px; color:#64748b;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:28px; margin-bottom:12px; display:block; color:#048848;"></i><p>PDF ýüklenýär...</p></div>';
+
+        function loadPdfEngine(callback) {
+            if (typeof pdfjsLib !== 'undefined') {
+                callback();
+                return;
+            }
+            var s = document.createElement('script');
+            s.src = '/pdfengine/lib.js';
+            s.onload = function() {
+                if (typeof pdfjsLib !== 'undefined') callback();
+                else fallbackFetch();
+            };
+            s.onerror = function() {
+                fallbackFetch();
+            };
+            function fallbackFetch() {
+                fetch('/pdfengine/lib.js')
+                    .then(function(r) { return r.text(); })
+                    .then(function(code) {
+                        var inline = document.createElement('script');
+                        inline.textContent = code;
+                        document.head.appendChild(inline);
+                        if (typeof pdfjsLib !== 'undefined') {
+                            callback();
+                        } else {
+                            loadNativePdf();
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error("Fetch fallback failed: ", err);
+                        loadNativePdf();
+                    });
+            }
+            document.head.appendChild(s);
+        }
+
+        loadPdfEngine(startPdfRendering);
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+        container.innerHTML = '<img src="' + url + '" style="max-width: 100%; height: auto; display: block; margin: auto; padding: 20px;">';
+    } else {
+        showUnsupported();
+    }
+});
+</script>
+{% endblock %}

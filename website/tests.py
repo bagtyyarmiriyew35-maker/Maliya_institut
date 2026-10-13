@@ -30,6 +30,18 @@ class WebsiteViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'news/list.html')
 
+    def test_news_list_pagination(self):
+        for i in range(10):
+            News.objects.create(title_tm=f"Täzelik {i}", content_tm="Mazmuny")
+        
+        response_page1 = self.client.get(reverse('news_list') + '?page=1')
+        self.assertEqual(len(response_page1.context['all_news']), 6)
+        
+        response_page2 = self.client.get(reverse('news_list') + '?page=2')
+        # 1 created in setUp + 10 created in loop = 11 total news.
+        # Page 1 has 6, Page 2 has 5.
+        self.assertEqual(len(response_page2.context['all_news']), 5)
+
     def test_news_detail_page_status_code(self):
         response = self.client.get(reverse('news_detail', args=[self.news.pk]))
         self.assertEqual(response.status_code, 200)
@@ -87,3 +99,21 @@ class WebsiteViewsTestCase(TestCase):
         response = self.client.get(reverse('page_detail', args=[page.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'page_detail.html')
+
+    def test_library_detail_page_status_code(self):
+        from website.models import LibraryCategory, LibraryBook
+        cat = LibraryCategory.objects.create(name_tm="Bilim žurnaly")
+        LibraryBook.objects.create(category=cat, title_tm="Bilim žurnaly 1 sany 2026")
+        response = self.client.get(reverse('library_detail', args=[cat.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'library/detail.html')
+
+    def test_library_book_detail_page_status_code(self):
+        from website.models import LibraryCategory, LibraryBook
+        cat = LibraryCategory.objects.create(name_tm="Bilim žurnaly")
+        book = LibraryBook.objects.create(category=cat, title_tm="Bilim žurnaly 2 sany 2026")
+        response = self.client.get(reverse('library_book_detail', args=[book.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'library/book_detail.html')
+
+

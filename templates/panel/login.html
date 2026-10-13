@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Giriş — TDMai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+</head>
+<body class="panel-body">
+
+<div class="panel-login-page">
+  <div class="panel-login-box">
+
+    <div class="panel-login-logo">
+      <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <h1>Admin Panel</h1>
+      <p>Türkmen Döwlet Maliýe Instituty</p>
+    </div>
+
+    {% if error %}
+    <div class="panel-login-error">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'panel_login' %}" id="loginForm">
+      {% csrf_token %}
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label for="id_username">
+          <i class="fa-solid fa-user" style="color:var(--panel-accent);"></i>
+          Ulanyjy ady
+        </label>
+        <input
+          type="text"
+          id="id_username"
+          name="username"
+          class="form-control-panel"
+          placeholder="admin"
+          autocomplete="username"
+          required
+          autofocus
+        >
+      </div>
+
+      <div class="form-group" style="margin-bottom:24px;">
+        <label for="id_password">
+          <i class="fa-solid fa-lock" style="color:var(--panel-accent);"></i>
+          Açar sözi
+        </label>
+        <div style="position:relative;">
+          <input
+            type="password"
+            id="id_password"
+            name="password"
+            class="form-control-panel"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+            style="padding-right:42px;"
+          >
+          <button type="button" id="togglePwd" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--panel-text-muted);cursor:pointer;font-size:14px;">
+            <i class="fa-solid fa-eye" id="pwdEyeIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-panel btn-panel-primary" style="width:100%;justify-content:center;padding:11px;" id="loginBtn">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Giriş
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:20px;">
+      <a href="/" style="font-size:12px;color:var(--panel-text-muted);text-decoration:none;">
+        <i class="fa-solid fa-arrow-left"></i> Sahypa dolan
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Toggle password visibility
+const toggleBtn = document.getElementById('togglePwd');
+const pwdInput = document.getElementById('id_password');
+const eyeIcon = document.getElementById('pwdEyeIcon');
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', function() {
+    if (pwdInput.type === 'password') {
+      pwdInput.type = 'text';
+      eyeIcon.className = 'fa-solid fa-eye-slash';
+    } else {
+      pwdInput.type = 'password';
+      eyeIcon.className = 'fa-solid fa-eye';
+    }
+  });
+}
+
+// Loading state on submit
+const loginForm = document.getElementById('loginForm');
+const loginBtn = document.getElementById('loginBtn');
+if (loginForm && loginBtn) {
+  loginForm.addEventListener('submit', function() {
+    loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Girýär...';
+    loginBtn.disabled = true;
+  });
+}
+</script>
+<script src="/static/js/panel.js"></script>
+</body>
+</html>

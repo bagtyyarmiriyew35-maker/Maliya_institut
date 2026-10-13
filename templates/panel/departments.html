@@ -1,0 +1,52 @@
+{% extends 'panel/base.html' %}
+{% block title %}Kafedralar{% endblock %}
+{% block breadcrumb %}Institut / Kafedralar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-sitemap"></i> Kafedralar</h1>
+  <a href="{% url 'panel_department_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Goş</a>
+</div>
+
+<div class="panel-section-nav" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+  <a href="{% url 'panel_pages_by_section' 'institut' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-file-lines"></i> Sahypalary
+  </a>
+  <a href="{% url 'panel_faculties' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-building-columns"></i> Fakultetler
+  </a>
+  <a href="{% url 'panel_departments' %}" class="btn-panel btn-panel-primary btn-panel-sm">
+    <i class="fa-solid fa-sitemap"></i> Kafedralar ({{ departments|length }})
+  </a>
+  <a href="{% url 'panel_partners' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-handshake"></i> Hyzmatdaşlar
+  </a>
+</div>
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>Ady</th><th>Fakülteti</th><th>Müdiri</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for dept in departments %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ dept.name_tm }}</strong>{% if dept.name_en %}<br><span class="text-muted">{{ dept.name_en }}</span>{% endif %}</td>
+          <td><span class="badge-panel badge-success">{{ dept.faculty.name_tm }}</span></td>
+          <td><span class="text-muted">{{ dept.head_name_tm|default:"—" }}</span></td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_department_edit' dept.pk %}" class="btn-panel btn-panel-edit btn-panel-sm"><i class="fa-solid fa-pen"></i> Üýtget</a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-dept-{{ dept.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-dept-{{ dept.pk }}" method="POST" action="{% url 'panel_department_delete' dept.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Kafedra tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

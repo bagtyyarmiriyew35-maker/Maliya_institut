@@ -1,0 +1,57 @@
+{% extends 'panel/base.html' %}
+{% block title %}Täzelikler{% endblock %}
+{% block breadcrumb %}Täzelikler{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-newspaper"></i> Täzelikler</h1>
+  <a href="{% url 'panel_news_add' %}" class="btn-panel btn-panel-primary">
+    <i class="fa-solid fa-plus"></i> Täze habar goş
+  </a>
+</div>
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>Media</th><th>At</th><th>Senesi</th><th>Görnüşler</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for item in all_news %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <div style="position: relative; display: inline-block;">
+              {% if item.image %}
+              <img src="{{ item.image.url }}" class="panel-table-thumb" alt="">
+              {% elif item.video or item.video_url %}
+              <div class="panel-table-thumb-placeholder" style="background: #0f172a; color: #58a6ff;"><i class="fa-solid fa-file-video"></i></div>
+              {% else %}
+              <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-newspaper"></i></div>
+              {% endif %}
+              {% if item.video or item.video_url %}
+              <span class="badge-panel badge-info" style="position: absolute; bottom: 2px; right: 2px; font-size: 9px; padding: 1px 4px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);"><i class="fa-solid fa-play"></i></span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <strong>{{ item.title_tm|truncatechars:45 }}</strong>
+            {% if item.title_en %}<br><span class="text-muted">{{ item.title_en|truncatechars:35 }}</span>{% endif %}
+          </td>
+          <td><span class="text-muted">{{ item.published_date|date:"d.m.Y H:i" }}</span></td>
+          <td><span class="badge-panel badge-info"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span></td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'news_detail' item.pk %}" target="_blank" class="btn-panel btn-panel-ghost btn-panel-sm"><i class="fa-solid fa-eye"></i></a>
+              <a href="{% url 'panel_news_edit' item.pk %}" class="btn-panel btn-panel-edit btn-panel-sm"><i class="fa-solid fa-pen"></i> Üýtget</a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-news-{{ item.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-news-{{ item.pk }}" method="POST" action="{% url 'panel_news_delete' item.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Täzelik tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

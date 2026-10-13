@@ -1,0 +1,157 @@
+{% extends 'panel/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
+</div>
+
+<!-- Stats Grid -->
+<div class="dashboard-stats-grid">
+  <a href="{% url 'panel_sliders' %}" class="stat-card-panel">
+    <div class="stat-card-icon"><i class="fa-solid fa-images"></i></div>
+    <div class="number">{{ stats.sliders }}</div>
+    <div class="label">Sliderlar</div>
+  </a>
+  <a href="{% url 'panel_news' %}" class="stat-card-panel">
+    <div class="stat-card-icon info"><i class="fa-solid fa-newspaper"></i></div>
+    <div class="number">{{ stats.news }}</div>
+    <div class="label">Täzelikler</div>
+  </a>
+  <a href="{% url 'panel_pages' %}" class="stat-card-panel">
+    <div class="stat-card-icon warning"><i class="fa-solid fa-file-lines"></i></div>
+    <div class="number">{{ stats.pages }}</div>
+    <div class="label">Sahypalar</div>
+  </a>
+  <a href="{% url 'panel_faculties' %}" class="stat-card-panel">
+    <div class="stat-card-icon"><i class="fa-solid fa-building-columns"></i></div>
+    <div class="number">{{ stats.faculties }}</div>
+    <div class="label">Fakultetler</div>
+  </a>
+  <a href="{% url 'panel_departments' %}" class="stat-card-panel">
+    <div class="stat-card-icon warning"><i class="fa-solid fa-sitemap"></i></div>
+    <div class="number">{{ stats.departments }}</div>
+    <div class="label">Kafedralar</div>
+  </a>
+  <a href="{% url 'panel_documents' %}" class="stat-card-panel">
+    <div class="stat-card-icon info"><i class="fa-solid fa-folder-open"></i></div>
+    <div class="number">{{ stats.documents }}</div>
+    <div class="label">Resminamalar</div>
+  </a>
+  <a href="{% url 'panel_olympiads' %}" class="stat-card-panel">
+    <div class="stat-card-icon warning"><i class="fa-solid fa-trophy"></i></div>
+    <div class="number">{{ stats.olympiads }}</div>
+    <div class="label">Olimpiadalar</div>
+  </a>
+  <a href="{% url 'panel_partners' %}" class="stat-card-panel">
+    <div class="stat-card-icon"><i class="fa-solid fa-handshake"></i></div>
+    <div class="number">{{ stats.partners }}</div>
+    <div class="label">Hyzmatdaşlar</div>
+  </a>
+  <a href="{% url 'panel_library_categories' %}" class="stat-card-panel">
+    <div class="stat-card-icon" style="background:#ecfdf5; color:#0a5c36;"><i class="fa-solid fa-book-bookmark"></i></div>
+    <div class="number">{{ stats.library_categories }}</div>
+    <div class="label">Elektron neşirler</div>
+  </a>
+  <a href="{% url 'panel_library_books' %}" class="stat-card-panel">
+    <div class="stat-card-icon" style="background:#f0fdf4; color:#16a34a;"><i class="fa-solid fa-book-open"></i></div>
+    <div class="number">{{ stats.library_books }}</div>
+    <div class="label">Neşir sanlary</div>
+  </a>
+  <a href="{% url 'panel_messages' %}" class="stat-card-panel">
+
+    <div class="stat-card-icon {% if stats.unread_messages %}danger{% endif %}"><i class="fa-solid fa-envelope"></i></div>
+    <div class="number">{{ stats.messages }}</div>
+    <div class="label">Hatlar
+      {% if stats.unread_messages %}
+        <span class="badge-panel badge-danger" style="margin-left:4px;">{{ stats.unread_messages }} täze</span>
+      {% endif %}
+    </div>
+  </a>
+</div>
+
+<!-- Bottom Grid -->
+<div class="dashboard-bottom-grid">
+
+  <!-- Recent News -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h2><i class="fa-solid fa-newspaper"></i> Soňky täzelikler</h2>
+      <a href="{% url 'panel_news_add' %}" class="btn-panel btn-panel-primary btn-panel-sm">
+        <i class="fa-solid fa-plus"></i> Goş
+      </a>
+    </div>
+    {% if recent_news %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>At</th>
+            <th>Senesi</th>
+            <th>Görnüşler</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in recent_news %}
+          <tr>
+            <td>{{ item.title_tm|truncatechars:40 }}</td>
+            <td><span class="text-muted">{{ item.published_date|date:"d.m.Y" }}</span></td>
+            <td><span class="text-muted">{{ item.views_count }}</span></td>
+            <td>
+              <a href="{% url 'panel_news_edit' item.pk %}" class="btn-panel btn-panel-edit btn-panel-sm">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="panel-empty"><i class="fa-solid fa-newspaper"></i><p>Täzelik ýok</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Messages -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h2><i class="fa-solid fa-envelope"></i> Soňky hatlar</h2>
+      <a href="{% url 'panel_messages' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+        Hemmesi <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+    {% if recent_messages %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Ady</th>
+            <th>Mowzuk</th>
+            <th>Senesi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in recent_messages %}
+          <tr class="{% if not msg.is_read %}msg-unread{% else %}msg-read{% endif %}">
+            <td>
+              {{ msg.name }}
+              {% if not msg.is_read %}
+              <span class="badge-panel badge-danger" style="margin-left:4px;">Täze</span>
+              {% endif %}
+            </td>
+            <td>{{ msg.subject|truncatechars:30 }}</td>
+            <td><span class="text-muted">{{ msg.created_at|date:"d.m.Y" }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="panel-empty"><i class="fa-solid fa-envelope"></i><p>Hat ýok</p></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django import template
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -38,6 +39,11 @@ UI_VOCABULARY = {
         'tm': 'Täzelikler',
         'eng': 'News',
         'rus': 'Новости'
+    },
+    'news_subtitle': {
+        'tm': 'Maliýe institutynyň durmuşyndaky iň täze habarlar we waka-däpler',
+        'eng': 'The latest news and events in the life of the Finance Institute',
+        'rus': 'Последние новости и события из жизни Финансового института'
     },
     'contact': {
         'tm': 'Habarlaşmak',
@@ -183,11 +189,20 @@ def render_lang(obj, field_base, lang):
         
     attr_name = f"{field_base}_{lang_suffix}"
     
-    val = getattr(obj, attr_name, None)
-    if val is None or val == "":
-        val = getattr(obj, f"{field_base}_tm", "")
-        
-    return val
+    if isinstance(obj, dict):
+        val = obj.get(attr_name)
+        if val is None or val == "":
+            val = obj.get(f"{field_base}_tm", "")
+    else:
+        val = getattr(obj, attr_name, None)
+        if val is None or val == "":
+            val = getattr(obj, f"{field_base}_tm", "")
+
+    # HTML içerik (TinyMCE) üçin mark_safe ulanýarys,
+    # şonuň üçin Django ony escape etmez
+    if val and '<' in str(val):
+        return mark_safe(val)
+    return val or ""
 
 @register.filter
 def get_dict_item(dictionary, key):
@@ -198,3 +213,23 @@ def get_dict_item(dictionary, key):
     if not dictionary:
         return ""
     return dictionary.get(key, "")
+
+import html
+from django.utils.html import strip_tags
+
+@register.filter
+def clean_excerpt(val, num_words=20):
+    """
+    Strips HTML tags, decodes HTML entities (&uuml;, &ccedil;, &Yacute;, etc.)
+    and truncates text cleanly to num_words.
+    """
+    if not val:
+        return ""
+    text = html.unescape(str(val))
+    text = strip_tags(text)
+    text = html.unescape(text).strip()
+    words = text.split()
+    if len(words) > num_words:
+        return " ".join(words[:num_words]) + "..."
+    return text
+

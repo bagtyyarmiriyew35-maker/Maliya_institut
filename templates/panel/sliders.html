@@ -1,0 +1,73 @@
+{% extends 'panel/base.html' %}
+{% block title %}Sliderlar{% endblock %}
+{% block breadcrumb %}Sliderlar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-images"></i> Sliderlar</h1>
+  <a href="{% url 'panel_slider_add' %}" class="btn-panel btn-panel-primary">
+    <i class="fa-solid fa-plus"></i> Täze slider goş
+  </a>
+</div>
+
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Media (Surat/Wideo)</th>
+          <th>At (TM)</th>
+          <th>Tertip</th>
+          <th>Baglantý</th>
+          <th>Hereketler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for slide in sliders %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              {% if slide.image %}
+              <img src="{{ slide.image.url }}" class="panel-table-thumb" alt="">
+              {% else %}
+              <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-image"></i></div>
+              {% endif %}
+              {% if slide.video %}
+              <span class="badge-panel badge-info" style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(88,166,255,0.18);color:#58a6ff;border:1px solid rgba(88,166,255,0.3);"><i class="fa-solid fa-video"></i> Wideo</span>
+              {% endif %}
+            </div>
+          </td>
+          <td><strong>{{ slide.title_tm }}</strong></td>
+          <td><span class="panel-order-badge">{{ slide.order }}</span></td>
+          <td>
+            {% if slide.link %}
+            <a href="{{ slide.link }}" target="_blank" style="color:var(--panel-info);font-size:12px;">
+              <i class="fa-solid fa-link"></i> Link
+            </a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_slider_edit' slide.pk %}" class="btn-panel btn-panel-edit btn-panel-sm">
+                <i class="fa-solid fa-pen"></i> Üýtget
+              </a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-slider-{{ slide.pk }}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+              <form id="del-slider-{{ slide.pk }}" method="POST" action="{% url 'panel_slider_delete' slide.pk %}" style="display:none;">
+                {% csrf_token %}
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Slider tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

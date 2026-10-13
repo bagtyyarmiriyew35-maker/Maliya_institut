@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel{% endblock %} — TDMai</title>
+  <link rel="icon" href="/media/loga.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="panel-body">
+
+<div class="panel-layout">
+
+  <!-- ── Sidebar ────────────────────────────────── -->
+  <aside class="panel-sidebar" id="panelSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="sidebar-logo-text">
+        <div class="title">Admin Panel</div>
+        <div class="subtitle">TDMai CMS</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Esasy</div>
+      <a href="{% url 'panel_dashboard' %}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+
+      <div class="sidebar-section-title">Mazmun</div>
+      <a href="{% url 'panel_sliders' %}"><i class="fa-solid fa-images"></i> Sliderlar</a>
+      <a href="{% url 'panel_news' %}"><i class="fa-solid fa-newspaper"></i> Täzelikler</a>
+      <a href="{% url 'panel_bilim_news' %}"><i class="fa-solid fa-graduation-cap"></i> Bilim.tm Täzelikleri</a>
+      <a href="{% url 'panel_library_categories' %}"><i class="fa-solid fa-book-bookmark"></i> Elektron neşirler</a>
+      <a href="{% url 'panel_library_books' %}"><i class="fa-solid fa-book-open"></i> Neşir sanlary</a>
+      <a href="{% url 'panel_documents' %}"><i class="fa-solid fa-folder-open"></i> Resminamalar</a>
+      <a href="{% url 'panel_olympiads' %}"><i class="fa-solid fa-file-pdf"></i> Olimpiada netijeleri</a>
+      <a href="{% url 'panel_partners' %}"><i class="fa-solid fa-handshake"></i> Hyzmatdaşlar</a>
+
+
+      <div class="sidebar-section-title">Bölümler</div>
+      <a href="{% url 'panel_pages_by_section' 'institut' %}"><i class="fa-solid fa-university"></i> Institut</a>
+      <a href="{% url 'panel_pages_by_section' 'ylym' %}"><i class="fa-solid fa-flask"></i> Ylym</a>
+      <a href="{% url 'panel_pages_by_section' 'olimpiada' %}"><i class="fa-solid fa-award"></i> Olimpiadalar</a>
+      <a href="{% url 'panel_pages_by_section' 'baslesikler' %}"><i class="fa-solid fa-trophy"></i> Bäsleşikler</a>
+      <a href="{% url 'panel_pages_by_section' 'halkara' %}"><i class="fa-solid fa-globe"></i> Halkara hyzmatdaşlyk</a>
+      <a href="{% url 'panel_pages_by_section' 'dalasgar' %}"><i class="fa-solid fa-user-graduate"></i> Dalaşgär</a>
+      <a href="{% url 'panel_pages_by_section' 'sorag_jogap' %}"><i class="fa-solid fa-circle-question"></i> Sorag-jogap</a>
+
+      <div class="sidebar-section-title">Dolandyryş</div>
+      <a href="{% url 'panel_messages' %}">
+        <i class="fa-solid fa-envelope"></i> Hatlar
+        {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}
+      </a>
+      <a href="{% url 'panel_settings' %}"><i class="fa-solid fa-gear"></i> Sazlamalar</a>
+
+      <div class="sidebar-section-title">Baglantylar</div>
+      <a href="/" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Sahypany gör</a>
+      <a href="/admin/" target="_blank"><i class="fa-brands fa-django"></i> Django Admin</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">{{ request.user.username|first|upper }}</div>
+        <div class="sidebar-user-info">
+          <div class="name">{{ request.user.username }}</div>
+          <div class="role">Administrator</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="{% url 'panel_logout' %}" style="color: var(--panel-danger);">
+          <i class="fa-solid fa-right-from-bracket"></i> Çykmak
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-mobile-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Main ────────────────────────────────────── -->
+  <div class="panel-main">
+
+    <!-- Topbar -->
+    <header class="panel-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="topbar-breadcrumb">
+          Admin Panel / <span>{% block breadcrumb %}Dashboard{% endblock %}</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:var(--panel-text-muted);" id="panelClock"></span>
+        <a href="/" target="_blank" class="topbar-btn topbar-btn-outline">
+          <i class="fa-solid fa-eye"></i> Sahypa
+        </a>
+        <a href="{% url 'panel_logout' %}" class="topbar-btn topbar-btn-danger">
+          <i class="fa-solid fa-right-from-bracket"></i> Çyk
+        </a>
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    <div class="panel-content" style="padding-bottom:0;">
+      {% if messages %}
+      <div class="panel-alerts">
+        {% for message in messages %}
+        <div class="panel-alert {% if message.tags == 'error' %}panel-alert-error{% else %}panel-alert-success{% endif %}">
+          <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Content -->
+    <div class="panel-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div><!-- /panel-main -->
+</div><!-- /panel-layout -->
+
+<!-- Delete Confirm Modal -->
+<div class="panel-modal-overlay" id="deleteModal">
+  <div class="panel-modal">
+    <div class="panel-modal-icon"><i class="fa-solid fa-trash-can"></i></div>
+    <h3>Öçüriljekmi?</h3>
+    <p>Bu maglumaty hemişelik öçürmek isleýärsiňizmi? Bu işi yzyna gaýtaryp bolmaz.</p>
+    <div class="panel-modal-actions">
+      <button class="btn-panel btn-panel-ghost" id="modalCancel">
+        <i class="fa-solid fa-xmark"></i> Ýok
+      </button>
+      <button class="btn-panel btn-panel-delete" id="modalConfirm">
+        <i class="fa-solid fa-trash-can"></i> Öçür
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/tinymce/tinymce.min.js"></script>
+<script>
+  tinymce.init({
+    license_key: 'gpl',
+    selector: '.wysiwyg-editor',
+    height: 380,
+    menubar: 'file edit view insert format tools table',
+    plugins: [
+      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+      'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+      'bold italic forecolor backcolor | alignleft aligncenter ' +
+      'alignright alignjustify | bullist numlist outdent indent | ' +
+      'removeformat | table link image | code fullscreen',
+    skin: 'oxide-dark',
+    content_css: 'dark',
+    branding: false,
+    promotion: false,
+    setup: function (editor) {
+      editor.on('change', function () { editor.save(); });
+      editor.on('keyup', function () { editor.save(); });
+    }
+  });
+</script>
+<script src="/static/js/panel.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

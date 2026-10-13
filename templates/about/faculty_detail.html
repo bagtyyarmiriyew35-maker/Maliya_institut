@@ -29,11 +29,11 @@
                 <div class="section-divider left mb-4"></div>
                 <div class="departments-grid">
                     {% for dept in departments %}
-                    <div class="dept-card">
-                        <h4 class="dept-card-title"><a href="{% url 'department_detail' dept.pk %}">{% render_lang dept 'name' current_lang %}</a></h4>
+                    <a href="{% url 'department_detail' dept.pk %}" class="dept-card">
+                        <h4 class="dept-card-title">{% render_lang dept 'name' current_lang %}</h4>
                         <p class="dept-card-head"><strong>{% ui_label 'head' current_lang %}:</strong> {% render_lang dept 'head_name' current_lang %}</p>
-                        <a href="{% url 'department_detail' dept.pk %}" class="dept-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
-                    </div>
+                        <span class="dept-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></span>
+                    </a>
                     {% empty %}
                     <p class="no-data">Kafedra tapylmady.</p>
                     {% endfor %}

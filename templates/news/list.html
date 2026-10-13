@@ -2,12 +2,10 @@
 {% load website_tags %}
 
 {% block content %}
-<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+<section class="page-banner" style="background: none; padding: 40px 0 20px 0; text-align: center;">
     <div class="container">
-        <h1 class="page-banner-title">{% ui_label 'news' current_lang %}</h1>
-        <div class="breadcrumbs">
-            <a href="{% url 'home' %}">{% ui_label 'home' current_lang %}</a> / <span>{% ui_label 'news' current_lang %}</span>
-        </div>
+        <h1 class="page-banner-title" style="color: var(--primary-color); margin-bottom: 5px;">{% ui_label 'news' current_lang %}</h1>
+        <p class="page-banner-subtitle" style="color: var(--text-light); margin-top: 0;">{% ui_label 'news_subtitle' current_lang %}</p>
     </div>
 </section>
 
@@ -15,28 +13,110 @@
     <div class="container">
         <div class="news-grid">
             {% for item in all_news %}
-            <article class="news-card">
+            <a href="{% url 'news_detail' item.pk %}" class="news-card">
                 <div class="news-card-img-wrapper">
-                    {% if item.image %}
+                    {% if item.video %}
+                    <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item.image %}poster="{{ item.image.url }}"{% endif %}>
+                        <source src="{{ item.video.url }}" type="video/mp4">
+                        <source src="{{ item.video.url }}" type="video/webm">
+                    </video>
+                    <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
+                    {% elif item.image %}
                     <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                    {% if item.video_url %}
+                    <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
+                    {% endif %}
+                    {% elif item.video_url %}
+                    <div class="news-card-img-placeholder" style="background: #0f172a; color: #58a6ff;"><i class="fa-solid fa-file-video"></i></div>
+                    <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                     {% else %}
                     <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
                     {% endif %}
-                    <span class="news-card-date"><i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}</span>
+                    <span class="news-card-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 13px; height: 13px; fill: currentColor; display: inline-block; vertical-align: middle; margin-right: 4px;">
+                            <path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v320c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64h-40V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192h352v256c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192z"/>
+                        </svg>
+                        {{ item.published_date|date:"d.m.Y" }}
+                    </span>
                 </div>
                 <div class="news-card-content">
-                    <h3 class="news-card-title"><a href="{% url 'news_detail' item.pk %}">{% render_lang item 'title' current_lang %}</a></h3>
-                    <p class="news-card-excerpt">{% render_lang item 'content' current_lang|slice:":150" %}...</p>
+                    <h3 class="news-card-title">{% render_lang item 'title' current_lang %}</h3>
+                    {% render_lang item 'content' current_lang as raw_content %}
+                    <p class="news-card-excerpt">{{ raw_content|striptags|truncatechars:150 }}</p>
                     <div class="news-card-footer">
-                        <a href="{% url 'news_detail' item.pk %}" class="news-card-more">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></a>
-                        <span class="news-card-views"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span>
+                        <span class="news-card-more">
+                            {% ui_label 'more' current_lang %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 12px; height: 12px; fill: currentColor; display: inline-block; vertical-align: middle; margin-left: 4px;">
+                                <path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
+                            </svg>
+                        </span>
+                        <span class="news-card-views">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" style="width: 15px; height: 15px; fill: currentColor; display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.4 78.1-95.4 92.9-131.1c3.3-7.9 3.3-16.7 0-24.6C558.7 208 527.4 156 480.6 112.6C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64a64 64 0 1 0 0 128 64 64 0 1 0 0-128z"/>
+                            </svg>
+                            {{ item.views_count }}
+                        </span>
                     </div>
                 </div>
-            </article>
+            </a>
             {% empty %}
             <p class="no-data">Häzirki wagtda täzelik ýok.</p>
             {% endfor %}
         </div>
+
+        {% if all_news.has_other_pages %}
+        <div class="pagination-wrapper">
+            <ul class="pagination">
+                {% if all_news.has_previous %}
+                <li class="page-item">
+                    <a href="?page={{ all_news.previous_page_number }}" class="page-link prev" aria-label="Previous">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style="width: 11px; height: 11px; fill: currentColor; display: inline-block; vertical-align: middle;">
+                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/>
+                        </svg>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style="width: 11px; height: 11px; fill: currentColor; display: inline-block; vertical-align: middle;">
+                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/>
+                        </svg>
+                    </span>
+                </li>
+                {% endif %}
+
+                {% for num in all_news.paginator.page_range %}
+                    {% if all_news.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if all_news.has_next %}
+                <li class="page-item">
+                    <a href="?page={{ all_news.next_page_number }}" class="page-link next" aria-label="Next">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style="width: 11px; height: 11px; fill: currentColor; display: inline-block; vertical-align: middle;">
+                            <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                        </svg>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link next">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style="width: 11px; height: 11px; fill: currentColor; display: inline-block; vertical-align: middle;">
+                            <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                        </svg>
+                    </span>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

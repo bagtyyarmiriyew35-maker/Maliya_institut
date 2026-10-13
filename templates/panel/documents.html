@@ -1,0 +1,60 @@
+{% extends 'panel/base.html' %}
+{% block title %}Resminamalar{% endblock %}
+{% block breadcrumb %}Resminamalar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-folder-open"></i> Resminamalar</h1>
+  <a href="{% url 'panel_document_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Resminama goş</a>
+</div>
+
+<!-- Filter -->
+<div class="panel-card" style="padding:14px 20px;margin-bottom:16px;border-radius:var(--panel-radius);">
+  <form method="GET" class="panel-filter-bar">
+    <select name="category" onchange="this.form.submit()">
+      <option value="">Hemme kategorýalar</option>
+      {% for val, label in categories %}
+      <option value="{{ val }}" {% if selected_category == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if selected_category %}
+    <a href="{% url 'panel_documents' %}" class="btn-panel btn-panel-ghost btn-panel-sm"><i class="fa-solid fa-xmark"></i> Arassala</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>At</th><th>Kategoriýa</th><th>Faýl</th><th>Senesi</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for doc in docs %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <strong>{{ doc.title_tm }}</strong>
+            {% if doc.image %}
+            <span style="display:inline-block; margin-left:6px; background:#e0f2fe; color:#0369a1; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600;"><i class="fa-solid fa-image"></i> Suratly</span>
+            {% endif %}
+          </td>
+          <td><span class="badge-panel badge-neutral">{{ doc.get_category_display }}</span></td>
+          <td><a href="{{ doc.file.url }}" target="_blank" style="color:var(--panel-info);font-size:12px;"><i class="fa-solid fa-file-pdf"></i> Açmak</a></td>
+          <td><span class="text-muted">{{ doc.uploaded_at|date:"d.m.Y" }}</span></td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_document_edit' doc.pk %}" class="btn-panel btn-panel-primary btn-panel-sm" title="Üýtget"><i class="fa-solid fa-pen-to-square"></i></a>
+              <a href="{{ doc.file.url }}" download class="btn-panel btn-panel-success btn-panel-sm" title="Ýükle"><i class="fa-solid fa-download"></i></a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-doc-{{ doc.pk }}" title="Öçür"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-doc-{{ doc.pk }}" method="POST" action="{% url 'panel_document_delete' doc.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Resminama tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

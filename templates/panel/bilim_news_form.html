@@ -1,0 +1,143 @@
+{% extends 'panel/base.html' %}
+{% block title %}Bilim Täzeligini Düzet{% endblock %}
+{% block breadcrumb %}Bilim.tm Täzelikleri / Düzet{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <div>
+    <h1><i class="fa-solid fa-graduation-cap"></i> Bilim Täzeligini Düzet</h1>
+    <p class="text-muted" style="margin-top: 4px; font-size: 13px;">
+      Habaryň Türkmençe (TM), Iňlisçe (EN) we Rusça (RU) terjimelerini, mazmunyny we suratyny bu ýerden üýtgedip bilersiňiz.
+    </p>
+  </div>
+  <a href="{% url 'panel_bilim_news' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+
+    <!-- Surat Bölümi -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image"></i> Surat</div>
+      
+      {% if obj.display_image %}
+      <div class="current-file-info" style="margin-bottom: 10px;">
+        <i class="fa-solid fa-image"></i> Häzirki surat: <a href="{{ obj.display_image }}" target="_blank">Uly görnüşde aç</a>
+      </div>
+      <img src="{{ obj.display_image }}" class="file-preview-img" id="imgPreview" style="max-height: 180px; border-radius: 8px; margin-bottom: 14px; object-fit: cover;">
+      {% else %}
+      <img id="imgPreview" class="file-preview-img" style="display:none; max-height: 180px; border-radius: 8px; margin-bottom: 14px;">
+      {% endif %}
+
+      <div class="file-upload-area">
+        <input type="file" name="image" accept="image/*" data-preview="imgPreview">
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">Täze ýerli surat ýükläň <strong>(JPG, PNG, WEBP)</strong></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label>Daşarky Surat URL (bilim.tm)</label>
+        <input type="url" name="image_url" class="form-control-panel" value="{{ obj.image_url|default:'' }}" placeholder="https://merkez.bilim.tm/media/...">
+      </div>
+    </div>
+
+    <!-- Türkmençe (TM) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Sözbasy (TM) <span class="required">*</span></label>
+        <input type="text" name="title_tm" class="form-control-panel" value="{{ obj.title_tm }}" required placeholder="Habaryň türkmençe ady">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Gysgaça Beýany (TM) (Kartlar üçin)</label>
+        <textarea name="description_tm" class="form-control-panel" rows="3" placeholder="Türkmençe gysgaça beýany...">{{ obj.description_tm }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Doly Mazmuny (TM) (Sahypa üçin)</label>
+        <textarea name="content_tm" class="form-control-panel wysiwyg-editor" rows="8" placeholder="Türkmençe doly mazmuny...">{{ obj.content_tm }}</textarea>
+      </div>
+    </div>
+
+    <!-- Iňlisçe (EN) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-language"></i> Iňlisçe <span class="badge-panel badge-info">EN</span>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Title (EN)</label>
+        <input type="text" name="title_en" class="form-control-panel" value="{{ obj.title_en|default:'' }}" placeholder="English title">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Description (EN)</label>
+        <textarea name="description_en" class="form-control-panel" rows="3" placeholder="Short description in English...">{{ obj.description_en|default:'' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Content (EN)</label>
+        <textarea name="content_en" class="form-control-panel wysiwyg-editor" rows="8" placeholder="Full English content...">{{ obj.content_en|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Rusça (RU) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-language"></i> Rusça <span class="badge-panel badge-danger">RU</span>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Заголовок (RU)</label>
+        <input type="text" name="title_ru" class="form-control-panel" value="{{ obj.title_ru|default:'' }}" placeholder="Заголовок на русском">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label>Краткое описание (RU)</label>
+        <textarea name="description_ru" class="form-control-panel" rows="3" placeholder="Краткое описание на русском...">{{ obj.description_ru|default:'' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Содержание (RU)</label>
+        <textarea name="content_ru" class="form-control-panel wysiwyg-editor" rows="8" placeholder="Полное содержание на русском...">{{ obj.content_ru|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Goşmaça Maglumatlar -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-gear"></i> Goşmaça Maglumatlar</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Çap edilen wagty</label>
+          <input type="text" name="published_date" class="form-control-panel" value="{{ obj.published_date|date:'Y-m-d H:i:s' }}">
+          <small class="text-muted" style="font-size: 11px;">Format: ÝÝÝÝ-AA-GG SS:MM:SS</small>
+        </div>
+
+        <div class="form-group">
+          <label>Görülen sany</label>
+          <input type="number" name="views_count" class="form-control-panel" value="{{ obj.views_count }}">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label>Asyl Çeşme URL (bilim.tm)</label>
+        <input type="url" name="source_url" class="form-control-panel" value="{{ obj.source_url|default:'' }}">
+      </div>
+    </div>
+
+    <div class="panel-form-footer">
+      <button type="submit" class="btn-panel btn-panel-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Üýtgeşmeleri Ýatda Sakla
+      </button>
+      <a href="{% url 'panel_bilim_news' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+
+  </div>
+</form>
+{% endblock %}

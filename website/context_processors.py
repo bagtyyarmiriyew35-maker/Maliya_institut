@@ -1,19 +1,32 @@
-from website.models import Faculty, Page
+from website.models import Faculty, Page, SiteSettings, ContactMessage, Document
 
 def language_processor(request):
     """
     Context processor to make the current selected language, 
-    the list of faculties, and the page menu hierarchy available globally in templates.
+    the list of faculties, the page menu hierarchy, site settings,
+    and admin panel unread messages count available globally in templates.
     """
     lang = request.session.get('lang', 'tm')
     if lang not in ['tm', 'eng', 'rus']:
         lang = 'tm'
         
     faculties_menu = Faculty.objects.all()
-    menu_pages = Page.objects.filter(parent=None).prefetch_related('subpages')
+    menu_pages = Page.objects.filter(parent=None).prefetch_related('subpages__subpages')
+    weekly_reports_menu = Document.objects.filter(category='Hasabat').order_by('-uploaded_at')[:10]
+    site_settings = SiteSettings.get_settings()
+    
+    # For the custom admin panel sidebar unread counter
+    unread_count = 0
+    if request.path.startswith('/panel/'):
+        unread_count = ContactMessage.objects.filter(is_read=False).count()
     
     return {
         'current_lang': lang,
         'faculties_menu': faculties_menu,
         'menu_pages': menu_pages,
+        'weekly_reports_menu': weekly_reports_menu,
+        'site_settings': site_settings,
+        'unread_count': unread_count,
+        'post': {},
     }
+

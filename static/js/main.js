@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdownItems = document.querySelectorAll('.dropdown-item > a, .dropdown-submenu-item > a');
     dropdownItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            if (window.innerWidth <= 991) {
+            if (window.innerWidth <= 1199) {
                 e.preventDefault();
                 const parent = item.parentElement;
                 parent.classList.toggle('active-mobile');
@@ -35,9 +35,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('sliderPrev');
     const nextBtn = document.getElementById('sliderNext');
     let currentSlide = 0;
-    let slideInterval;
+    let slideTimer = null;
 
     if (slides.length > 0) {
+        const handleSlidePlayback = (slide) => {
+            if (slideTimer) clearTimeout(slideTimer);
+
+            // Stop and reset videos in non-active slides
+            slides.forEach(s => {
+                if (s !== slide) {
+                    const v = s.querySelector('video');
+                    if (v) {
+                        v.pause();
+                        v.currentTime = 0;
+                    }
+                }
+            });
+
+            const video = slide.querySelector('video');
+            if (video) {
+                video.currentTime = 0;
+                video.muted = true;
+                video.removeAttribute('loop');
+
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.warn("Video playback interrupted, using fallback timer:", err);
+                        slideTimer = setTimeout(nextSlide, 6000);
+                    });
+                }
+
+                // Transition to next slide ONLY AFTER video finishes!
+                video.onended = () => {
+                    nextSlide();
+                };
+            } else {
+                // Image slide: Wait 6 seconds before advancing
+                slideTimer = setTimeout(nextSlide, 6000);
+            }
+        };
+
         const showSlide = (index) => {
             const nextIndex = (index + slides.length) % slides.length;
             if (nextIndex === currentSlide && slides[currentSlide].classList.contains('active')) return;
@@ -55,11 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             currentSlide = nextIndex;
-            slides[currentSlide].classList.add('active');
+            const activeSlide = slides[currentSlide];
+            activeSlide.classList.add('active');
             
             if (dots[currentSlide]) {
                 dots[currentSlide].classList.add('active');
             }
+
+            handleSlidePlayback(activeSlide);
         };
 
         const nextSlide = () => {
@@ -70,28 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
             showSlide(currentSlide - 1);
         };
 
-        // Start Auto Slider
-        const startAutoplay = () => {
-            slideInterval = setInterval(nextSlide, 4000);
-        };
-
-        const resetAutoplay = () => {
-            clearInterval(slideInterval);
-            startAutoplay();
-        };
-
         // Event Listeners
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
                 nextSlide();
-                resetAutoplay();
             });
         }
 
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 prevSlide();
-                resetAutoplay();
             });
         }
 
@@ -99,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.addEventListener('click', () => {
                 const index = parseInt(dot.getAttribute('data-index'), 10);
                 showSlide(index);
-                resetAutoplay();
             });
         });
 
-        startAutoplay();
+        // Initialize first slide playback
+        handleSlidePlayback(slides[currentSlide]);
     }
 
 
@@ -114,22 +143,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statNumbers.length > 0) {
         const animateCounters = () => {
             statNumbers.forEach(stat => {
-                const target = parseInt(stat.getAttribute('data-target'), 10);
-                const isPlus = stat.innerText.includes('+');
+                const fullText = (stat.getAttribute('data-display-text') || stat.innerText).trim();
+                const digitsMatch = fullText.replace(/[^0-9]/g, '');
+                const target = parseInt(digitsMatch, 10);
+                
+                if (isNaN(target) || target <= 0) {
+                    stat.innerText = fullText;
+                    return;
+                }
+                
+                const suffixMatch = fullText.replace(/^[0-9\s,\.]*/, '');
+                const hasSpaceSep = fullText.includes(' ');
+                
                 let count = 0;
-                const duration = 2000; // 2 seconds
-                const stepTime = Math.max(Math.floor(duration / target), 15);
+                const duration = 1800;
+                const stepTime = 20;
                 
                 const increment = () => {
-                    const progress = count / target;
-                    // Ease out quadratic
-                    const easedStep = Math.ceil(target * (1 - Math.pow(1 - progress, 2)));
                     count += Math.ceil(target / (duration / stepTime));
                     
                     if (count >= target) {
-                        stat.innerText = target.toLocaleString() + (isPlus ? '+' : '');
+                        stat.innerText = fullText;
                     } else {
-                        stat.innerText = easedStep.toLocaleString() + (isPlus ? '+' : '');
+                        let formatted = count.toLocaleString();
+                        if (hasSpaceSep) {
+                            formatted = formatted.replace(/,/g, ' ');
+                        }
+                        stat.innerText = formatted + (suffixMatch ? suffixMatch : '');
                         setTimeout(increment, stepTime);
                     }
                 };
@@ -155,6 +195,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const statsSection = document.querySelector('.stats-section');
         if (statsSection) {
             observer.observe(statsSection);
+        }
+    }
+
+    // --- 6. News Card Video Autoplay (Muted & Loop) ---
+    const cardVideos = document.querySelectorAll('.news-card-video');
+    if (cardVideos.length > 0) {
+        cardVideos.forEach(vid => {
+            vid.muted = true;
+            vid.setAttribute('playsinline', '');
+            vid.setAttribute('muted', '');
+            const tryPlay = () => {
+                vid.muted = true;
+                const p = vid.play();
+                if (p !== undefined) p.catch(() => {});
+            };
+            tryPlay();
+            const card = vid.closest('.news-card');
+            if (card) {
+                card.addEventListener('mouseenter', tryPlay);
+                card.addEventListener('touchstart', tryPlay, { passive: true });
+            }
+        });
+
+        if ('IntersectionObserver' in window) {
+            const vidObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const v = entry.target;
+                    if (entry.isIntersecting) {
+                        v.muted = true;
+                        const p = v.play();
+                        if (p !== undefined) p.catch(() => {});
+                    } else {
+                        v.pause();
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cardVideos.forEach(v => vidObserver.observe(v));
         }
     }
 });

@@ -1,0 +1,66 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Neşir Kategoriýasyny Üýtget{% else %}Täze Neşir Kategoriýasy Goş{% endif %}{% endblock %}
+{% block breadcrumb %}Elektron Neşirler / {% if action == 'edit' %}Kategoriýany Üýtget{% else %}Täze Kategoriýa{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-book-bookmark"></i> {% if action == 'edit' %}Kategoriýany Üýtget{% else %}Täze Kategoriýa Goş{% endif %}</h1>
+  <a href="{% url 'panel_library_categories' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Kategoriýa maglumatlary</div>
+      <div class="form-row form-row-2" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label>Kategoriýanyň ady (TM) <span class="required">*</span></label>
+          <input type="text" name="name_tm" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.name_tm }}{% else %}{{ post.name_tm }}{% endif %}" required placeholder="mysal: Maliýe neşiri">
+        </div>
+        <div class="form-group">
+          <label>Tertip belgisi (Order)</label>
+          <input type="number" name="order" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.order }}{% else %}{{ post.order|default:'0' }}{% endif %}" placeholder="0">
+        </div>
+      </div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>Kategoriýanyň ady (EN)</label>
+          <input type="text" name="name_en" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.name_en }}{% else %}{{ post.name_en }}{% endif %}" placeholder="English name">
+        </div>
+        <div class="form-group">
+          <label>Kategoriýanyň ady (RU)</label>
+          <input type="text" name="name_ru" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.name_ru }}{% else %}{{ post.name_ru }}{% endif %}" placeholder="Название на русском">
+        </div>
+      </div>
+    </div>
+
+    <!-- Icon / Logo -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image" style="color:#0a5c36;"></i> Neşiriň Logotipi / Suraty</div>
+      {% if action == 'edit' and obj.icon %}
+      <div class="current-file-info" style="margin-bottom:12px; display:flex; align-items:center; gap:14px;">
+        <div style="width:64px; height:64px; border-radius:12px; background:#f8fafc; border:1px solid #cbd5e1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+          <img src="{{ obj.icon.url }}" alt="Logo" style="max-width:100%; max-height:100%; object-fit:contain; padding:4px;">
+        </div>
+        <label style="font-size:13px; color:#ef4444; cursor:pointer;">
+          <input type="checkbox" name="clear_icon" value="1"> Logotipi aýyr
+        </label>
+      </div>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="icon" accept="image/*">
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">Surat / Logotip saýlaň (PNG, JPG, WEBP)<br><strong>Baş sahypada tegelek çarçuwada görkeziler</strong></div>
+      </div>
+    </div>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn-panel btn-panel-primary">
+        <i class="fa-solid fa-check"></i> Ýatda sakla
+      </button>
+      <a href="{% url 'panel_library_categories' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

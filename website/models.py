@@ -2,18 +2,38 @@ from django.db import models
 from django.utils import timezone
 
 class Page(models.Model):
+    SECTION_CHOICES = [
+        ('institut', 'Institut'),
+        ('ylym', 'Ylym'),
+        ('baslesikler', 'Bäsleşikler'),
+        ('halkara', 'Halkara hyzmatdaşlyk'),
+        ('dalasgar', 'Dalaşgär'),
+        ('sorag_jogap', 'Sorag-jogap'),
+        ('olimpiada', 'Olimpiadalar'),
+    ]
+
     title_tm = models.CharField(max_length=255, verbose_name="Title (Turkmen)")
     title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
     title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
     
     slug = models.SlugField(max_length=255, unique=True, verbose_name="Slug")
+    section = models.CharField(
+        max_length=30,
+        choices=SECTION_CHOICES,
+        default='institut',
+        verbose_name="Bölüm (Section)"
+    )
     
     content_tm = models.TextField(blank=True, verbose_name="Content (Turkmen)")
     content_en = models.TextField(blank=True, verbose_name="Content (English)")
     content_ru = models.TextField(blank=True, verbose_name="Content (Russian)")
     
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='subpages', verbose_name="Parent Page")
+    image = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Page Image")
+    pdf_file = models.FileField(upload_to='pages/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
     order = models.IntegerField(default=0, verbose_name="Order")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Döredilen senesi")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Üýtgedilen senesi")
 
     class Meta:
         ordering = ['order', 'title_tm']
@@ -25,9 +45,13 @@ class Page(models.Model):
             return f"{self.parent.title_tm} -> {self.title_tm}"
         return self.title_tm
 
+    def get_section_display_name(self):
+        return dict(self.SECTION_CHOICES).get(self.section, 'Beýleki')
+
 
 class SliderImage(models.Model):
-    image = models.ImageField(upload_to='slides/')
+    image = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image")
+    video = models.FileField(upload_to='slides/videos/', blank=True, null=True, verbose_name="Slider Video (MP4/WebM)")
     title_tm = models.CharField(max_length=255, verbose_name="Title (Turkmen)")
     title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
     title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
@@ -57,7 +81,9 @@ class News(models.Model):
     content_en = models.TextField(blank=True, verbose_name="Content (English)")
     content_ru = models.TextField(blank=True, verbose_name="Content (Russian)")
     
-    image = models.ImageField(upload_to='news/', blank=True, null=True)
+    image = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (Image)")
+    video = models.FileField(upload_to='news/videos/', blank=True, null=True, verbose_name="Wideo (Video - MP4/WebM)")
+    video_url = models.URLField(blank=True, verbose_name="Wideo URL (YouTube / Çeşme)")
     published_date = models.DateTimeField(default=timezone.now, verbose_name="Published Date")
     views_count = models.IntegerField(default=0, verbose_name="Views Count")
 
@@ -68,6 +94,76 @@ class News(models.Model):
 
     def __str__(self):
         return self.title_tm
+
+    @property
+    def has_media(self):
+        return bool(self.image or self.video or self.video_url)
+
+    @property
+    def youtube_embed_url(self):
+        if not self.video_url:
+            return ''
+        url = self.video_url.strip()
+        import re
+        yt_match = re.search(r'(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})', url)
+        if yt_match:
+            return f"https://www.youtube.com/embed/{yt_match.group(1)}"
+        return ''
+
+
+class BilimNews(models.Model):
+    external_id = models.IntegerField(unique=True, null=True, blank=True, verbose_name="Bilim.tm ID")
+    
+    # Titles
+    title_tm = models.CharField(max_length=500, default='', verbose_name="Sözbasy (TM)")
+    title_en = models.CharField(max_length=500, blank=True, default='', verbose_name="Title (EN)")
+    title_ru = models.CharField(max_length=500, blank=True, default='', verbose_name="Заголовок (RU)")
+    
+    slug = models.SlugField(max_length=400, blank=True, verbose_name="Slug")
+    
+    # Descriptions
+    description_tm = models.TextField(blank=True, default='', verbose_name="Gysgaça beýany (TM)")
+    description_en = models.TextField(blank=True, default='', verbose_name="Description (EN)")
+    description_ru = models.TextField(blank=True, default='', verbose_name="Описание (RU)")
+    
+    # Contents
+    content_tm = models.TextField(blank=True, default='', verbose_name="Mazmuny (TM)")
+    content_en = models.TextField(blank=True, default='', verbose_name="Content (EN)")
+    content_ru = models.TextField(blank=True, default='', verbose_name="Содержание (RU)")
+
+    image_url = models.URLField(max_length=700, blank=True, verbose_name="Surat URL (bilim.tm)")
+    image = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat")
+    source_url = models.URLField(max_length=700, blank=True, verbose_name="Çeşme URL")
+    published_date = models.DateTimeField(default=timezone.now, verbose_name="Çap edilen senesi")
+    views_count = models.IntegerField(default=0, verbose_name="Görülen sany")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-published_date', '-id']
+        verbose_name = "Bilim Täzeligi"
+        verbose_name_plural = "Bilim Täzelikleri"
+
+    def __str__(self):
+        return self.title_tm or "Bilim News"
+
+    @property
+    def title(self):
+        return self.title_tm
+
+    @property
+    def description(self):
+        return self.description_tm
+
+    @property
+    def content(self):
+        return self.content_tm
+
+    @property
+    def display_image(self):
+        if self.image:
+            return self.image.url
+        return self.image_url or ''
 
 
 class Faculty(models.Model):
@@ -169,6 +265,7 @@ class Document(models.Model):
     title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
     title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
     
+    image = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Header Image)")
     file = models.FileField(upload_to='documents/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Hasabat', verbose_name="Category")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Uploaded At")
@@ -187,6 +284,7 @@ class ContactMessage(models.Model):
     email = models.EmailField(verbose_name="Email")
     subject = models.CharField(max_length=255, verbose_name="Subject")
     message = models.TextField(verbose_name="Message")
+    is_read = models.BooleanField(default=False, verbose_name="Is Read")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
 
     class Meta:
@@ -196,3 +294,97 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"
+
+
+class SiteSettings(models.Model):
+    """Singleton model — site-wide settings editable from the custom admin panel."""
+
+    # Statistics
+    stat_books = models.CharField(max_length=100, default="45 000+", verbose_name="Books Count Text")
+    stat_majors = models.CharField(max_length=100, default="12", verbose_name="Majors Count Text")
+    stat_teachers = models.CharField(max_length=100, default="280+", verbose_name="Teachers Count Text")
+    stat_students = models.CharField(max_length=100, default="3 200+", verbose_name="Students Count Text")
+    
+    stat_books_icon = models.ImageField(upload_to='settings/stats/', blank=True, null=True, verbose_name="Books Stat Icon / Logo")
+    stat_majors_icon = models.ImageField(upload_to='settings/stats/', blank=True, null=True, verbose_name="Majors Stat Icon / Logo")
+    stat_teachers_icon = models.ImageField(upload_to='settings/stats/', blank=True, null=True, verbose_name="Teachers Stat Icon / Logo")
+    stat_students_icon = models.ImageField(upload_to='settings/stats/', blank=True, null=True, verbose_name="Students Stat Icon / Logo")
+
+    stats_bg_image = models.ImageField(upload_to='settings/', blank=True, null=True, verbose_name="Statistika Arka Fon Suraty (Stats Background Image)")
+
+    # Contact Info
+    address_tm = models.CharField(max_length=500, blank=True, default="744027, Aşgabat ş., 1987 köç. (Hero Atamyrat Niyazow Ave.), 112.", verbose_name="Address (Turkmen)")
+    address_en = models.CharField(max_length=500, blank=True, verbose_name="Address (English)")
+    address_ru = models.CharField(max_length=500, blank=True, verbose_name="Address (Russian)")
+    phone = models.CharField(max_length=50, blank=True, default="+993 12 496309", verbose_name="Phone")
+    email = models.EmailField(blank=True, default="info@tdmai.edu.tm", verbose_name="Email")
+
+    # Social Media
+    facebook_url = models.URLField(blank=True, verbose_name="Facebook URL")
+    twitter_url = models.URLField(blank=True, verbose_name="Twitter URL")
+    linkedin_url = models.URLField(blank=True, verbose_name="LinkedIn URL")
+    instagram_url = models.URLField(blank=True, verbose_name="Instagram URL")
+    youtube_url = models.URLField(blank=True, verbose_name="YouTube URL")
+
+    class Meta:
+        verbose_name = "Site Settings"
+        verbose_name_plural = "Site Settings"
+
+    def __str__(self):
+        return "Site Settings"
+
+    @classmethod
+    def get_settings(cls):
+        """Always return the single settings object, creating it if needed."""
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class LibraryCategory(models.Model):
+    name_tm = models.CharField(max_length=255, verbose_name="Kategoriýa Ady (Turkmen)")
+    name_en = models.CharField(max_length=255, blank=True, verbose_name="Category Name (English)")
+    name_ru = models.CharField(max_length=255, blank=True, verbose_name="Category Name (Russian)")
+    
+    icon = models.ImageField(upload_to='library_icons/', blank=True, null=True, verbose_name="Icon / Logo")
+    order = models.IntegerField(default=0, verbose_name="Tertip belgisi (Order)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Döredilen senesi")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = "Neşir Kategoriýasy"
+        verbose_name_plural = "Neşir Kategoriýalary"
+
+    def __str__(self):
+        return self.name_tm
+
+
+class LibraryBook(models.Model):
+    category = models.ForeignKey(
+        LibraryCategory,
+        on_delete=models.CASCADE,
+        related_name='books',
+        verbose_name="Kategoriýasy (Neşir)"
+    )
+    title_tm = models.CharField(max_length=255, verbose_name="Sözbaşy / Ady (Turkmen)")
+    title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
+    title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
+    
+    pdf_file = models.FileField(upload_to='library_books/', blank=True, null=True, verbose_name="PDF Faýl")
+    image = models.ImageField(upload_to='library_books/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Header Image)")
+    cover_image = models.ImageField(upload_to='library_books/covers/', blank=True, null=True, verbose_name="Daşky suraty (Cover)")
+    year = models.IntegerField(default=2026, blank=True, null=True, verbose_name="Ýyly")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Ýüklenen senesi")
+
+    @property
+    def display_image(self):
+        return self.image or self.cover_image
+
+    class Meta:
+
+        ordering = ['-year', '-uploaded_at', '-id']
+        verbose_name = "Neşir Sany / Kitap"
+        verbose_name_plural = "Neşir Sanlary / Kitaplar"
+
+    def __str__(self):
+        return f"{self.title_tm} ({self.category.name_tm})"
+

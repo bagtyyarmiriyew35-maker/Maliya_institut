@@ -1,0 +1,96 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Neşir Sanyny Üýtget{% else %}Täze Neşir Sany Goş{% endif %}{% endblock %}
+{% block breadcrumb %}Elektron Neşirler / {% if action == 'edit' %}Sany Üýtget{% else %}Täze San Goş{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-book-open"></i> {% if action == 'edit' %}Neşir Sanyny Üýtget{% else %}Täze Neşir Sany Goş{% endif %}</h1>
+  <a href="{% url 'panel_library_books' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Neşir Sanynyň Maglumatlary</div>
+      <div class="form-row form-row-2" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label>Kategoriýasy (Neşiri) <span class="required">*</span></label>
+          <select name="category" class="form-control-panel" required>
+            <option value="">— Neşiri saýlaň —</option>
+            {% for cat in categories %}
+            <option value="{{ cat.pk }}" {% if action == 'edit' and obj.category_id == cat.pk or post.category == cat.pk|stringformat:"s" %}selected{% endif %}>
+              {{ cat.name_tm }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ýyly</label>
+          <input type="number" name="year" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.year }}{% else %}{{ post.year|default:'2026' }}{% endif %}" placeholder="2026">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Sözbaşy / Sanyň Ady (TM) <span class="required">*</span></label>
+        <input type="text" name="title_tm" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.title_tm }}{% else %}{{ post.title_tm }}{% endif %}" required placeholder="mysal: Neşir 4 sany 2026">
+      </div>
+
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>Sözbaşy (EN)</label>
+          <input type="text" name="title_en" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.title_en }}{% else %}{{ post.title_en }}{% endif %}" placeholder="English title">
+        </div>
+        <div class="form-group">
+          <label>Sözbaşy (RU)</label>
+          <input type="text" name="title_ru" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.title_ru }}{% else %}{{ post.title_ru }}{% endif %}" placeholder="Название на русском">
+        </div>
+      </div>
+    </div>
+
+    <!-- Başlyk Suraty (Header Photo / Cover Image) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image" style="color:#0a5c36;"></i> Başlyk Suraty (Daşynda we sahypada görkeziljek surat)</div>
+      {% if action == 'edit' and obj.display_image %}
+      <div class="current-file-info" style="margin-bottom:12px; display:flex; align-items:center; gap:14px;">
+        <img src="{{ obj.display_image.url }}" alt="Header photo" style="max-height:80px; border-radius:8px; border:1px solid #cbd5e1;">
+        <label style="font-size:13px; color:#ef4444; cursor:pointer;">
+          <input type="checkbox" name="clear_image" value="1"> Suraty aýyr (öçür)
+        </label>
+      </div>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="image" accept="image/*">
+        <div class="file-upload-icon"><i class="fa-solid fa-image"></i></div>
+        <div class="file-upload-text">Başlyk suraty saýlaň (JPG, PNG, WEBP)<br><strong>Neşiriň daşynda we açylanda üst bölüminde uly başlyk suraty bolup görkeziler</strong></div>
+      </div>
+    </div>
+
+    <!-- PDF Faýl -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Neşiriň PDF Faýly</div>
+
+      {% if action == 'edit' and obj.pdf_file %}
+      <div class="current-file-info" style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+        <i class="fa-solid fa-file-pdf" style="color:#ef4444; font-size:20px;"></i>
+        <a href="{{ obj.pdf_file.url }}" target="_blank" style="font-size:13px; color:#0284c7; font-weight:600;">
+          {{ obj.pdf_file.name }}
+        </a>
+      </div>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="pdf_file" accept=".pdf">
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">PDF faýl saýlaň (diňe .pdf format)<br><strong>Ulanyjylar sahypadan muny okap we göçürip alyp bilerler</strong></div>
+      </div>
+    </div>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn-panel btn-panel-primary">
+        <i class="fa-solid fa-check"></i> Ýatda sakla
+      </button>
+      <a href="{% url 'panel_library_books' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

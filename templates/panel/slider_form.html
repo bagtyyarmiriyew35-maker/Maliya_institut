@@ -1,0 +1,129 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Slider Üýtget{% else %}Täze Slider{% endif %}{% endblock %}
+{% block breadcrumb %}Sliderlar / {% if action == 'edit' %}Üýtget{% else %}Goş{% endif %}{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-images"></i> {% if action == 'edit' %}Slider Üýtget{% else %}Täze Slider Goş{% endif %}</h1>
+  <a href="{% url 'panel_sliders' %}" class="btn-panel btn-panel-ghost">
+    <i class="fa-solid fa-arrow-left"></i> Yza
+  </a>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+
+    <!-- Image -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image"></i> Surat (Fon / Thumbnail)</div>
+      {% if action == 'edit' and obj.image %}
+      <div class="current-file-info">
+        <i class="fa-solid fa-image"></i>
+        Häzirki surat: <a href="{{ obj.image.url }}" target="_blank">görüň</a>
+      </div>
+      <img src="{{ obj.image.url }}" class="file-preview-img" id="imgPreview" style="margin-bottom:12px;">
+      {% else %}
+      <img id="imgPreview" class="file-preview-img" style="display:none;">
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="image" accept="image/*" data-preview="imgPreview">
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">Surat saýla ýa-da bu ýere süýr<br><strong>JPG, PNG, WEBP</strong></div>
+      </div>
+    </div>
+
+    <!-- Video -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-video"></i> Wideo (Background Video)</div>
+      {% if action == 'edit' and obj.video %}
+      <div class="current-file-info" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <i class="fa-solid fa-film" style="color: var(--panel-info);"></i>
+          Häzirki wideo: <a href="{{ obj.video.url }}" target="_blank" style="color: #58a6ff;">wideo gör</a>
+        </div>
+        <label style="font-size: 13px; color: var(--panel-danger); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <input type="checkbox" name="clear_video" value="1"> Widony aýyr (öçür)
+        </label>
+      </div>
+      <video controls style="max-width: 100%; max-height: 220px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--panel-border);">
+        <source src="{{ obj.video.url }}">
+      </video>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="video" accept="video/mp4,video/webm,video/ogg">
+        <div class="file-upload-icon"><i class="fa-solid fa-file-video" style="color: #58a6ff;"></i></div>
+        <div class="file-upload-text">Wideo faýly saýlaň (MP4 / WebM)<br><strong>Arka fony üçin wideo awtomatiki oýnadylar</strong></div>
+      </div>
+    </div>
+
+    <!-- TM -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>At <span class="required">*</span></label>
+          <input type="text" name="title_tm" class="form-control-panel" value="{{ obj.title_tm|default:'' }}" required placeholder="Slider adyny giriziň">
+        </div>
+        <div class="form-group">
+          <label>Kiçi at</label>
+          <input type="text" name="subtitle_tm" class="form-control-panel" value="{{ obj.subtitle_tm|default:'' }}" placeholder="Kiçi tekstiň giriziň">
+        </div>
+      </div>
+    </div>
+
+    <!-- EN -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Iňlisçe <span class="badge-panel badge-info">EN</span></div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" name="title_en" class="form-control-panel" value="{{ obj.title_en|default:'' }}" placeholder="English title">
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" name="subtitle_en" class="form-control-panel" value="{{ obj.subtitle_en|default:'' }}" placeholder="English subtitle">
+        </div>
+      </div>
+    </div>
+
+    <!-- RU -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Rusça <span class="badge-panel badge-danger">RU</span></div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>Заголовок</label>
+          <input type="text" name="title_ru" class="form-control-panel" value="{{ obj.title_ru|default:'' }}" placeholder="Заголовок на русском">
+        </div>
+        <div class="form-group">
+          <label>Подзаголовок</label>
+          <input type="text" name="subtitle_ru" class="form-control-panel" value="{{ obj.subtitle_ru|default:'' }}" placeholder="Подзаголовок">
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-sliders"></i> Goşmaça</div>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label>Baglantý (URL)</label>
+          <input type="url" name="link" class="form-control-panel" value="{{ obj.link|default:'' }}" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Tertip belgisi</label>
+          <input type="number" name="order" class="form-control-panel" value="{{ obj.order|default:0 }}" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-form-footer">
+      <button type="submit" class="btn-panel btn-panel-primary">
+        <i class="fa-solid fa-floppy-disk"></i>
+        {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}
+      </button>
+      <a href="{% url 'panel_sliders' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+
+  </div>
+</form>
+{% endblock %}

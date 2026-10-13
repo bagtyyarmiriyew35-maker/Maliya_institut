@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load website_tags %}
+
+{% block content %}
+<section class="section journal-list-section">
+    <div class="container">
+        
+        <!-- Category switcher tabs (if multiple categories) -->
+        {% if all_categories|length > 1 %}
+        <div class="journal-categories-tabs">
+            {% for cat in all_categories %}
+            <a href="{% url 'library_detail' cat.pk %}" class="journal-category-tab {% if cat.pk == category.pk %}active{% endif %}">
+                {% render_lang cat 'name' current_lang %}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Journal Heading with blue vertical line (Matching Image 3) -->
+        <div class="journal-list-header">
+            <h2 class="journal-list-heading">
+                <span class="journal-list-accent-bar"></span>
+                {% if current_lang == 'eng' %}
+                    "{{ category.name_en|default:category.name_tm }}" journals
+                {% elif current_lang == 'rus' %}
+                    Журналы "{{ category.name_ru|default:category.name_tm }}"
+                {% else %}
+                    "{{ category.name_tm }}" žurnallary
+                {% endif %}
+            </h2>
+        </div>
+
+        {% if books %}
+        <!-- 4-column Grid matching Image 3 -->
+        <div class="journal-issues-grid">
+            {% for book in books %}
+            <a href="{% url 'library_book_detail' book.pk %}" class="journal-issue-card">
+                <div class="journal-issue-cover-wrap">
+                    {% if book.display_image %}
+                    <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-issue-cover-img" loading="lazy">
+                    {% else %}
+                    <div class="journal-issue-cover-placeholder">
+                        <i class="fa-solid fa-book-open" style="font-size: 36px; color: #6ba3d6;"></i>
+                        <span>Neşir sany</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="journal-issue-title">
+                    {% render_lang book 'title' current_lang %}
+                </div>
+
+                <div class="journal-issue-card-footer">
+                    {% if book.pdf_file %}
+                    <span class="journal-issue-download-link" title="Ýükle" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ book.pdf_file.url }}';">
+                        <i class="fa-solid fa-download"></i>
+                    </span>
+                    {% else %}
+                    <span class="journal-issue-download-link" title="Okamak">
+                        <i class="fa-solid fa-download"></i>
+                    </span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="background: #ffffff; border-radius: 16px; padding: 40px; text-align: center; border: 1px dashed #cbd5e1; margin-top: 20px;">
+            <i class="fa-solid fa-folder-open" style="font-size: 40px; color: #94a3b8; margin-bottom: 15px;"></i>
+            <h4 style="color: #475569; font-size: 1.1rem; margin-bottom: 6px;">Bu neşir üçin heniz san goşulmandyr</h4>
+            <p style="color: #64748b; font-size: 0.9rem;">Ýakyn wagtda täze sanlar dolandyryş panelinden ýüklener.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

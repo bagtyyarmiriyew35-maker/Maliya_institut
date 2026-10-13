@@ -1,0 +1,179 @@
+{% extends 'panel/base.html' %}
+{% block title %}Sazlamalar{% endblock %}
+{% block breadcrumb %}Sazlamalar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-gear"></i> Site Sazlamalary</h1>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="settings-grid">
+
+    <!-- Statistics Section -->
+    <div class="settings-section-card" style="grid-column:span 2;">
+      <h3><i class="fa-solid fa-chart-simple"></i> Statistika Sanlary, Logolary we Fon Suraty</h3>
+      
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:18px; margin-bottom:20px;">
+        
+        <!-- Books Stat -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <h4 style="margin:0 0 12px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-book-open" style="color:#048848;"></i> 1. Kitaplar statistikasy
+          </h4>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-size:13px;">Sany / Ýazgysy (mysal üçin: 45 000+)</label>
+            <input type="text" name="stat_books" class="form-control-panel" value="{{ site_settings.stat_books }}" required placeholder="45 000+">
+          </div>
+          <div class="form-group">
+            <label style="font-size:13px;"><i class="fa-regular fa-image"></i> Öz logo/ikonyňyz (isleg boýunça)</label>
+            {% if site_settings.stat_books_icon %}
+            <div style="margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+              <img src="{{ site_settings.stat_books_icon.url }}" alt="Logo" style="height:36px; object-fit:contain; border-radius:6px; background:#fff; padding:3px; border:1px solid #cbd5e1;">
+              <span style="font-size:12px; color:#64748b;">Häzirki logo</span>
+            </div>
+            {% endif %}
+            <input type="file" name="stat_books_icon" class="form-control-panel" accept="image/*">
+          </div>
+        </div>
+
+        <!-- Majors Stat -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <h4 style="margin:0 0 12px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-graduation-cap" style="color:#048848;"></i> 2. Hünärler statistikasy
+          </h4>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-size:13px;">Sany / Ýazgysy (mysal üçin: 12)</label>
+            <input type="text" name="stat_majors" class="form-control-panel" value="{{ site_settings.stat_majors }}" required placeholder="12">
+          </div>
+          <div class="form-group">
+            <label style="font-size:13px;"><i class="fa-regular fa-image"></i> Öz logo/ikonyňyz (isleg boýunça)</label>
+            {% if site_settings.stat_majors_icon %}
+            <div style="margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+              <img src="{{ site_settings.stat_majors_icon.url }}" alt="Logo" style="height:36px; object-fit:contain; border-radius:6px; background:#fff; padding:3px; border:1px solid #cbd5e1;">
+              <span style="font-size:12px; color:#64748b;">Häzirki logo</span>
+            </div>
+            {% endif %}
+            <input type="file" name="stat_majors_icon" class="form-control-panel" accept="image/*">
+          </div>
+        </div>
+
+        <!-- Teachers Stat -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <h4 style="margin:0 0 12px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-chalkboard-user" style="color:#048848;"></i> 3. Mugallymlar statistikasy
+          </h4>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-size:13px;">Sany / Ýazgysy (mysal üçin: 280+)</label>
+            <input type="text" name="stat_teachers" class="form-control-panel" value="{{ site_settings.stat_teachers }}" required placeholder="280+">
+          </div>
+          <div class="form-group">
+            <label style="font-size:13px;"><i class="fa-regular fa-image"></i> Öz logo/ikonyňyz (isleg boýunça)</label>
+            {% if site_settings.stat_teachers_icon %}
+            <div style="margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+              <img src="{{ site_settings.stat_teachers_icon.url }}" alt="Logo" style="height:36px; object-fit:contain; border-radius:6px; background:#fff; padding:3px; border:1px solid #cbd5e1;">
+              <span style="font-size:12px; color:#64748b;">Häzirki logo</span>
+            </div>
+            {% endif %}
+            <input type="file" name="stat_teachers_icon" class="form-control-panel" accept="image/*">
+          </div>
+        </div>
+
+        <!-- Students Stat -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <h4 style="margin:0 0 12px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-user-graduate" style="color:#048848;"></i> 4. Talyplar statistikasy
+          </h4>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-size:13px;">Sany / Ýazgysy (mysal üçin: 3 200+)</label>
+            <input type="text" name="stat_students" class="form-control-panel" value="{{ site_settings.stat_students }}" required placeholder="3 200+">
+          </div>
+          <div class="form-group">
+            <label style="font-size:13px;"><i class="fa-regular fa-image"></i> Öz logo/ikonyňyz (isleg boýunça)</label>
+            {% if site_settings.stat_students_icon %}
+            <div style="margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+              <img src="{{ site_settings.stat_students_icon.url }}" alt="Logo" style="height:36px; object-fit:contain; border-radius:6px; background:#fff; padding:3px; border:1px solid #cbd5e1;">
+              <span style="font-size:12px; color:#64748b;">Häzirki logo</span>
+            </div>
+            {% endif %}
+            <input type="file" name="stat_students_icon" class="form-control-panel" accept="image/*">
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-group" style="margin-top:10px;">
+        <label><i class="fa-regular fa-image"></i> Arka Fon Suraty (Stats Background)</label>
+        {% if site_settings.stats_bg_image %}
+        <div style="margin-bottom:8px;">
+          <img src="{{ site_settings.stats_bg_image.url }}" alt="Background" style="max-height:80px; border-radius:8px; border:1px solid #cbd5e1;">
+        </div>
+        {% endif %}
+        <input type="file" name="stats_bg_image" class="form-control-panel" accept="image/*">
+        <small style="color:#64748b; font-size:12px; display:block; margin-top:4px;">Eger täze surat saýlamasaňyz, öňki fon saklanar.</small>
+      </div>
+    </div>
+
+    <!-- Contact Settings -->
+    <div class="settings-section-card">
+      <h3><i class="fa-solid fa-address-book"></i> Habarlaşmak maglumatlary</h3>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Telefon</label>
+        <input type="text" name="phone" class="form-control-panel" value="{{ site_settings.phone }}">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>E-poçta</label>
+        <input type="email" name="email" class="form-control-panel" value="{{ site_settings.email }}">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Salgysy (TM)</label>
+        <input type="text" name="address_tm" class="form-control-panel" value="{{ site_settings.address_tm }}">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Salgysy (EN)</label>
+        <input type="text" name="address_en" class="form-control-panel" value="{{ site_settings.address_en }}">
+      </div>
+      <div class="form-group">
+        <label>Salgysy (RU)</label>
+        <input type="text" name="address_ru" class="form-control-panel" value="{{ site_settings.address_ru }}">
+      </div>
+    </div>
+
+    <!-- Social Media Settings -->
+    <div class="settings-section-card" style="grid-column:span 2;">
+      <h3><i class="fa-solid fa-share-nodes"></i> Durmuş torlary (Social Links)</h3>
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label><i class="fa-brands fa-facebook" style="color:#1877f2;"></i> Facebook URL</label>
+          <input type="url" name="facebook_url" class="form-control-panel" value="{{ site_settings.facebook_url }}" placeholder="https://facebook.com/...">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-brands fa-twitter" style="color:#1da1f2;"></i> Twitter URL</label>
+          <input type="url" name="twitter_url" class="form-control-panel" value="{{ site_settings.twitter_url }}" placeholder="https://twitter.com/...">
+        </div>
+      </div>
+      <div class="form-row form-row-3" style="margin-top:14px;">
+        <div class="form-group">
+          <label><i class="fa-brands fa-linkedin" style="color:#0a66c2;"></i> LinkedIn URL</label>
+          <input type="url" name="linkedin_url" class="form-control-panel" value="{{ site_settings.linkedin_url }}" placeholder="https://linkedin.com/...">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-brands fa-instagram" style="color:#c13584;"></i> Instagram URL</label>
+          <input type="url" name="instagram_url" class="form-control-panel" value="{{ site_settings.instagram_url }}" placeholder="https://instagram.com/...">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-brands fa-youtube" style="color:#ff0000;"></i> YouTube URL</label>
+          <input type="url" name="youtube_url" class="form-control-panel" value="{{ site_settings.youtube_url }}" placeholder="https://youtube.com/...">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="panel-form-footer">
+    <button type="submit" class="btn-panel btn-panel-primary">
+      <i class="fa-solid fa-floppy-disk"></i> Sazlamalary ýatda sakla
+    </button>
+  </div>
+</form>
+{% endblock %}

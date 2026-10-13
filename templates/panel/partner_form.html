@@ -1,0 +1,48 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Hyzmatdaş Üýtget{% else %}Täze Hyzmatdaş{% endif %}{% endblock %}
+{% block breadcrumb %}Hyzmatdaşlar / {% if action == 'edit' %}Üýtget{% else %}Goş{% endif %}{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-handshake"></i> {% if action == 'edit' %}Hyzmatdaş Üýtget{% else %}Täze Hyzmatdaş Goş{% endif %}</h1>
+  <a href="{% url 'panel_partners' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image"></i> Logo <span class="required" style="color:var(--panel-danger);">*</span></div>
+      {% if action == 'edit' and obj.logo %}
+      <div class="current-file-info"><i class="fa-solid fa-image"></i> Häzirki: <a href="{{ obj.logo.url }}" target="_blank">görüň</a></div>
+      <img src="{{ obj.logo.url }}" class="file-preview-img" id="imgPreview" style="margin-bottom:12px;background:#fff;padding:8px;">
+      {% else %}<img id="imgPreview" class="file-preview-img" style="display:none;">{% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="logo" accept="image/*" data-preview="imgPreview" {% if action == 'add' %}required{% endif %}>
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">Logo saýla (PNG arka plansyz maslahat berilýär)</div>
+      </div>
+    </div>
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
+      <div class="form-row form-row-2">
+        <div class="form-group"><label>Ady <span class="required">*</span></label><input type="text" name="name_tm" class="form-control-panel" value="{{ obj.name_tm|default:'' }}" required></div>
+        <div class="form-group"><label>Ýurdy</label><input type="text" name="country_tm" class="form-control-panel" value="{{ obj.country_tm|default:'' }}"></div>
+      </div>
+    </div>
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Iňlisçe / Rusça</div>
+      <div class="form-row form-row-2" style="margin-bottom:12px;">
+        <div class="form-group"><label>Name (EN)</label><input type="text" name="name_en" class="form-control-panel" value="{{ obj.name_en|default:'' }}"></div>
+        <div class="form-group"><label>Country (EN)</label><input type="text" name="country_en" class="form-control-panel" value="{{ obj.country_en|default:'' }}"></div>
+      </div>
+      <div class="form-row form-row-2">
+        <div class="form-group"><label>Название (RU)</label><input type="text" name="name_ru" class="form-control-panel" value="{{ obj.name_ru|default:'' }}"></div>
+        <div class="form-group"><label>Страна (RU)</label><input type="text" name="country_ru" class="form-control-panel" value="{{ obj.country_ru|default:'' }}"></div>
+      </div>
+    </div>
+    <div class="panel-form-footer">
+      <button type="submit" class="btn-panel btn-panel-primary"><i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}</button>
+      <a href="{% url 'panel_partners' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Olimpiada Üýtget{% else %}Täze Olimpiada{% endif %}{% endblock %}
+{% block breadcrumb %}Olimpiadalar / {% if action == 'edit' %}Üýtget{% else %}Goş{% endif %}{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-trophy"></i> {% if action == 'edit' %}Olimpiada Üýtget{% else %}Täze Olimpiada Goş{% endif %}</h1>
+  <a href="{% url 'panel_olympiads' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Esasy maglumatlar</div>
+      <div class="form-row form-row-2" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label>At (TM) <span class="required">*</span></label>
+          <input type="text" name="title_tm" class="form-control-panel" value="{{ obj.title_tm|default:'' }}" required>
+        </div>
+        <div class="form-group">
+          <label>Ýyl <span class="required">*</span></label>
+          <input type="number" name="year" class="form-control-panel" value="{{ obj.year|default:2026 }}" min="2000" max="2050" required>
+        </div>
+      </div>
+      <div class="form-row form-row-2">
+        <div class="form-group"><label>At (EN)</label><input type="text" name="title_en" class="form-control-panel" value="{{ obj.title_en|default:'' }}"></div>
+        <div class="form-group"><label>At (RU)</label><input type="text" name="title_ru" class="form-control-panel" value="{{ obj.title_ru|default:'' }}"></div>
+      </div>
+    </div>
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-align-left"></i> Beýany</div>
+      <div class="form-group" style="margin-bottom:12px;"><label>Beýan (TM)</label><textarea name="description_tm" class="form-control-panel wysiwyg-editor">{{ obj.description_tm|default:'' }}</textarea></div>
+      <div class="form-group" style="margin-bottom:12px;"><label>Description (EN)</label><textarea name="description_en" class="form-control-panel wysiwyg-editor">{{ obj.description_en|default:'' }}</textarea></div>
+      <div class="form-group"><label>Описание (RU)</label><textarea name="description_ru" class="form-control-panel wysiwyg-editor">{{ obj.description_ru|default:'' }}</textarea></div>
+    </div>
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-file-pdf"></i> Netijeleriň PDF-i</div>
+      {% if action == 'edit' and obj.results_pdf %}
+      <div class="current-file-info"><i class="fa-solid fa-file-pdf"></i> Häzirki: <a href="{{ obj.results_pdf.url }}" target="_blank">göç alyň</a></div>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="results_pdf" accept=".pdf">
+        <div class="file-upload-icon"><i class="fa-solid fa-file-pdf"></i></div>
+        <div class="file-upload-text">PDF faýl saýla</div>
+      </div>
+    </div>
+    <div class="panel-form-footer">
+      <button type="submit" class="btn-panel btn-panel-primary"><i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}</button>
+      <a href="{% url 'panel_olympiads' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

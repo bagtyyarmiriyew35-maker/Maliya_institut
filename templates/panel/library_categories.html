@@ -1,0 +1,135 @@
+{% extends 'panel/base.html' %}
+{% block title %}Kitaphana Kategoriýalary Sanawy{% endblock %}
+{% block breadcrumb %}Elektron Neşirler / Kategoriýalar{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <h1><i class="fa-solid fa-book-bookmark"></i> Kitaphana Kategoriýalary Sanawy</h1>
+  </div>
+  <a href="{% url 'panel_library_category_add' %}" class="btn-panel btn-panel-primary">
+    <i class="fa-solid fa-plus"></i> Täze goş
+  </a>
+</div>
+
+<div class="panel-card" style="overflow:hidden; border-radius:18px;">
+  <form method="POST" id="bulk-delete-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_selected">
+
+    <div id="bulk-actions" style="display:none; padding:12px 24px; background:#fef2f2; border-bottom:1px solid #fee2e2; align-items:center; justify-content:space-between;">
+      <span style="font-size:13px; font-weight:700; color:#dc2626;"><span id="selected-count">0</span> sany saýlandy</span>
+      <button type="submit" onclick="return confirm('Saýlananlary pozmak isleýärsiňizmi?')" class="btn-panel btn-panel-delete btn-panel-sm" style="background:#ef4444; color:#fff;">
+        <i class="fa-solid fa-trash"></i> Saýlananlary poz
+      </button>
+    </div>
+
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8;">
+            <th style="width:40px; text-align:center;">
+              <input type="checkbox" id="select-all" style="cursor:pointer; width:16px; height:16px; accent-color:#0a5c36;">
+            </th>
+            <th style="width:60px;">ID</th>
+            <th>Sözbaşy / Ady</th>
+            <th>Sene / Maglumat</th>
+            <th style="text-align:right; width:140px;">Amallar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+          <tr>
+            <td style="text-align:center;" onclick="event.stopPropagation()">
+              <input type="checkbox" name="selected_items" value="{{ cat.pk }}" class="item-checkbox" style="cursor:pointer; width:16px; height:16px; accent-color:#0a5c36;">
+            </td>
+            <td><strong style="color:#94a3b8; font-size:12px;">#{{ cat.id }}</strong></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:44px; height:44px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                  {% if cat.icon %}
+                  <img src="{{ cat.icon.url }}" alt="{{ cat.name_tm }}" style="width:100%; height:100%; object-fit:contain; padding:4px;">
+                  {% else %}
+                  <i class="fa-solid fa-book-open" style="color:#0a5c36; font-size:18px;"></i>
+                  {% endif %}
+                </div>
+                <div>
+                  <a href="{% url 'panel_library_books' %}?category={{ cat.pk }}" style="font-weight:700; color:#1e293b; text-decoration:none; font-size:14px;">
+                    {{ cat.name_tm }}
+                  </a>
+                  {% if cat.name_en or cat.name_ru %}
+                  <div style="font-size:11px; color:#94a3b8; margin-top:2px;">
+                    {% if cat.name_en %}EN: {{ cat.name_en }}{% endif %}
+                    {% if cat.name_ru %}{% if cat.name_en %} | {% endif %}RU: {{ cat.name_ru }}{% endif %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge-panel badge-neutral" style="background:#ecfdf5; color:#047857; font-weight:600;">
+                <i class="fa-solid fa-book-open"></i> {{ cat.books.count }} san
+              </span>
+              {% if cat.order %}
+              <span style="font-size:11px; color:#94a3b8; margin-left:6px;">Tertip: {{ cat.order }}</span>
+              {% endif %}
+            </td>
+            <td style="text-align:right;">
+              <div class="panel-actions" style="justify-content:flex-end;">
+                <a href="{% url 'panel_library_category_edit' cat.pk %}" class="btn-panel btn-panel-primary btn-panel-sm" title="Düzet">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <button type="button" class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-cat-{{ cat.pk }}" title="Öçür">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+              <form id="del-cat-{{ cat.pk }}" method="POST" action="{% url 'panel_library_category_delete' cat.pk %}" style="display:none;">
+                {% csrf_token %}
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align:center; padding:36px; color:#94a3b8;">
+              <i class="fa-solid fa-book-bookmark" style="font-size:32px; margin-bottom:10px; display:block;"></i>
+              Häzirki wagtda kategoriýa ýok
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const bulkActionsBar = document.getElementById('bulk-actions');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    function updateBulkActionsVisibility() {
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCountSpan) selectedCountSpan.textContent = selectedCount;
+        if (bulkActionsBar) {
+            bulkActionsBar.style.display = selectedCount > 0 ? 'flex' : 'none';
+        }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = selectedCount === itemCheckboxes.length && itemCheckboxes.length > 0;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            itemCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            updateBulkActionsVisibility();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkActionsVisibility);
+    });
+});
+</script>
+{% endblock %}

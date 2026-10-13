@@ -1,0 +1,62 @@
+{% extends 'panel/base.html' %}
+{% block title %}Fakultetler{% endblock %}
+{% block breadcrumb %}Institut / Fakultetler{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-building-columns"></i> Fakultetler</h1>
+  <a href="{% url 'panel_faculty_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Goş</a>
+</div>
+
+<div class="panel-section-nav" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+  <a href="{% url 'panel_pages_by_section' 'institut' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-file-lines"></i> Sahypalary
+  </a>
+  <a href="{% url 'panel_faculties' %}" class="btn-panel btn-panel-primary btn-panel-sm">
+    <i class="fa-solid fa-building-columns"></i> Fakultetler ({{ faculties|length }})
+  </a>
+  <a href="{% url 'panel_departments' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-sitemap"></i> Kafedralar
+  </a>
+  <a href="{% url 'panel_partners' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+    <i class="fa-solid fa-handshake"></i> Hyzmatdaşlar
+  </a>
+</div>
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>Surat</th><th>Ady</th><th>Dekan</th><th>Kafedralar</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for fac in faculties %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            {% if fac.image %}
+            <img src="{{ fac.image.url }}" class="panel-table-thumb" alt="">
+            {% else %}
+            <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-building-columns"></i></div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ fac.name_tm }}</strong>
+            {% if fac.name_en %}<br><span class="text-muted">{{ fac.name_en }}</span>{% endif %}
+          </td>
+          <td><span class="text-muted">{{ fac.dean_name_tm|default:"—" }}</span></td>
+          <td><span class="badge-panel badge-info">{{ fac.departments.count }}</span></td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'panel_faculty_edit' fac.pk %}" class="btn-panel btn-panel-edit btn-panel-sm"><i class="fa-solid fa-pen"></i> Üýtget</a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-fac-{{ fac.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-fac-{{ fac.pk }}" method="POST" action="{% url 'panel_faculty_delete' fac.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Fakultet tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

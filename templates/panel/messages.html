@@ -1,0 +1,57 @@
+{% extends 'panel/base.html' %}
+{% block title %}Hatlar{% endblock %}
+{% block breadcrumb %}Hatlar{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-envelope"></i> Iletişim Hatlary</h1>
+</div>
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr><th>#</th><th>Ady</th><th>E-poçta</th><th>Mowzuk</th><th>Hat</th><th>Senesi</th><th>Ýagdaýy</th><th>Hereketler</th></tr>
+      </thead>
+      <tbody>
+        {% for msg in all_messages %}
+        <tr class="{% if not msg.is_read %}msg-unread{% else %}msg-read{% endif %}">
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ msg.name }}</strong></td>
+          <td><a href="mailto:{{ msg.email }}" style="color:var(--panel-info);">{{ msg.email }}</a></td>
+          <td>{{ msg.subject|truncatechars:30 }}</td>
+          <td>
+            <details>
+              <summary style="cursor:pointer;color:var(--panel-text-muted);font-size:12px;">Hatyň okaň...</summary>
+              <div style="margin-top:8px;padding:10px;background:var(--panel-surface-2);border-radius:6px;font-size:13px;white-space:pre-wrap;">{{ msg.message }}</div>
+            </details>
+          </td>
+          <td><span class="text-muted">{{ msg.created_at|date:"d.m.Y H:i" }}</span></td>
+          <td>
+            {% if msg.is_read %}
+            <span class="badge-panel badge-neutral"><i class="fa-solid fa-check"></i> Okaldy</span>
+            {% else %}
+            <span class="badge-panel badge-danger"><i class="fa-solid fa-circle"></i> Täze</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="panel-actions">
+              {% if not msg.is_read %}
+              <form method="POST" action="{% url 'panel_message_read' msg.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-panel btn-panel-success btn-panel-sm" title="Okaldy diýip bellemek">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              </form>
+              {% endif %}
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-msg-{{ msg.pk }}"><i class="fa-solid fa-trash"></i></button>
+              <form id="del-msg-{{ msg.pk }}" method="POST" action="{% url 'panel_message_delete' msg.pk %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--panel-text-muted);">Hat tapylmady</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

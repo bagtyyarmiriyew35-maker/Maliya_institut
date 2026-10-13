@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ayh^v^11v5#+11knf3g8t+$=e5!8ga^wn#se&oz9h@5iw3q5s-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', '216.250.10.252', '20.20.21.143']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tinymce',
     'website.apps.WebsiteConfig',
 ]
 
@@ -118,6 +119,40 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'static_root'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# TinyMCE Configuration
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 380,
+    'menubar': 'file edit view insert format tools table',
+    'plugins': [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount',
+    ],
+    'toolbar': (
+        'undo redo | blocks | '
+        'bold italic forecolor backcolor | alignleft aligncenter '
+        'alignright alignjustify | bullist numlist outdent indent | '
+        'removeformat | table link image | code fullscreen'
+    ),
+    'skin': 'oxide-dark',
+    'content_css': 'dark',
+    'branding': False,
+    'promotion': False,
+    'relative_urls': False,
+    'remove_script_host': False,
+    # Resim yükleme — TinyMCE'deki resimleri /media/uploads/ klasörüne kaydeder
+    'images_upload_url': '/tinymce/upload_image/',
+    'images_upload_base_path': '/media/',
+    'automatic_uploads': True,
+    'file_picker_types': 'image',
+}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Frame options for PDF iframe embedding
+X_FRAME_OPTIONS = 'SAMEORIGIN'

@@ -1,0 +1,112 @@
+{% extends 'panel/base.html' %}
+{% block title %}Bilim.tm Täzelikleri{% endblock %}
+{% block breadcrumb %}Bilim.tm Täzelikleri{% endblock %}
+
+{% block content %}
+<div class="panel-page-header">
+  <div>
+    <h1><i class="fa-solid fa-graduation-cap"></i> Bilim.tm Täzelikleri (9 sany)</h1>
+    <p class="text-muted" style="margin-top: 4px; font-size: 13px;">
+      <i class="fa-solid fa-circle-info"></i> Bu habarlar <strong>bilim.tm/tk/news</strong> sahypasyndan her sagat başy awtomatiki täzelenýär. Iň soňky 9 habar saklanýar.
+    </p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <a href="{% url 'panel_bilim_news_sync' %}" class="btn-panel btn-panel-primary" id="btnSyncNews" onclick="this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Çekilýär...';">
+      <i class="fa-solid fa-arrows-rotate"></i> Bilim.tm-den Täzele
+    </a>
+  </div>
+</div>
+
+{% if messages %}
+<div style="margin-bottom: 20px;">
+  {% for message in messages %}
+  <div class="panel-alert panel-alert-{{ message.tags }}" style="padding: 12px 18px; border-radius: 8px; margin-bottom: 8px; background: {% if message.tags == 'success' %}#ecfdf5; color: #065f46; border: 1px solid #a7f3d0;{% else %}#fef2f2; color: #991b1b; border: 1px solid #fecaca;{% endif %}">
+    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i> {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="panel-card">
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Surat</th>
+          <th>Sözbasy / Title</th>
+          <th>Çap edilen wagty</th>
+          <th>Görülen sany</th>
+          <th>Çeşme</th>
+          <th>Hereketler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in news_items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            {% if item.display_image %}
+            <img src="{{ item.display_image }}" class="panel-table-thumb" alt="" style="width: 54px; height: 38px; object-fit: cover; border-radius: 6px;">
+            {% else %}
+            <div class="panel-table-thumb-placeholder" style="width: 54px; height: 38px; border-radius: 6px;"><i class="fa-solid fa-newspaper"></i></div>
+            {% endif %}
+          </td>
+          <td style="max-width: 320px;">
+            <strong style="color: #1e293b; display: block; line-height: 1.35;">{{ item.title_tm }}</strong>
+            <div style="margin-top: 5px; display: flex; gap: 4px; align-items: center;">
+              <span class="badge-panel badge-success" style="font-size: 10px; padding: 2px 6px;">TM</span>
+              {% if item.title_en %}<span class="badge-panel badge-info" style="font-size: 10px; padding: 2px 6px;">EN</span>{% endif %}
+              {% if item.title_ru %}<span class="badge-panel badge-danger" style="font-size: 10px; padding: 2px 6px;">RU</span>{% endif %}
+            </div>
+            {% if item.description_tm %}
+            <span class="text-muted" style="font-size: 12px; display: block; margin-top: 4px;">{{ item.description_tm|truncatechars:70 }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="text-muted" style="font-size: 13px;">
+              <i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y H:i" }}
+            </span>
+          </td>
+          <td>
+            <span class="badge-panel badge-info"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span>
+          </td>
+          <td>
+            {% if item.source_url %}
+            <a href="{{ item.source_url }}" target="_blank" class="text-muted" style="font-size: 12px;" title="bilim.tm sahypasynda aç">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> bilim.tm
+            </a>
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td>
+            <div class="panel-actions">
+              <a href="{% url 'bilim_news_detail' item.pk %}" target="_blank" class="btn-panel btn-panel-ghost btn-panel-sm" title="Sahypada gör">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <a href="{% url 'panel_bilim_news_edit' item.pk %}" class="btn-panel btn-panel-edit btn-panel-sm" title="Düzet">
+                <i class="fa-solid fa-pen"></i> Düzet
+              </a>
+              <button class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-bilim-{{ item.pk }}" title="Poz">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+              <form id="del-bilim-{{ item.pk }}" method="POST" action="{% url 'panel_bilim_news_delete' item.pk %}" style="display:none;">
+                {% csrf_token %}
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center;padding:36px;color:var(--panel-text-muted);">
+            <i class="fa-solid fa-circle-exclamation" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+            Häzirki wagtda bilim.tm habary ýok. Ýokardaky <strong>"Bilim.tm-den Täzele"</strong> düwmesine basyp habarlary çekip bilersiňiz.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if action == 'edit' %}Sahypa Üýtget{% else %}Täze Sahypa{% endif %}{% endblock %}
+{% block breadcrumb %}Sahypalar / {% if action == 'edit' %}Üýtget{% else %}Goş{% endif %}{% endblock %}
+{% block content %}
+<div class="panel-page-header">
+  <h1><i class="fa-solid fa-file-lines"></i> {% if action == 'edit' %}Sahypa Üýtget{% else %}Täze Sahypa Goş{% endif %}</h1>
+  <a href="{% url 'panel_pages' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
+</div>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="panel-form-card">
+
+    <!-- Surat -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-image"></i> Sahypa suraty</div>
+      {% if action == 'edit' and obj.image %}
+      <div class="current-file-info" style="margin-bottom:8px;"><i class="fa-solid fa-image"></i> Häzirki surat: <a href="{{ obj.image.url }}" target="_blank">görüň</a></div>
+      <img src="{{ obj.image.url }}" class="file-preview-img" id="imgPreview" style="margin-bottom:12px;max-height:180px;border-radius:8px;object-fit:cover;">
+      <div style="margin-bottom:12px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--panel-danger);">
+          <input type="checkbox" name="clear_image" value="1"> Suraty öçür
+        </label>
+      </div>
+      {% else %}
+      <img id="imgPreview" class="file-preview-img" style="display:none;max-height:180px;border-radius:8px;object-fit:cover;margin-bottom:12px;">
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="image" accept="image/*" data-preview="imgPreview">
+        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div class="file-upload-text">Surat saýla (JPG, PNG, WebP)</div>
+      </div>
+    </div>
+
+    <!-- PDF Resminama -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-file-pdf" style="color: #f85149;"></i> PDF Resminama (Mazmunyň yerine göni açylyp görkeziler)</div>
+      {% if action == 'edit' and obj.pdf_file %}
+      <div class="current-file-info" style="margin-bottom:12px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <i class="fa-solid fa-file-pdf" style="color: #f85149;"></i>
+          Häzirki PDF: <a href="{{ obj.pdf_file.url }}" target="_blank" style="color: #58a6ff; font-weight: 600;">PDF resminamany gör</a>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--panel-danger);">
+          <input type="checkbox" name="clear_pdf_file" value="1"> PDF resminamany aýyr (öçür)
+        </label>
+      </div>
+      {% endif %}
+      <div class="file-upload-area">
+        <input type="file" name="pdf_file" accept=".pdf,application/pdf">
+        <div class="file-upload-icon"><i class="fa-solid fa-file-pdf" style="color: #f85149;"></i></div>
+        <div class="file-upload-text">PDF resminama saýlaň (.pdf)<br><strong>Sahypa girilende mazmunyň yerine göni PDF okalaç görkeziler</strong></div>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Sahypa maglumatlary</div>
+      <div class="form-row form-row-3">
+        <div class="form-group" style="grid-column:span 2;">
+          <label>At (TM) <span class="required">*</span></label>
+          <input type="text" name="title_tm" id="id_title_tm_slug_source" class="form-control-panel" value="{% if obj %}{{ obj.title_tm }}{% else %}{{ post.title_tm }}{% endif %}" required placeholder="Sahypanyň adyny giriziň">
+        </div>
+        <div class="form-group">
+          <label>Tertip belgisi</label>
+          <input type="number" name="order" class="form-control-panel" value="{{ obj.order|default:0 }}" min="0">
+        </div>
+      </div>
+      <div class="form-row form-row-3">
+        <div class="form-group">
+          <label>Slug (URL) <small style="color:var(--panel-text-muted);font-weight:normal;">(Awtomatiki)</small></label>
+          <input type="text" name="slug" id="id_slug" class="form-control-panel" value="{% if obj %}{{ obj.slug }}{% else %}{{ post.slug }}{% endif %}" placeholder="Awtomatiki dörediler...">
+          <small style="color:var(--panel-text-muted);font-size:11px;">Boş goýsaňyz sahypanyň adyndan awtomatiki dörediler</small>
+        </div>
+        <div class="form-group">
+          <label>Bölüm <span class="required">*</span></label>
+          <select name="section" id="id_section" class="form-control-panel">
+            {% for sec_key, sec_label, sec_icon in nav_sections %}
+            <option value="{{ sec_key }}"
+              {% if obj and obj.section == sec_key %}selected
+              {% elif not obj and preselect_section == sec_key %}selected
+              {% elif not obj and not preselect_section and sec_key == 'other' %}selected
+              {% endif %}>
+              {{ sec_label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ata sahypa (Üst Bölüm) {% if action == 'add' %}<span class="required">*</span>{% endif %}</label>
+          {% if action == 'edit' and not obj.parent %}
+          <div style="padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:600;">
+            <i class="fa-solid fa-layer-group"></i> Bu sahypa Baş Üst Bölümdir. Diňe adyny we mazmunyny üýtgedip bilersiňiz.
+          </div>
+          {% else %}
+          <select name="parent" id="id_parent" class="form-control-panel" {% if action == 'add' %}required{% endif %}>
+            <option value="">— Ata sahypa saýlaň (Hökmany) —</option>
+            {% for p in all_pages %}
+            <option value="{{ p.pk }}" data-section="{{ p.section }}"
+              {% if obj.parent and obj.parent.pk == p.pk %}selected
+              {% elif not obj and preselect_parent and preselect_parent.pk == p.pk %}selected
+              {% endif %}>
+              {{ p.title_tm }}
+            </option>
+            {% endfor %}
+          </select>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TM -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
+      <div class="form-group">
+        <label>Mazmuny (TM)</label>
+        <textarea name="content_tm" class="form-control-panel wysiwyg-editor" placeholder="Sahypanyň mazmuny (HTML hem ulanyp bolýar)...">{{ obj.content_tm|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- EN -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Iňlisçe <span class="badge-panel badge-info">EN</span></div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Title (EN)</label>
+        <input type="text" name="title_en" class="form-control-panel" value="{{ obj.title_en|default:'' }}" placeholder="English title...">
+      </div>
+      <div class="form-group">
+        <label>Content (EN)</label>
+        <textarea name="content_en" class="form-control-panel wysiwyg-editor" placeholder="English content...">{{ obj.content_en|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- RU -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Rusça <span class="badge-panel badge-danger">RU</span></div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Заголовок (RU)</label>
+        <input type="text" name="title_ru" class="form-control-panel" value="{{ obj.title_ru|default:'' }}" placeholder="Заголовок на русском...">
+      </div>
+      <div class="form-group">
+        <label>Содержание (RU)</label>
+        <textarea name="content_ru" class="form-control-panel wysiwyg-editor" placeholder="Содержание на русском...">{{ obj.content_ru|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <div class="panel-form-footer">
+      <button type="submit" class="btn-panel btn-panel-primary">
+        <i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}
+      </button>
+      <a href="{% url 'panel_pages' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+    </div>
+  </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sectionSelect = document.getElementById('id_section');
+  const parentSelect = document.getElementById('id_parent');
+  const titleInput = document.getElementById('id_title_tm_slug_source');
+  const slugInput = document.getElementById('id_slug');
+
+  let isSlugManuallyEdited = {% if action == 'edit' %}true{% else %}false{% endif %};
+
+  if (slugInput) {
+    slugInput.addEventListener('input', function() {
+      isSlugManuallyEdited = true;
+    });
+  }
+
+  if (titleInput && slugInput) {
+    titleInput.addEventListener('input', function() {
+      if (!isSlugManuallyEdited) {
+        let str = titleInput.value.toLowerCase().trim();
+        const charMap = {
+          'ä':'a', 'ž':'z', 'ň':'n', 'ö':'o', 'ş':'s', 'ü':'u', 'ç':'c', 'ý':'y',
+          'ı':'i', 'ğ':'g', 'ð':'d', 'þ':'t', 'ñ':'n'
+        };
+        str = str.replace(/[äžňöşüçýığðþñ]/g, matched => charMap[matched] || matched);
+        str = str.replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+        slugInput.value = str;
+      }
+    });
+  }
+
+  if (sectionSelect && parentSelect) {
+    const initialParentVal = parentSelect.value;
+    const allOptions = Array.from(parentSelect.querySelectorAll('option'));
+
+    function filterParents() {
+      const selectedSec = sectionSelect.value;
+      const currentVal = parentSelect.value || initialParentVal;
+
+      parentSelect.innerHTML = '';
+      allOptions.forEach(opt => {
+        const optSec = opt.getAttribute('data-section');
+        if (!opt.value || optSec === selectedSec) {
+          parentSelect.appendChild(opt.cloneNode(true));
+        }
+      });
+
+      if (currentVal && parentSelect.querySelector(`option[value="${currentVal}"]`)) {
+        parentSelect.value = currentVal;
+      }
+    }
+
+    sectionSelect.addEventListener('change', filterParents);
+    filterParents();
+  }
+});
+</script>
+{% endblock %}

@@ -60,7 +60,9 @@ class Page(models.Model):
 
 
 class SliderImage(models.Model):
-    image = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image")
+    image = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image (TM / Esasy)")
+    image_en = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image (English)")
+    image_ru = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image (Russian)")
     video = models.FileField(upload_to='slides/videos/', blank=True, null=True, verbose_name="Slider Video (MP4/WebM)")
     title_tm = models.CharField(max_length=255, verbose_name="Title (Turkmen)")
     title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
@@ -72,6 +74,14 @@ class SliderImage(models.Model):
     
     link = models.URLField(blank=True, verbose_name="Link URL")
     order = models.IntegerField(default=0, verbose_name="Order")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         ordering = ['order']
@@ -91,11 +101,21 @@ class News(models.Model):
     content_en = models.TextField(blank=True, verbose_name="Content (English)")
     content_ru = models.TextField(blank=True, verbose_name="Content (Russian)")
     
-    image = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (Image)")
+    image = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (TM / Esasy)")
+    image_en = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (English)")
+    image_ru = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (Russian)")
     video = models.FileField(upload_to='news/videos/', blank=True, null=True, verbose_name="Wideo (Video - MP4/WebM)")
     video_url = models.URLField(blank=True, verbose_name="Wideo URL (YouTube / Çeşme)")
     published_date = models.DateTimeField(default=timezone.now, verbose_name="Published Date")
     views_count = models.IntegerField(default=0, verbose_name="Views Count")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         ordering = ['-published_date']
@@ -107,7 +127,7 @@ class News(models.Model):
 
     @property
     def has_media(self):
-        return bool(self.image or self.video or self.video_url)
+        return bool(self.image or self.image_en or self.image_ru or self.video or self.video_url)
 
     @property
     def youtube_embed_url(self):
@@ -142,12 +162,22 @@ class BilimNews(models.Model):
     content_ru = models.TextField(blank=True, default='', verbose_name="Содержание (RU)")
 
     image_url = models.URLField(max_length=700, blank=True, verbose_name="Surat URL (bilim.tm)")
-    image = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat")
+    image = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat (TM / Esasy)")
+    image_en = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat (English)")
+    image_ru = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat (Russian)")
     source_url = models.URLField(max_length=700, blank=True, verbose_name="Çeşme URL")
     published_date = models.DateTimeField(default=timezone.now, verbose_name="Çap edilen senesi")
     views_count = models.IntegerField(default=0, verbose_name="Görülen sany")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         ordering = ['-published_date', '-id']
@@ -285,10 +315,20 @@ class Document(models.Model):
     title_en = models.CharField(max_length=255, blank=True, verbose_name="Title (English)")
     title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
     
-    image = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Header Image)")
+    image = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (TM / Esasy)")
+    image_en = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (English)")
+    image_ru = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Russian)")
     file = models.FileField(upload_to='documents/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Hasabat', verbose_name="Category")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Uploaded At")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         ordering = ['-uploaded_at']
@@ -390,10 +430,20 @@ class LibraryBook(models.Model):
     title_ru = models.CharField(max_length=255, blank=True, verbose_name="Title (Russian)")
     
     pdf_file = models.FileField(upload_to='library_books/', blank=True, null=True, verbose_name="PDF Faýl")
-    image = models.ImageField(upload_to='library_books/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Header Image)")
+    image = models.ImageField(upload_to='library_books/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (TM / Esasy)")
+    image_en = models.ImageField(upload_to='library_books/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (English)")
+    image_ru = models.ImageField(upload_to='library_books/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Russian)")
     cover_image = models.ImageField(upload_to='library_books/covers/', blank=True, null=True, verbose_name="Daşky suraty (Cover)")
     year = models.IntegerField(default=2026, blank=True, null=True, verbose_name="Ýyly")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Ýüklenen senesi")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image or self.cover_image
 
     @property
     def display_image(self):

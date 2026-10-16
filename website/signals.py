@@ -7,16 +7,16 @@ from .models import (
 )
 
 IMAGE_FIELD_MAPPING = {
-    Page: ['image'],
-    SliderImage: ['image'],
-    News: ['image'],
-    BilimNews: ['image'],
-    Faculty: ['image'],
+    Page: ['image', 'image_en', 'image_ru'],
+    SliderImage: ['image', 'image_en', 'image_ru'],
+    News: ['image', 'image_en', 'image_ru'],
+    BilimNews: ['image', 'image_en', 'image_ru'],
+    Faculty: ['image', 'image_en', 'image_ru'],
     Partner: ['logo'],
-    Document: ['image'],
+    Document: ['image', 'image_en', 'image_ru'],
     SiteSettings: ['stat_books_icon', 'stat_majors_icon', 'stat_teachers_icon', 'stat_students_icon', 'stats_bg_image'],
     LibraryCategory: ['icon'],
-    LibraryBook: ['image', 'cover_image'],
+    LibraryBook: ['image', 'image_en', 'image_ru', 'cover_image'],
 }
 
 VIDEO_FIELD_MAPPING = {

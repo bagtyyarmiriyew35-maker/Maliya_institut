@@ -34,8 +34,12 @@
           <td>{{ forloop.counter }}</td>
           <td>
             <strong>{{ doc.title_tm }}</strong>
-            {% if doc.image %}
-            <span style="display:inline-block; margin-left:6px; background:#e0f2fe; color:#0369a1; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600;"><i class="fa-solid fa-image"></i> Suratly</span>
+            {% if doc.image or doc.image_en or doc.image_ru %}
+            <div style="display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle;">
+              {% if doc.image %}<span class="badge-panel badge-success" style="font-size:9px;padding:1px 4px;">TM</span>{% endif %}
+              {% if doc.image_en %}<span class="badge-panel badge-info" style="font-size:9px;padding:1px 4px;">EN</span>{% endif %}
+              {% if doc.image_ru %}<span class="badge-panel badge-danger" style="font-size:9px;padding:1px 4px;">RU</span>{% endif %}
+            </div>
             {% endif %}
           </td>
           <td><span class="badge-panel badge-neutral">{{ doc.get_category_display }}</span></td>

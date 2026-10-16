@@ -147,6 +147,10 @@ def panel_slider_add(request):
         )
         if 'image' in request.FILES:
             slide.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            slide.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            slide.image_ru = request.FILES['image_ru']
         if 'video' in request.FILES:
             slide.video = request.FILES['video']
         slide.save()
@@ -169,6 +173,19 @@ def panel_slider_edit(request, pk):
         slide.order = int(request.POST.get('order', 0) or 0)
         if 'image' in request.FILES:
             slide.image = request.FILES['image']
+        elif request.POST.get('clear_image') == '1':
+            slide.image = None
+
+        if 'image_en' in request.FILES:
+            slide.image_en = request.FILES['image_en']
+        elif request.POST.get('clear_image_en') == '1':
+            slide.image_en = None
+
+        if 'image_ru' in request.FILES:
+            slide.image_ru = request.FILES['image_ru']
+        elif request.POST.get('clear_image_ru') == '1':
+            slide.image_ru = None
+
         if 'video' in request.FILES:
             slide.video = request.FILES['video']
         elif request.POST.get('clear_video') == '1':
@@ -217,6 +234,10 @@ def panel_news_add(request):
         )
         if 'image' in request.FILES:
             news.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            news.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            news.image_ru = request.FILES['image_ru']
         if 'video' in request.FILES:
             news.video = request.FILES['video']
         news.save()
@@ -239,8 +260,18 @@ def panel_news_edit(request, pk):
         
         if 'image' in request.FILES:
             news.image = request.FILES['image']
-        elif 'clear_image' in request.POST:
+        elif 'clear_image' in request.POST or request.POST.get('clear_image') == '1':
             news.image = None
+
+        if 'image_en' in request.FILES:
+            news.image_en = request.FILES['image_en']
+        elif 'clear_image_en' in request.POST or request.POST.get('clear_image_en') == '1':
+            news.image_en = None
+
+        if 'image_ru' in request.FILES:
+            news.image_ru = request.FILES['image_ru']
+        elif 'clear_image_ru' in request.POST or request.POST.get('clear_image_ru') == '1':
+            news.image_ru = None
 
         if 'video' in request.FILES:
             news.video = request.FILES['video']
@@ -305,6 +336,10 @@ def panel_bilim_news_add(request):
         )
         if 'image' in request.FILES:
             item.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            item.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            item.image_ru = request.FILES['image_ru']
         item.save()
         messages.success(request, 'Bilim täzeligi üstünlikli goşuldy!')
         return redirect('panel_bilim_news')
@@ -348,6 +383,18 @@ def panel_bilim_news_edit(request, pk):
 
         if 'image' in request.FILES:
             item.image = request.FILES['image']
+        elif 'clear_image' in request.POST or request.POST.get('clear_image') == '1':
+            item.image = None
+
+        if 'image_en' in request.FILES:
+            item.image_en = request.FILES['image_en']
+        elif 'clear_image_en' in request.POST or request.POST.get('clear_image_en') == '1':
+            item.image_en = None
+
+        if 'image_ru' in request.FILES:
+            item.image_ru = request.FILES['image_ru']
+        elif 'clear_image_ru' in request.POST or request.POST.get('clear_image_ru') == '1':
+            item.image_ru = None
 
         item.save()
         messages.success(request, 'Bilim täzeligi üstünlikli üýtgedildi!')
@@ -838,6 +885,10 @@ def panel_document_add(request):
         )
         if 'image' in request.FILES:
             doc.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            doc.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            doc.image_ru = request.FILES['image_ru']
         doc.save()
         messages.success(request, 'Resminama üstünlikli goşuldy!')
         return redirect('panel_documents')
@@ -858,6 +909,17 @@ def panel_document_edit(request, pk):
             doc.image = request.FILES['image']
         elif request.POST.get('clear_image') == '1':
             doc.image = None
+
+        if 'image_en' in request.FILES:
+            doc.image_en = request.FILES['image_en']
+        elif request.POST.get('clear_image_en') == '1':
+            doc.image_en = None
+
+        if 'image_ru' in request.FILES:
+            doc.image_ru = request.FILES['image_ru']
+        elif request.POST.get('clear_image_ru') == '1':
+            doc.image_ru = None
+
         doc.save()
         messages.success(request, 'Resminama üstünlikli üýtgedildi!')
         return redirect('panel_documents')
@@ -1186,6 +1248,11 @@ def panel_library_book_add(request):
         elif 'cover_image' in request.FILES:
             book.cover_image = request.FILES['cover_image']
 
+        if 'image_en' in request.FILES:
+            book.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            book.image_ru = request.FILES['image_ru']
+
         book.save()
         messages.success(request, 'Neşir sany üstünlikli goşuldy!')
         return redirect('panel_library_books')
@@ -1213,6 +1280,7 @@ def panel_library_book_edit(request, pk):
 
         if 'pdf_file' in request.FILES:
             book.pdf_file = request.FILES['pdf_file']
+
         if request.POST.get('clear_image') == '1':
             book.image = None
             book.cover_image = None
@@ -1220,6 +1288,16 @@ def panel_library_book_edit(request, pk):
             book.image = request.FILES['image']
         elif 'cover_image' in request.FILES:
             book.cover_image = request.FILES['cover_image']
+
+        if request.POST.get('clear_image_en') == '1':
+            book.image_en = None
+        elif 'image_en' in request.FILES:
+            book.image_en = request.FILES['image_en']
+
+        if request.POST.get('clear_image_ru') == '1':
+            book.image_ru = None
+        elif 'image_ru' in request.FILES:
+            book.image_ru = request.FILES['image_ru']
 
         book.save()
 

@@ -326,16 +326,28 @@ def render_lang(obj, field_base, lang):
 def render_multilingual_image(obj, current_lang='tm'):
     """
     Returns the appropriate ImageField file object for the current language.
-    Usage: {% render_multilingual_image page current_lang as current_img %}
+    Supports both model instances and dictionary objects.
+    Usage: {% render_multilingual_image obj current_lang as current_img %}
     """
     if not obj:
         return None
+    lang = str(current_lang or 'tm').lower()
+    is_en = ('eng' in lang or lang == 'en')
+    is_ru = ('rus' in lang or lang == 'ru')
+
+    if isinstance(obj, dict):
+        if is_en and obj.get('image_en'):
+            return obj['image_en']
+        if is_ru and obj.get('image_ru'):
+            return obj['image_ru']
+        return obj.get('image') or obj.get('image_tm')
+
     if hasattr(obj, 'get_image'):
         return obj.get_image(current_lang)
-    lang = str(current_lang or 'tm').lower()
-    if ('eng' in lang or lang == 'en') and getattr(obj, 'image_en', None):
+
+    if is_en and getattr(obj, 'image_en', None):
         return obj.image_en
-    if ('rus' in lang or lang == 'ru') and getattr(obj, 'image_ru', None):
+    if is_ru and getattr(obj, 'image_ru', None):
         return obj.image_ru
     return getattr(obj, 'image', None)
 

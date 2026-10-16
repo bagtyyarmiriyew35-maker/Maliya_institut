@@ -10,27 +10,61 @@
   {% csrf_token %}
   <div class="panel-form-card">
 
-    <!-- Image (Surat) -->
+    <!-- 3-Language Image Upload Section -->
     <div class="panel-form-section">
-      <div class="panel-form-section-title"><i class="fa-solid fa-image"></i> Surat (Fotoğraf / Cover)</div>
-      {% if action == 'edit' and obj.image %}
-      <div class="current-file-info" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <i class="fa-solid fa-image" style="color: var(--panel-info);"></i>
-          Häzirki surat: <a href="{{ obj.image.url }}" target="_blank" style="color: #58a6ff;">surat gör</a>
+      <div class="panel-form-section-title"><i class="fa-solid fa-images" style="color:var(--panel-primary, #0a5c36);"></i> Täzelik Suratlary (TM, EN, RU)</div>
+      <p style="font-size: 13px; color: var(--panel-text-muted); margin-bottom: 14px;">
+        Her diliň özüne aýratyn surat ýükläp bilersiňiz. Eger Iňlisçe ýa-da Rusça surat saýlamasaňyz, awtomatiki Türkmençe surat görkeziler.
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <!-- TM -->
+        <div style="background: var(--panel-surface, #fff); border: 1px solid var(--panel-border, #e2e8f0); border-radius: 10px; padding: 12px;">
+          <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_tm.png" style="width: 16px; vertical-align: middle;"> Surat (TM / Esasy)</span>
+            <span class="badge-panel badge-success" style="font-size: 10px;">TM</span>
+          </div>
+          {% if action == 'edit' and obj.image %}
+          <div class="current-file-info" style="font-size: 12px; margin-bottom: 6px;">Häzirki: <a href="{{ obj.image.url }}" target="_blank">Gör</a></div>
+          <img src="{{ obj.image.url }}" class="file-preview-img" id="imgPrevNewsTM" style="margin-bottom:8px; max-height:100px; width:100%; border-radius:6px; object-fit:cover;">
+          <div style="margin-bottom:6px;"><label style="font-size:12px; color:var(--panel-danger); cursor:pointer;"><input type="checkbox" name="clear_image" value="1"> Aýyr</label></div>
+          {% else %}<img id="imgPrevNewsTM" class="file-preview-img" style="display:none; max-height:100px; width:100%; border-radius:6px; object-fit:cover; margin-bottom:8px;">{% endif %}
+          <div class="file-upload-area" style="padding: 12px 8px;">
+            <input type="file" name="image" accept="image/*" data-preview="imgPrevNewsTM">
+            <div class="file-upload-text" style="font-size: 11px;">TM surat</div>
+          </div>
         </div>
-        <label style="font-size: 13px; color: var(--panel-danger); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-          <input type="checkbox" name="clear_image" value="1"> Suraty aýyr (öçür)
-        </label>
-      </div>
-      <img src="{{ obj.image.url }}" class="file-preview-img" id="imgPreview" style="margin-bottom:12px; max-height: 220px; border-radius: 10px;">
-      {% else %}
-      <img id="imgPreview" class="file-preview-img" style="display:none; max-height: 220px; border-radius: 10px; margin-bottom: 12px;">
-      {% endif %}
-      <div class="file-upload-area">
-        <input type="file" name="image" accept="image/*" data-preview="imgPreview">
-        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-        <div class="file-upload-text">Surat saýlaň <strong>JPG, PNG, WEBP</strong></div>
+        <!-- EN -->
+        <div style="background: var(--panel-surface, #fff); border: 1px solid var(--panel-border, #e2e8f0); border-radius: 10px; padding: 12px;">
+          <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_uk.png" style="width: 16px; vertical-align: middle;"> Surat (EN)</span>
+            <span class="badge-panel badge-info" style="font-size: 10px;">EN</span>
+          </div>
+          {% if action == 'edit' and obj.image_en %}
+          <div class="current-file-info" style="font-size: 12px; margin-bottom: 6px;">Häzirki: <a href="{{ obj.image_en.url }}" target="_blank">Gör</a></div>
+          <img src="{{ obj.image_en.url }}" class="file-preview-img" id="imgPrevNewsEN" style="margin-bottom:8px; max-height:100px; width:100%; border-radius:6px; object-fit:cover;">
+          <div style="margin-bottom:6px;"><label style="font-size:12px; color:var(--panel-danger); cursor:pointer;"><input type="checkbox" name="clear_image_en" value="1"> Aýyr</label></div>
+          {% else %}<img id="imgPrevNewsEN" class="file-preview-img" style="display:none; max-height:100px; width:100%; border-radius:6px; object-fit:cover; margin-bottom:8px;">{% endif %}
+          <div class="file-upload-area" style="padding: 12px 8px;">
+            <input type="file" name="image_en" accept="image/*" data-preview="imgPrevNewsEN">
+            <div class="file-upload-text" style="font-size: 11px;">EN surat</div>
+          </div>
+        </div>
+        <!-- RU -->
+        <div style="background: var(--panel-surface, #fff); border: 1px solid var(--panel-border, #e2e8f0); border-radius: 10px; padding: 12px;">
+          <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_rus.png" style="width: 16px; vertical-align: middle;"> Surat (RU)</span>
+            <span class="badge-panel badge-danger" style="font-size: 10px;">RU</span>
+          </div>
+          {% if action == 'edit' and obj.image_ru %}
+          <div class="current-file-info" style="font-size: 12px; margin-bottom: 6px;">Häzirki: <a href="{{ obj.image_ru.url }}" target="_blank">Gör</a></div>
+          <img src="{{ obj.image_ru.url }}" class="file-preview-img" id="imgPrevNewsRU" style="margin-bottom:8px; max-height:100px; width:100%; border-radius:6px; object-fit:cover;">
+          <div style="margin-bottom:6px;"><label style="font-size:12px; color:var(--panel-danger); cursor:pointer;"><input type="checkbox" name="clear_image_ru" value="1"> Aýyr</label></div>
+          {% else %}<img id="imgPrevNewsRU" class="file-preview-img" style="display:none; max-height:100px; width:100%; border-radius:6px; object-fit:cover; margin-bottom:8px;">{% endif %}
+          <div class="file-upload-area" style="padding: 12px 8px;">
+            <input type="file" name="image_ru" accept="image/*" data-preview="imgPrevNewsRU">
+            <div class="file-upload-text" style="font-size: 11px;">RU surat</div>
+          </div>
+        </div>
       </div>
     </div>
 

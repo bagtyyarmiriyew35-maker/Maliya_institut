@@ -34,8 +34,13 @@
         
         <!-- PDF & Cover Card -->
         <div class="card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-            {% if book.display_image %}
+            {% render_multilingual_image book current_lang as book_img %}
+            {% if book_img %}
             <!-- Header Photo (Başlyk Suraty) -->
+            <div class="article-image-wrap" style="margin-bottom: 25px; text-align: center;">
+                <img src="{{ book_img.url }}" alt="{% render_lang book 'title' current_lang %}" style="max-width: 100%; height: auto; max-height: 650px; object-fit: contain; display: block; margin: 0 auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+            </div>
+            {% elif book.display_image %}
             <div class="article-image-wrap" style="margin-bottom: 25px; text-align: center;">
                 <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" style="max-width: 100%; height: auto; max-height: 650px; object-fit: contain; display: block; margin: 0 auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
             </div>
@@ -75,9 +80,12 @@
 
             <div class="journal-issues-grid">
                 {% for item in other_books %}
+                {% render_multilingual_image item current_lang as item_img %}
                 <a href="{% url 'library_book_detail' item.pk %}" class="journal-issue-card">
                     <div class="journal-issue-cover-wrap">
-                        {% if item.display_image %}
+                        {% if item_img %}
+                            <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="journal-issue-cover-img" loading="lazy">
+                        {% elif item.display_image %}
                             <img src="{{ item.display_image.url }}" alt="{% render_lang item 'title' current_lang %}" class="journal-issue-cover-img" loading="lazy">
                         {% else %}
                             <div class="journal-issue-cover-placeholder">

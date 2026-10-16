@@ -28,11 +28,18 @@
           <td>{{ forloop.counter }}</td>
           <td>
             <div style="display:flex;align-items:center;gap:8px;">
-              {% if slide.image %}
-              <img src="{{ slide.image.url }}" class="panel-table-thumb" alt="">
-              {% else %}
-              <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-image"></i></div>
-              {% endif %}
+              <div>
+                {% if slide.image %}
+                <img src="{{ slide.image.url }}" class="panel-table-thumb" alt="">
+                {% else %}
+                <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-image"></i></div>
+                {% endif %}
+                <div style="display:flex;gap:3px;margin-top:4px;">
+                  {% if slide.image %}<span class="badge-panel badge-success" style="font-size:9px;padding:1px 4px;">TM</span>{% endif %}
+                  {% if slide.image_en %}<span class="badge-panel badge-info" style="font-size:9px;padding:1px 4px;">EN</span>{% endif %}
+                  {% if slide.image_ru %}<span class="badge-panel badge-danger" style="font-size:9px;padding:1px 4px;">RU</span>{% endif %}
+                </div>
+              </div>
               {% if slide.video %}
               <span class="badge-panel badge-info" style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(88,166,255,0.18);color:#58a6ff;border:1px solid rgba(88,166,255,0.3);"><i class="fa-solid fa-video"></i> Wideo</span>
               {% endif %}

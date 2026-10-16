@@ -8,9 +8,10 @@
         <!-- Main Content -->
         <div class="main-detail-content">
             <article class="article-detail">
+                {% render_multilingual_image news_item current_lang as news_img %}
                 {% if news_item.video %}
                 <div class="article-media-wrapper" style="max-width: 850px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.12); background: #000; position: relative;">
-                    <video id="newsDetailVideo" controls playsinline preload="metadata" {% if news_item.image %}poster="{{ news_item.image.url }}"{% endif %} style="width: 100%; height: auto; max-height: 540px; display: block; margin: 0 auto;">
+                    <video id="newsDetailVideo" controls playsinline preload="metadata" {% if news_img %}poster="{{ news_img.url }}"{% endif %} style="width: 100%; height: auto; max-height: 540px; display: block; margin: 0 auto;">
                         <source src="{{ news_item.video.url }}" type="video/mp4">
                         <source src="{{ news_item.video.url }}" type="video/webm">
                         Siziň brauzeriňiz bu wideony goldamaýar.
@@ -20,9 +21,9 @@
                 <div class="article-media-wrapper" style="max-width: 850px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.12); aspect-ratio: 16/9; background: #000;">
                     <iframe src="{{ news_item.youtube_embed_url }}" style="width: 100%; height: 100%; border: 0;" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
-                {% elif news_item.image %}
+                {% elif news_img %}
                 <div class="article-img-wrapper" style="max-width: 750px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
-                    <img src="{{ news_item.image.url }}" alt="{% render_lang news_item 'title' current_lang %}" class="article-img" style="width: 100%; height: auto; display: block;">
+                    <img src="{{ news_img.url }}" alt="{% render_lang news_item 'title' current_lang %}" class="article-img" style="width: 100%; height: auto; display: block;">
                 </div>
                 {% endif %}
 
@@ -68,16 +69,17 @@
                 
                 <div class="news-grid">
                     {% for item in recent_news %}
+                    {% render_multilingual_image item current_lang as item_img %}
                     <a href="{% url 'news_detail' item.pk %}" class="news-card">
                         <div class="news-card-img-wrapper">
                             {% if item.video %}
-                            <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item.image %}poster="{{ item.image.url }}"{% endif %}>
+                            <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item_img %}poster="{{ item_img.url }}"{% endif %}>
                                 <source src="{{ item.video.url }}" type="video/mp4">
                                 <source src="{{ item.video.url }}" type="video/webm">
                             </video>
                             <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
-                            {% elif item.image %}
-                            <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                            {% elif item_img %}
+                            <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
                             {% if item.video_url %}
                             <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                             {% endif %}

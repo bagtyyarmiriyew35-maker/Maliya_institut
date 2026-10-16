@@ -13,16 +13,17 @@
     <div class="container">
         <div class="news-grid">
             {% for item in all_news %}
+            {% render_multilingual_image item current_lang as item_img %}
             <a href="{% url 'news_detail' item.pk %}" class="news-card">
                 <div class="news-card-img-wrapper">
                     {% if item.video %}
-                    <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item.image %}poster="{{ item.image.url }}"{% endif %}>
+                    <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item_img %}poster="{{ item_img.url }}"{% endif %}>
                         <source src="{{ item.video.url }}" type="video/mp4">
                         <source src="{{ item.video.url }}" type="video/webm">
                     </video>
                     <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
-                    {% elif item.image %}
-                    <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                    {% elif item_img %}
+                    <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
                     {% if item.video_url %}
                     <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                     {% endif %}

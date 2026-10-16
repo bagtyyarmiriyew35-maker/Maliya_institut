@@ -230,5 +230,81 @@ class MultilingualContentTestCase(TestCase):
         self.assertEqual(page_tm_only.get_image('eng').name, "pages/default_img.jpg")
         self.assertEqual(page_tm_only.get_image('rus').name, "pages/default_img.jpg")
 
+    def test_all_models_multilingual_images(self):
+        from website.models import SliderImage, BilimNews, Document, LibraryCategory, LibraryBook
+        from website.templatetags.website_tags import render_multilingual_image
+
+        # 1. SliderImage
+        slide = SliderImage.objects.create(
+            title_tm="Slide TM",
+            image="slides/tm.jpg",
+            image_en="slides/en.jpg",
+            image_ru="slides/ru.jpg",
+        )
+        self.assertEqual(slide.get_image('tm').name, "slides/tm.jpg")
+        self.assertEqual(slide.get_image('eng').name, "slides/en.jpg")
+        self.assertEqual(slide.get_image('rus').name, "slides/ru.jpg")
+        self.assertEqual(render_multilingual_image(slide, 'eng').name, "slides/en.jpg")
+
+        # 2. News
+        news = News.objects.create(
+            title_tm="News TM",
+            content_tm="Content TM",
+            image="news/tm.jpg",
+            image_en="news/en.jpg",
+        )
+        self.assertEqual(news.get_image('tm').name, "news/tm.jpg")
+        self.assertEqual(news.get_image('eng').name, "news/en.jpg")
+        # RU fallback to TM
+        self.assertEqual(news.get_image('rus').name, "news/tm.jpg")
+
+        # 3. BilimNews
+        bilim = BilimNews.objects.create(
+            title_tm="Bilim TM",
+            image="bilim/tm.jpg",
+            image_ru="bilim/ru.jpg",
+        )
+        self.assertEqual(bilim.get_image('tm').name, "bilim/tm.jpg")
+        self.assertEqual(bilim.get_image('rus').name, "bilim/ru.jpg")
+        # EN fallback to TM
+        self.assertEqual(bilim.get_image('eng').name, "bilim/tm.jpg")
+
+        # 4. Document
+        doc = Document.objects.create(
+            title_tm="Doc TM",
+            category="Hasabat",
+            image="docs/tm.jpg",
+            image_en="docs/en.jpg",
+            image_ru="docs/ru.jpg",
+        )
+        self.assertEqual(doc.get_image('tm').name, "docs/tm.jpg")
+        self.assertEqual(doc.get_image('eng').name, "docs/en.jpg")
+        self.assertEqual(doc.get_image('rus').name, "docs/ru.jpg")
+
+        # 5. LibraryBook
+        cat = LibraryCategory.objects.create(name_tm="Žurnallar")
+        book = LibraryBook.objects.create(
+            category=cat,
+            title_tm="Book TM",
+            image="books/tm.jpg",
+            image_en="books/en.jpg",
+            image_ru="books/ru.jpg",
+        )
+        self.assertEqual(book.get_image('tm').name, "books/tm.jpg")
+        self.assertEqual(book.get_image('eng').name, "books/en.jpg")
+        self.assertEqual(book.get_image('rus').name, "books/ru.jpg")
+        self.assertEqual(book.display_image.name, "books/tm.jpg")
+
+        # 6. Dictionary object (e.g. recent_contents)
+        d_item = {
+            'image_tm': 'recent/tm.jpg',
+            'image_en': 'recent/en.jpg',
+            'image_ru': 'recent/ru.jpg',
+        }
+        self.assertEqual(render_multilingual_image(d_item, 'tm'), 'recent/tm.jpg')
+        self.assertEqual(render_multilingual_image(d_item, 'eng'), 'recent/en.jpg')
+        self.assertEqual(render_multilingual_image(d_item, 'rus'), 'recent/ru.jpg')
+
+
 
 

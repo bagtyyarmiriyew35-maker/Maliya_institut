@@ -30,6 +30,11 @@
               {% if item.video or item.video_url %}
               <span class="badge-panel badge-info" style="position: absolute; bottom: 2px; right: 2px; font-size: 9px; padding: 1px 4px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);"><i class="fa-solid fa-play"></i></span>
               {% endif %}
+              <div style="display:flex;gap:3px;margin-top:4px;">
+                {% if item.image %}<span class="badge-panel badge-success" style="font-size:9px;padding:1px 4px;">TM</span>{% endif %}
+                {% if item.image_en %}<span class="badge-panel badge-info" style="font-size:9px;padding:1px 4px;">EN</span>{% endif %}
+                {% if item.image_ru %}<span class="badge-panel badge-danger" style="font-size:9px;padding:1px 4px;">RU</span>{% endif %}
+              </div>
             </div>
           </td>
           <td>

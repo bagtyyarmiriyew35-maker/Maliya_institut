@@ -34,9 +34,12 @@
         <!-- 4-column Grid matching Image 3 -->
         <div class="journal-issues-grid">
             {% for book in books %}
+            {% render_multilingual_image book current_lang as book_img %}
             <a href="{% url 'library_book_detail' book.pk %}" class="journal-issue-card">
                 <div class="journal-issue-cover-wrap">
-                    {% if book.display_image %}
+                    {% if book_img %}
+                    <img src="{{ book_img.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-issue-cover-img" loading="lazy">
+                    {% elif book.display_image %}
                     <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-issue-cover-img" loading="lazy">
                     {% else %}
                     <div class="journal-issue-cover-placeholder">

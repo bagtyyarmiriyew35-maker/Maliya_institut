@@ -30,7 +30,7 @@ Türkmen döwlet maliýe institutynyň resmi web portaly. Bu taslama, ýokary ok
 ### Backend
 *   **Python** - Esasy programma dili.
 *   **Django** - Güýçli, ygtybarly we çalt işçi gurşaw (Web Framework).
-*   **SQLite** - Gurluşly maglumatlar binýady (Ösüş gurşawy üçin).
+*   **PostgreSQL** - Döwrebap we kuwwatly gurluşly maglumatlar binýady (Database).
 
 ### Frontend
 *   **Vanilla HTML5 & CSS3** - Ösen grid, flexbox we premium wizual dizaýn ulgamy.
@@ -95,7 +95,12 @@ Projenin canlı ortamda (Production) çalıştırılması sırasında güvenlik 
 DEBUG=False
 SECRET_KEY=django-insecure-your-secret-key-here
 ALLOWED_HOSTS=127.0.0.1,localhost,yourdomain.com
-DB_NAME=db.sqlite3
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=maliya_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=127.0.0.1
+DB_PORT=33296
 ```
 
-> **Önemli:** `.gitignore` dosyası `.env` dosyasını ve yerel veritabanı dosyası olan `db.sqlite3`'ü GitHub'a yüklemeyi otomatik olarak engeller. Bu sayede hassas şifreleriniz ve yerel test verileriniz güvende kalır.
+> **Önemli:** `.gitignore` dosyası `.env` dosyasını GitHub'a yüklemeyi otomatik olarak engeller. Bu sayede hassas şifreleriniz ve veritabanı bağlantı bilgileriniz güvende kalır.

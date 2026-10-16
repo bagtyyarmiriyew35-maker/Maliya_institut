@@ -43,9 +43,10 @@
                     </a>
                 </div>
             </div>
-            {% elif document.image %}
+            {% render_multilingual_image document current_lang as doc_img %}
+            {% elif doc_img %}
             <div class="article-image-wrap" style="text-align: center;">
-                <img src="{{ document.image.url }}" alt="{% render_lang document 'title' current_lang %}" style="max-width: 100%; height: auto; max-height: 700px; object-fit: contain; display: block; margin: 0 auto; border-radius: 8px;">
+                <img src="{{ doc_img.url }}" alt="{% render_lang document 'title' current_lang %}" style="max-width: 100%; height: auto; max-height: 700px; object-fit: contain; display: block; margin: 0 auto; border-radius: 8px;">
             </div>
             {% else %}
             <div style="padding: 30px; text-align: center; color: #64748b;">
@@ -62,9 +63,12 @@
             </h3>
             <div class="reports-grid">
                 {% for doc in recent_documents %}
+                {% render_multilingual_image doc current_lang as recent_doc_img %}
                 <a href="{% url 'document_detail' doc.pk %}" class="report-card">
                     <div class="report-card-media">
-                        {% if doc.image %}
+                        {% if recent_doc_img %}
+                            <img src="{{ recent_doc_img.url }}" alt="{% render_lang doc 'title' current_lang %}">
+                        {% elif doc.image %}
                             <img src="{{ doc.image.url }}" alt="{% render_lang doc 'title' current_lang %}">
                         {% else %}
                             <div class="report-card-placeholder">

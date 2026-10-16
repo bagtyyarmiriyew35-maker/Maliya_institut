@@ -53,7 +53,10 @@
                 <div class="section-divider left mb-3"></div>
                 
                 <div class="dean-avatar-wrapper">
-                    {% if faculty.image %}
+                    {% render_multilingual_image faculty current_lang as fac_img %}
+                    {% if fac_img %}
+                    <img src="{{ fac_img.url }}" alt="Dean" class="dean-img">
+                    {% elif faculty.image %}
                     <img src="{{ faculty.image.url }}" alt="Dean" class="dean-img">
                     {% else %}
                     <div class="dean-img-placeholder"><i class="fa-solid fa-user-tie"></i></div>

@@ -37,7 +37,12 @@
                     {% endif %}
                 </div>
 
-                {% if news_item.display_image %}
+                {% render_multilingual_image news_item current_lang as news_img %}
+                {% if news_img %}
+                <div class="article-img-wrapper" style="width: 100%; max-height: 480px; overflow: hidden; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
+                    <img src="{{ news_img.url }}" alt="{% render_lang news_item 'title' current_lang %}" class="article-img" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                {% elif news_item.display_image %}
                 <div class="article-img-wrapper" style="width: 100%; max-height: 480px; overflow: hidden; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
                     <img src="{{ news_item.display_image }}" alt="{% render_lang news_item 'title' current_lang %}" class="article-img" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                 </div>
@@ -77,9 +82,12 @@
                 
                 <div class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
                     {% for item in other_news %}
+                    {% render_multilingual_image item current_lang as other_img %}
                     <a href="{% url 'bilim_news_detail' item.pk %}" class="news-card" style="text-decoration: none;">
                         <div class="news-card-img-wrapper" style="height: 180px; overflow: hidden; position: relative;">
-                            {% if item.display_image %}
+                            {% if other_img %}
+                            <img src="{{ other_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% elif item.display_image %}
                             <img src="{{ item.display_image }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img" style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
                             <div class="news-card-img-placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; background: #f1f5f9;"><i class="fa-solid fa-newspaper"></i></div>

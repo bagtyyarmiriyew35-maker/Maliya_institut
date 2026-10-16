@@ -49,11 +49,18 @@
         <tr>
           <td>{{ forloop.counter }}</td>
           <td>
-            {% if item.display_image %}
-            <img src="{{ item.display_image }}" class="panel-table-thumb" alt="" style="width: 54px; height: 38px; object-fit: cover; border-radius: 6px;">
-            {% else %}
-            <div class="panel-table-thumb-placeholder" style="width: 54px; height: 38px; border-radius: 6px;"><i class="fa-solid fa-newspaper"></i></div>
-            {% endif %}
+            <div>
+              {% if item.display_image %}
+              <img src="{{ item.display_image }}" class="panel-table-thumb" alt="" style="width: 54px; height: 38px; object-fit: cover; border-radius: 6px;">
+              {% else %}
+              <div class="panel-table-thumb-placeholder" style="width: 54px; height: 38px; border-radius: 6px;"><i class="fa-solid fa-newspaper"></i></div>
+              {% endif %}
+              <div style="display:flex;gap:3px;margin-top:4px;">
+                {% if item.image %}<span class="badge-panel badge-success" style="font-size:9px;padding:1px 4px;">TM</span>{% endif %}
+                {% if item.image_en %}<span class="badge-panel badge-info" style="font-size:9px;padding:1px 4px;">EN</span>{% endif %}
+                {% if item.image_ru %}<span class="badge-panel badge-danger" style="font-size:9px;padding:1px 4px;">RU</span>{% endif %}
+              </div>
+            </div>
           </td>
           <td style="max-width: 320px;">
             <strong style="color: #1e293b; display: block; line-height: 1.35;">{{ item.title_tm }}</strong>

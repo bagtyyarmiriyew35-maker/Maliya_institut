@@ -33,7 +33,10 @@ def convert_image_to_webp(field_file, max_width=1920, quality=82):
     ext = os.path.splitext(filename)[1].lower()
 
     # Determine if this is a newly uploaded file
-    is_new_upload = hasattr(field_file, 'file') and isinstance(field_file.file, UploadedFile)
+    try:
+        is_new_upload = hasattr(field_file, 'file') and isinstance(field_file.file, UploadedFile)
+    except (FileNotFoundError, OSError):
+        return None
 
     # If already webp and not a raw new upload needing resize/compression, skip
     if ext == '.webp' and not is_new_upload:

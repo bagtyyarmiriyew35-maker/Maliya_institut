@@ -207,5 +207,28 @@ class MultilingualContentTestCase(TestCase):
         self.client.get(reverse('set_language') + '?lang=ru')
         self.assertEqual(self.client.session['lang'], 'rus')
 
+    def test_multilingual_page_images(self):
+        page = Page.objects.create(
+            title_tm="Institut Taryhy",
+            slug="institut-taryhy",
+            section="institut",
+            image="pages/tm_img.jpg",
+            image_en="pages/en_img.jpg",
+            image_ru="pages/ru_img.jpg",
+        )
+        self.assertEqual(page.get_image('tm').name, "pages/tm_img.jpg")
+        self.assertEqual(page.get_image('eng').name, "pages/en_img.jpg")
+        self.assertEqual(page.get_image('rus').name, "pages/ru_img.jpg")
+
+        # Test fallback if EN or RU not uploaded
+        page_tm_only = Page.objects.create(
+            title_tm="Fallback Test",
+            slug="fallback-test",
+            section="institut",
+            image="pages/default_img.jpg",
+        )
+        self.assertEqual(page_tm_only.get_image('eng').name, "pages/default_img.jpg")
+        self.assertEqual(page_tm_only.get_image('rus').name, "pages/default_img.jpg")
+
 
 

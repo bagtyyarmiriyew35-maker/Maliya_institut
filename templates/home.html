@@ -436,8 +436,9 @@
                     <div class="recent-content-slide-item">
                         <a href="{{ item.url }}" class="report-card" draggable="false">
                             <div class="report-card-media">
-                                {% if item.image %}
-                                    <img src="{{ item.image.url }}" alt="{% render_lang item 'title' current_lang %}" loading="lazy" draggable="false">
+                                {% render_multilingual_image item current_lang as item_img %}
+                                {% if item_img %}
+                                    <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" loading="lazy" draggable="false">
                                 {% else %}
                                     <div class="report-card-placeholder">
                                         <i class="{{ item.icon }}"></i>

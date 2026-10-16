@@ -43,7 +43,10 @@ def get_recent_contents(limit=10):
 
     items = []
     for p in pages:
-        img = p.image if p.image else (p.parent.image if p.parent and p.parent.image else None)
+        img_tm = p.image or (p.parent.image if p.parent else None)
+        img_en = p.image_en or (p.parent.image_en if p.parent else None) or img_tm
+        img_ru = p.image_ru or (p.parent.image_ru if p.parent else None) or img_tm
+
         if p.parent:
             badge_tm = p.parent.title_tm
             badge_en = p.parent.title_en or p.parent.title_tm
@@ -66,7 +69,10 @@ def get_recent_contents(limit=10):
             'badge_en': badge_en,
             'badge_ru': badge_ru,
             'url': f'/p/{p.slug}/',
-            'image': img,
+            'image': img_tm,
+            'image_tm': img_tm,
+            'image_en': img_en,
+            'image_ru': img_ru,
             'icon': icon,
             'date': getattr(p, 'created_at', None),
             'sort_date': getattr(p, 'created_at', None),

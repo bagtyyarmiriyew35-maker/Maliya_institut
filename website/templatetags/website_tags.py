@@ -286,6 +286,20 @@ def render_lang(obj, field_base, lang):
     else:
         lang_suffix = 'tm'
 
+    if field_base == 'image':
+        lang_code = str(lang or 'tm').strip().lower()
+        if hasattr(obj, 'get_image'):
+            img = obj.get_image(lang_code)
+            return img.url if img else ""
+        if isinstance(obj, dict):
+            return obj.get(f"image_{lang_suffix}") or obj.get("image_tm") or obj.get("image") or ""
+        if ('eng' in lang_code or lang_code == 'en') and getattr(obj, 'image_en', None):
+            return obj.image_en.url
+        if ('rus' in lang_code or lang_code == 'ru') and getattr(obj, 'image_ru', None):
+            return obj.image_ru.url
+        img = getattr(obj, 'image', None)
+        return img.url if img else ""
+
     attr_name = f"{field_base}_{lang_suffix}"
 
     val = None
@@ -306,6 +320,24 @@ def render_lang(obj, field_base, lang):
     if val and '<' in str(val):
         return mark_safe(val)
     return val or ""
+
+
+@register.simple_tag
+def render_multilingual_image(obj, current_lang='tm'):
+    """
+    Returns the appropriate ImageField file object for the current language.
+    Usage: {% render_multilingual_image page current_lang as current_img %}
+    """
+    if not obj:
+        return None
+    if hasattr(obj, 'get_image'):
+        return obj.get_image(current_lang)
+    lang = str(current_lang or 'tm').lower()
+    if ('eng' in lang or lang == 'en') and getattr(obj, 'image_en', None):
+        return obj.image_en
+    if ('rus' in lang or lang == 'ru') and getattr(obj, 'image_ru', None):
+        return obj.image_ru
+    return getattr(obj, 'image', None)
 
 @register.filter
 def get_dict_item(dictionary, key):

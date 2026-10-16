@@ -29,11 +29,21 @@ class Page(models.Model):
     content_ru = models.TextField(blank=True, verbose_name="Content (Russian)")
     
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='subpages', verbose_name="Parent Page")
-    image = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Page Image")
+    image = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (TM / Esasy)")
+    image_en = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (English)")
+    image_ru = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (Russian)")
     pdf_file = models.FileField(upload_to='pages/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
     order = models.IntegerField(default=0, verbose_name="Order")
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Döredilen senesi")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Üýtgedilen senesi")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         ordering = ['order', 'title_tm']
@@ -179,7 +189,17 @@ class Faculty(models.Model):
     dean_name_en = models.CharField(max_length=255, blank=True, verbose_name="Dean Name (English)")
     dean_name_ru = models.CharField(max_length=255, blank=True, verbose_name="Dean Name (Russian)")
     
-    image = models.ImageField(upload_to='faculties/', blank=True, null=True)
+    image = models.ImageField(upload_to='faculties/', blank=True, null=True, verbose_name="Surat (TM / Esasy)")
+    image_en = models.ImageField(upload_to='faculties/', blank=True, null=True, verbose_name="Surat (EN)")
+    image_ru = models.ImageField(upload_to='faculties/', blank=True, null=True, verbose_name="Surat (RU)")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
 
     class Meta:
         verbose_name = "Faculty"

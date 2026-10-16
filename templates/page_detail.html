@@ -20,9 +20,10 @@
         <!-- Main Content Column -->
         <div class="main-detail-content">
             <article class="article-detail">
-                {% if page.image %}
+                {% render_multilingual_image page current_lang as current_page_img %}
+                {% if current_page_img %}
                 <div class="article-image-wrap" style="margin-bottom:24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.08);background:#f8f9fa;text-align:center;">
-                    <img src="{{ page.image.url }}" alt="{% render_lang page 'title' current_lang %}" style="max-width:100%;height:auto;max-height:800px;object-fit:contain;display:block;margin:0 auto;">
+                    <img src="{{ current_page_img.url }}" alt="{% render_lang page 'title' current_lang %}" style="max-width:100%;height:auto;max-height:800px;object-fit:contain;display:block;margin:0 auto;">
                 </div>
                 {% endif %}
 

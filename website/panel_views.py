@@ -549,6 +549,10 @@ def panel_page_add(request):
         )
         if 'image' in request.FILES:
             page.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            page.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            page.image_ru = request.FILES['image_ru']
         if 'pdf_file' in request.FILES:
             page.pdf_file = request.FILES['pdf_file']
         page.save()
@@ -596,10 +600,24 @@ def panel_page_edit(request, pk):
             if parent_id:
                 page.parent = Page.objects.filter(pk=parent_id).first()
         page.order = int(request.POST.get('order', 0) or 0)
+        
+        # TM Image
         if 'image' in request.FILES:
             page.image = request.FILES['image']
         elif request.POST.get('clear_image') == '1':
             page.image = None
+
+        # EN Image
+        if 'image_en' in request.FILES:
+            page.image_en = request.FILES['image_en']
+        elif request.POST.get('clear_image_en') == '1':
+            page.image_en = None
+
+        # RU Image
+        if 'image_ru' in request.FILES:
+            page.image_ru = request.FILES['image_ru']
+        elif request.POST.get('clear_image_ru') == '1':
+            page.image_ru = None
 
         if 'pdf_file' in request.FILES:
             page.pdf_file = request.FILES['pdf_file']
@@ -658,6 +676,10 @@ def panel_faculty_add(request):
         )
         if 'image' in request.FILES:
             faculty.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            faculty.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            faculty.image_ru = request.FILES['image_ru']
         faculty.save()
         messages.success(request, 'Fakultet üstünlikli goşuldy!')
         return redirect('panel_faculties')
@@ -677,8 +699,22 @@ def panel_faculty_edit(request, pk):
         faculty.dean_name_tm = request.POST.get('dean_name_tm', '')
         faculty.dean_name_en = request.POST.get('dean_name_en', '')
         faculty.dean_name_ru = request.POST.get('dean_name_ru', '')
+        
         if 'image' in request.FILES:
             faculty.image = request.FILES['image']
+        elif request.POST.get('clear_image') == '1':
+            faculty.image = None
+
+        if 'image_en' in request.FILES:
+            faculty.image_en = request.FILES['image_en']
+        elif request.POST.get('clear_image_en') == '1':
+            faculty.image_en = None
+
+        if 'image_ru' in request.FILES:
+            faculty.image_ru = request.FILES['image_ru']
+        elif request.POST.get('clear_image_ru') == '1':
+            faculty.image_ru = None
+
         faculty.save()
         messages.success(request, 'Fakultet üstünlikli üýtgedildi!')
         return redirect('panel_faculties')

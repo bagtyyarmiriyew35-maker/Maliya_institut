@@ -12,7 +12,7 @@ def get_recent_contents(limit=10):
     - News (News, BilimNews)
     - FAQ / Sorag-jogap (section='sorag_jogap')
     """
-    pages = list(Page.objects.exclude(section='sorag_jogap').order_by('-created_at', '-id')[:limit])
+    pages = list(Page.objects.select_related('parent').exclude(section='sorag_jogap').order_by('-created_at', '-id')[:limit])
     docs = list(Document.objects.all().order_by('-uploaded_at', '-id')[:limit])
 
     section_icon_map = {
@@ -24,13 +24,35 @@ def get_recent_contents(limit=10):
         'dalasgar': 'fa-solid fa-user-graduate',
     }
 
+    section_names = {
+        'institut': {'tm': 'Institut', 'en': 'Institute', 'ru': 'Институт'},
+        'ylym': {'tm': 'Ylym', 'en': 'Science', 'ru': 'Наука'},
+        'olimpiada': {'tm': 'Olimpiadalar', 'en': 'Olympiads', 'ru': 'Олимпиады'},
+        'baslesikler': {'tm': 'Bäsleşikler', 'en': 'Contests', 'ru': 'Конкурсы'},
+        'halkara': {'tm': 'Halkara hyzmatdaşlyk', 'en': 'International', 'ru': 'Международное'},
+        'dalasgar': {'tm': 'Dalaşgär', 'en': 'Applicant', 'ru': 'Абитуриент'},
+        'sorag_jogap': {'tm': 'Sorag-jogap', 'en': 'FAQ', 'ru': 'Вопросы и ответы'},
+    }
+
+    doc_cat_names = {
+        'Kitaphana': {'tm': 'Kitaphana', 'en': 'Library', 'ru': 'Библиотека'},
+        'Sanly Bilim': {'tm': 'Sanly Bilim', 'en': 'Digital Education', 'ru': 'Цифровое образование'},
+        'Hasabat': {'tm': 'Hepdelik Hasabat', 'en': 'Weekly Report', 'ru': 'Еженедельный отчет'},
+        'Maksatnama': {'tm': 'Maksatnamalar', 'en': 'Programs', 'ru': 'Программы'},
+    }
+
     items = []
     for p in pages:
         img = p.image if p.image else (p.parent.image if p.parent and p.parent.image else None)
         if p.parent:
-            badge = p.parent.title_tm
+            badge_tm = p.parent.title_tm
+            badge_en = p.parent.title_en or p.parent.title_tm
+            badge_ru = p.parent.title_ru or p.parent.title_tm
         else:
-            badge = p.get_section_display_name()
+            s_dict = section_names.get(p.section, {})
+            badge_tm = s_dict.get('tm', p.get_section_display_name())
+            badge_en = s_dict.get('en', badge_tm)
+            badge_ru = s_dict.get('ru', badge_tm)
 
         icon = section_icon_map.get(p.section, 'fa-solid fa-file-lines')
 
@@ -39,23 +61,34 @@ def get_recent_contents(limit=10):
             'title_tm': p.title_tm,
             'title_en': p.title_en or p.title_tm,
             'title_ru': p.title_ru or p.title_tm,
+            'badge': badge_tm,
+            'badge_tm': badge_tm,
+            'badge_en': badge_en,
+            'badge_ru': badge_ru,
             'url': f'/p/{p.slug}/',
             'image': img,
-            'badge': badge,
             'icon': icon,
             'date': getattr(p, 'created_at', None),
             'sort_date': getattr(p, 'created_at', None),
         })
 
     for d in docs:
+        c_dict = doc_cat_names.get(d.category, {})
+        d_badge_tm = c_dict.get('tm', d.get_category_display() or 'Resminama')
+        d_badge_en = c_dict.get('en', 'Document')
+        d_badge_ru = c_dict.get('ru', 'Документ')
+
         items.append({
             'type': 'document',
             'title_tm': d.title_tm,
             'title_en': d.title_en or d.title_tm,
             'title_ru': d.title_ru or d.title_tm,
+            'badge': d_badge_tm,
+            'badge_tm': d_badge_tm,
+            'badge_en': d_badge_en,
+            'badge_ru': d_badge_ru,
             'url': f'/document/{d.pk}/',
             'image': d.image,
-            'badge': d.get_category_display() or 'Resminama',
             'icon': 'fa-solid fa-file-pdf',
             'date': d.uploaded_at,
             'sort_date': d.uploaded_at,
@@ -85,16 +118,12 @@ def home(request):
     featured_category = library_categories.first()
     featured_books = []
     if featured_category:
-        featured_books = list(featured_category.books.all().order_by('id'))
+        featured_books = list(featured_category.books.all().order_by('-uploaded_at', '-id')[:6])
     if not featured_books:
-        featured_books = list(LibraryBook.objects.all().order_by('id')[:10])
+        featured_books = list(LibraryBook.objects.all().order_by('-uploaded_at', '-id')[:6])
     
     # Bilim.tm-den iň soňky 9 sany täzelik
     bilim_news = BilimNews.objects.all().order_by('-published_date', '-id')[:9]
-    if not bilim_news.exists():
-        from .bilim_scraper import sync_bilim_news
-        sync_bilim_news(9)
-        bilim_news = BilimNews.objects.all().order_by('-published_date', '-id')[:9]
 
     context = {
         'sliders': sliders,
@@ -231,11 +260,17 @@ def contact(request):
 def set_language(request):
     """
     Switch language code via request parameter.
-    Valid choices: tm, eng, rus
+    Valid choices: tm, eng, rus (also accepts en, ru)
     """
-    lang = request.GET.get('lang', 'tm')
-    if lang in ['tm', 'eng', 'rus']:
-        request.session['lang'] = lang
+    raw_lang = str(request.GET.get('lang', 'tm')).strip().lower()
+    if raw_lang in ['eng', 'en']:
+        target_lang = 'eng'
+    elif raw_lang in ['rus', 'ru']:
+        target_lang = 'rus'
+    else:
+        target_lang = 'tm'
+
+    request.session['lang'] = target_lang
         
     # Redirect back to the referrer or homepage
     referrer = request.META.get('HTTP_REFERER', '/')

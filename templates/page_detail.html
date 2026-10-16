@@ -346,7 +346,7 @@
 
                                         {% if sub.subpages.exists %}
                                             <div class="subpage-card-badge">
-                                                <i class="fa-solid fa-diagram-project"></i> {{ sub.subpages.count }} sany bölüm
+                                                <i class="fa-solid fa-diagram-project"></i> {{ sub.subpages.count }} {% if current_lang == 'eng' %}sections{% elif current_lang == 'rus' %}разделов{% else %}sany bölüm{% endif %}
                                             </div>
                                         {% endif %}
                                     </div>

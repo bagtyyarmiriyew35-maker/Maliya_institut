@@ -8,11 +8,6 @@
     <title>Türkmen Döwlet Maliýe Instituty</title>
     <link rel="icon" href="/media/loga.png" type="image/png">
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="/static/css/fontawesome.min.css">
     
@@ -129,7 +124,7 @@
         <div class="container footer-grid">
             <div class="footer-col brand-col">
                 <h3 class="footer-title">TDMai</h3>
-                <p class="footer-description">Türkmenistanyň ykdysady we maliýe pudaklary üçin ýokary derejeli hünärmenleri taýýarlaýan öňdebaryjy ýokary okuw mekdebi.</p>
+                <p class="footer-description">{% ui_label 'footer_desc' current_lang %}</p>
                 <div class="social-links">
                     {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" target="_blank"><i class="fa-brands fa-facebook"></i></a>{% endif %}
                     {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank"><i class="fa-brands fa-twitter"></i></a>{% endif %}
@@ -177,7 +172,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-container">
-                <p>&copy; {% ui_label 'all_rights_reserved' current_lang %} - 2026. Türkmen Döwlet Maliýe Instituty.</p>
+                <p>&copy; {% ui_label 'all_rights_reserved' current_lang %} - 2026. {% ui_label 'institute_name' current_lang %}.</p>
             </div>
         </div>
     </footer>

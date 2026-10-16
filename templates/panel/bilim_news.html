@@ -11,7 +11,10 @@
     </p>
   </div>
   <div style="display: flex; gap: 10px;">
-    <a href="{% url 'panel_bilim_news_sync' %}" class="btn-panel btn-panel-primary" id="btnSyncNews" onclick="this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Çekilýär...';">
+    <a href="{% url 'panel_bilim_news_add' %}" class="btn-panel btn-panel-primary">
+      <i class="fa-solid fa-plus"></i> Täze Habar Goş
+    </a>
+    <a href="{% url 'panel_bilim_news_sync' %}" class="btn-panel btn-panel-ghost" id="btnSyncNews" onclick="this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Çekilýär...';">
       <i class="fa-solid fa-arrows-rotate"></i> Bilim.tm-den Täzele
     </a>
   </div>

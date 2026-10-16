@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Admin Panel{% endblock %} — TDMai</title>
   <link rel="icon" href="/media/loga.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/fontawesome.min.css">
   <link rel="stylesheet" href="/static/css/panel.css">
   {% block extra_css %}{% endblock %}
@@ -168,6 +166,12 @@
       editor.on('keyup', function () { editor.save(); });
     }
   });
+
+  document.addEventListener('submit', function () {
+    if (typeof tinymce !== 'undefined') {
+      tinymce.triggerSave();
+    }
+  }, true);
 </script>
 <script src="/static/js/panel.js"></script>
 {% block extra_js %}{% endblock %}

@@ -117,3 +117,95 @@ class WebsiteViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'library/book_detail.html')
 
 
+class MultilingualContentTestCase(TestCase):
+    def setUp(self):
+        self.news = News.objects.create(
+            title_tm="Türkmençe Sözbasy",
+            title_en="English Title",
+            title_ru="Русский Заголовок",
+            content_tm="Türkmençe doly mazmun.",
+            content_en="English full content.",
+            content_ru="Русское полное содержание."
+        )
+        self.faculty = Faculty.objects.create(
+            name_tm="Maliýe Fakulteti",
+            name_en="Finance Faculty",
+            name_ru="Финансовый Факультет",
+            description_tm="Türkmençe beýany.",
+            description_en="English description.",
+            description_ru="Русское описание.",
+            dean_name_tm="Amanow A.",
+            dean_name_en="Amanov A.",
+            dean_name_ru="Аманов А."
+        )
+
+    def test_render_lang_tag(self):
+        from website.templatetags.website_tags import render_lang, ui_label
+
+        # Test TM
+        self.assertEqual(render_lang(self.news, 'title', 'tm'), "Türkmençe Sözbasy")
+        self.assertEqual(render_lang(self.news, 'content', 'tm'), "Türkmençe doly mazmun.")
+
+        # Test EN (both 'eng' and 'en')
+        self.assertEqual(render_lang(self.news, 'title', 'eng'), "English Title")
+        self.assertEqual(render_lang(self.news, 'title', 'en'), "English Title")
+        self.assertEqual(render_lang(self.news, 'content', 'eng'), "English full content.")
+
+        # Test RU (both 'rus' and 'ru')
+        self.assertEqual(render_lang(self.news, 'title', 'rus'), "Русский Заголовок")
+        self.assertEqual(render_lang(self.news, 'title', 'ru'), "Русский Заголовок")
+        self.assertEqual(render_lang(self.news, 'content', 'rus'), "Русское полное содержание.")
+
+        # Test UI labels
+        self.assertEqual(ui_label('news', 'tm'), "Täzelikler")
+        self.assertEqual(ui_label('news', 'eng'), "News")
+        self.assertEqual(ui_label('news', 'rus'), "Новости")
+        self.assertEqual(ui_label('home', 'en'), "Home")
+        self.assertEqual(ui_label('home', 'ru'), "Главная")
+
+    def test_render_lang_fallback_to_turkmen(self):
+        from website.templatetags.website_tags import render_lang
+
+        # An item with only TM filled
+        item = News.objects.create(
+            title_tm="Diňe Türkmençe",
+            title_en="",
+            title_ru="",
+            content_tm="Mazmuny diňe türkmençe.",
+            content_en="",
+            content_ru=""
+        )
+
+        # In English and Russian, it must fall back to Turkmen rather than being blank
+        self.assertEqual(render_lang(item, 'title', 'eng'), "Diňe Türkmençe")
+        self.assertEqual(render_lang(item, 'title', 'rus'), "Diňe Türkmençe")
+        self.assertEqual(render_lang(item, 'content', 'eng'), "Mazmuny diňe türkmençe.")
+        self.assertEqual(render_lang(item, 'content', 'rus'), "Mazmuny diňe türkmençe.")
+
+    def test_frontend_switches_content_based_on_language(self):
+        # 1. Default (TM)
+        res_tm = self.client.get(reverse('news_detail', args=[self.news.pk]))
+        self.assertContains(res_tm, "Türkmençe Sözbasy")
+
+        # 2. Switch to English
+        self.client.get(reverse('set_language') + '?lang=eng')
+        res_en = self.client.get(reverse('news_detail', args=[self.news.pk]))
+        self.assertContains(res_en, "English Title")
+        self.assertContains(res_en, "English full content.")
+
+        # 3. Switch to Russian
+        self.client.get(reverse('set_language') + '?lang=rus')
+        res_ru = self.client.get(reverse('news_detail', args=[self.news.pk]))
+        self.assertContains(res_ru, "Русский Заголовок")
+        self.assertContains(res_ru, "Русское полное содержание.")
+
+        # 4. Switch to English using ?lang=en (short code)
+        self.client.get(reverse('set_language') + '?lang=en')
+        self.assertEqual(self.client.session['lang'], 'eng')
+
+        # 5. Switch to Russian using ?lang=ru (short code)
+        self.client.get(reverse('set_language') + '?lang=ru')
+        self.assertEqual(self.client.session['lang'], 'rus')
+
+
+

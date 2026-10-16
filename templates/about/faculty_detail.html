@@ -20,7 +20,12 @@
             </div>
             
             <div class="faculty-body">
-                {% render_lang faculty 'description' current_lang|linebreaks %}
+                {% render_lang faculty 'description' current_lang as fac_desc %}
+                {% if '<' in fac_desc %}
+                    {{ fac_desc|safe }}
+                {% else %}
+                    {{ fac_desc|linebreaks }}
+                {% endif %}
             </div>
             
             <!-- Departments belonging to this faculty -->
@@ -35,7 +40,7 @@
                         <span class="dept-card-link">{% ui_label 'more' current_lang %} <i class="fa-solid fa-arrow-right"></i></span>
                     </a>
                     {% empty %}
-                    <p class="no-data">Kafedra tapylmady.</p>
+                    <p class="no-data">{% ui_label 'no_data' current_lang %}</p>
                     {% endfor %}
                 </div>
             </div>

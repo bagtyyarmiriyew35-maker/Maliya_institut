@@ -15,30 +15,34 @@
     <div class="container contact-container">
         <!-- Contact Details -->
         <div class="contact-info-panel">
-            <h2 class="contact-panel-title">Habarlaşmak üçin</h2>
+            <h2 class="contact-panel-title">{% ui_label 'contact_for' current_lang %}</h2>
             <div class="section-divider left mb-4"></div>
-            <p class="contact-intro">Maliýe instituty bilen habarlaşmak üçin aşakdaky maglumatlary ulanyp bilersiňiz ýa-da göni hat iberip bilersiňiz.</p>
+            <p class="contact-intro">{% ui_label 'contact_intro' current_lang %}</p>
             
             <div class="contact-details-list">
                 <div class="contact-detail-item">
                     <div class="icon-box"><i class="fa-solid fa-location-dot"></i></div>
                     <div class="details">
                         <h4>{% ui_label 'address' current_lang %}</h4>
-                        <p>744027, Aşgabat ş., 1987 köç. (Hero Atamyrat Niyazow Ave.), 112.</p>
+                        <p>
+                            {% if current_lang == 'eng' and site_settings.address_en %}{{ site_settings.address_en }}
+                            {% elif current_lang == 'rus' and site_settings.address_ru %}{{ site_settings.address_ru }}
+                            {% else %}{{ site_settings.address_tm }}{% endif %}
+                        </p>
                     </div>
                 </div>
                 <div class="contact-detail-item">
                     <div class="icon-box"><i class="fa-solid fa-phone"></i></div>
                     <div class="details">
                         <h4>{% ui_label 'phone' current_lang %}</h4>
-                        <p>+993 12 496309</p>
+                        <p>{{ site_settings.phone }}</p>
                     </div>
                 </div>
                 <div class="contact-detail-item">
                     <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
                     <div class="details">
                         <h4>{% ui_label 'email' current_lang %}</h4>
-                        <p>info@tdmai.edu.tm</p>
+                        <p>{{ site_settings.email }}</p>
                     </div>
                 </div>
             </div>
@@ -46,7 +50,7 @@
         
         <!-- Contact Form -->
         <div class="contact-form-panel">
-            <h2 class="contact-panel-title">Hat ýazyň</h2>
+            <h2 class="contact-panel-title">{% ui_label 'write_to_us' current_lang %}</h2>
             <div class="section-divider left mb-4"></div>
             
             <form action="{% url 'contact' %}" method="POST" class="contact-form">

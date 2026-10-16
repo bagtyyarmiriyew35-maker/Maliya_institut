@@ -89,3 +89,5 @@ site_structure.md
 update_dalasgar_pages.py
 register_slides.py
 update_faq.py
+*.json
+*.zip

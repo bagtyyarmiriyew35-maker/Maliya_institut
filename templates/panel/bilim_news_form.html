@@ -1,13 +1,13 @@
 {% extends 'panel/base.html' %}
-{% block title %}Bilim Täzeligini Düzet{% endblock %}
-{% block breadcrumb %}Bilim.tm Täzelikleri / Düzet{% endblock %}
+{% block title %}{% if action == 'add' %}Täze Bilim Täzeligi Goş{% else %}Bilim Täzeligini Düzet{% endif %}{% endblock %}
+{% block breadcrumb %}Bilim.tm Täzelikleri / {% if action == 'add' %}Goş{% else %}Düzet{% endif %}{% endblock %}
 
 {% block content %}
 <div class="panel-page-header">
   <div>
-    <h1><i class="fa-solid fa-graduation-cap"></i> Bilim Täzeligini Düzet</h1>
+    <h1><i class="fa-solid fa-graduation-cap"></i> {% if action == 'add' %}Täze Bilim Täzeligi Goş{% else %}Bilim Täzeligini Düzet{% endif %}</h1>
     <p class="text-muted" style="margin-top: 4px; font-size: 13px;">
-      Habaryň Türkmençe (TM), Iňlisçe (EN) we Rusça (RU) terjimelerini, mazmunyny we suratyny bu ýerden üýtgedip bilersiňiz.
+      Habaryň Türkmençe (TM), Iňlisçe (EN) we Rusça (RU) terjimelerini, mazmunyny we suratyny bu ýerden girizip bilersiňiz.
     </p>
   </div>
   <a href="{% url 'panel_bilim_news' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-arrow-left"></i> Yza</a>
@@ -133,7 +133,7 @@
 
     <div class="panel-form-footer">
       <button type="submit" class="btn-panel btn-panel-primary">
-        <i class="fa-solid fa-floppy-disk"></i> Üýtgeşmeleri Ýatda Sakla
+        <i class="fa-solid fa-floppy-disk"></i> {% if action == 'add' %}Ýatda Sakla (Goş){% else %}Üýtgeşmeleri Ýatda Sakla{% endif %}
       </button>
       <a href="{% url 'panel_bilim_news' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
     </div>

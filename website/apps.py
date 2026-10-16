@@ -9,13 +9,10 @@ class WebsiteConfig(AppConfig):
     name = 'website'
 
     def ready(self):
-        # Diňe esasy serwer prosesinde işlesin (runserver reload gaýtalanmazlygy üçin)
-        if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
-            return
-
-        # Migrasiýa ýa-da shell buýruklarynda arka planda thread açmazlyk üçin
-        commands_to_skip = {'makemigrations', 'migrate', 'collectstatic', 'check', 'test'}
-        if any(cmd in sys.argv for cmd in commands_to_skip):
+        import website.signals
+        
+        # Arka plandaky thread diňe aýratyn buýruk bilen işletmek üçin (Gunicorn işgärlerini dondurmazlygy üçin)
+        if os.environ.get('ENABLE_BACKGROUND_SCRAPER') != 'True':
             return
 
         def run_hourly_sync():

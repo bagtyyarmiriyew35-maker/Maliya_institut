@@ -10,7 +10,7 @@
             <article class="article-detail">
                 {% if news_item.video %}
                 <div class="article-media-wrapper" style="max-width: 850px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.12); background: #000; position: relative;">
-                    <video id="newsDetailVideo" controls autoplay playsinline preload="auto" {% if news_item.image %}poster="{{ news_item.image.url }}"{% endif %} style="width: 100%; height: auto; max-height: 540px; display: block; margin: 0 auto;">
+                    <video id="newsDetailVideo" controls playsinline preload="metadata" {% if news_item.image %}poster="{{ news_item.image.url }}"{% endif %} style="width: 100%; height: auto; max-height: 540px; display: block; margin: 0 auto;">
                         <source src="{{ news_item.video.url }}" type="video/mp4">
                         <source src="{{ news_item.video.url }}" type="video/webm">
                         Siziň brauzeriňiz bu wideony goldamaýar.
@@ -18,7 +18,7 @@
                 </div>
                 {% elif news_item.youtube_embed_url %}
                 <div class="article-media-wrapper" style="max-width: 850px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.12); aspect-ratio: 16/9; background: #000;">
-                    <iframe src="{{ news_item.youtube_embed_url }}?autoplay=1" style="width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <iframe src="{{ news_item.youtube_embed_url }}" style="width: 100%; height: 100%; border: 0;" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
                 {% elif news_item.image %}
                 <div class="article-img-wrapper" style="max-width: 750px; margin: 0 auto 30px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
@@ -61,7 +61,7 @@
             <div class="recent-news-section" style="margin-top: 50px; padding-top: 40px; border-top: 1px solid var(--gray-light, #e2e8f0);">
                 <div class="section-header" style="margin-bottom: 30px; text-align: left;">
                     <h3 class="section-title" style="font-size: 1.4rem; color: var(--primary-dark, #064e29); font-weight: 700; margin: 0;">
-                        {% if current_lang == 'eng' %}Latest News{% elif current_lang == 'rus' %}Sonky täzelikler{% else %}Soňky täzelikler{% endif %}
+                        {% ui_label 'recent_news' current_lang %}
                     </h3>
                     <div class="section-divider left" style="margin-top: 8px;"></div>
                 </div>
@@ -123,42 +123,3 @@
 </section>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const video = document.getElementById('newsDetailVideo');
-    if (video) {
-        // Try autoplaying with sound first
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(function() {
-                // If browser autoplay policy blocks audio, mute and play immediately
-                video.muted = true;
-                video.play().catch(function() {});
-                
-                // Show a helpful unmute button overlay
-                const hint = document.createElement('button');
-                hint.type = 'button';
-                hint.className = 'video-unmute-hint-btn';
-                hint.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> Sesi aç';
-                hint.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    video.muted = false;
-                    hint.remove();
-                };
-                if (video.parentElement) {
-                    video.parentElement.appendChild(hint);
-                }
-
-                video.addEventListener('volumechange', function() {
-                    if (!video.muted && hint.parentElement) {
-                        hint.remove();
-                    }
-                }, { once: true });
-            });
-        }
-    }
-});
-</script>
-{% endblock %}

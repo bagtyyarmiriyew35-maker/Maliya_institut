@@ -14,6 +14,10 @@ def serve_media_files(request, path):
         response['Content-Disposition'] = 'inline'
     elif path.lower().endswith('.mp4'):
         response['Content-Type'] = 'video/mp4'
+    elif path.lower().endswith('.webm'):
+        response['Content-Type'] = 'video/webm'
+    elif path.lower().endswith('.webp'):
+        response['Content-Type'] = 'image/webp'
     response['X-Frame-Options'] = 'SAMEORIGIN'
     return response
 

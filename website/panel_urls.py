@@ -23,6 +23,7 @@ urlpatterns = [
 
     # Bilim.tm News
     path('bilim-news/', panel_views.panel_bilim_news, name='panel_bilim_news'),
+    path('bilim-news/add/', panel_views.panel_bilim_news_add, name='panel_bilim_news_add'),
     path('bilim-news/sync/', panel_views.panel_bilim_news_sync, name='panel_bilim_news_sync'),
     path('bilim-news/<int:pk>/edit/', panel_views.panel_bilim_news_edit, name='panel_bilim_news_edit'),
     path('bilim-news/<int:pk>/delete/', panel_views.panel_bilim_news_delete, name='panel_bilim_news_delete'),

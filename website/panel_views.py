@@ -283,6 +283,35 @@ def panel_bilim_news_sync(request):
 
 
 @panel_login_required
+def panel_bilim_news_add(request):
+    if request.method == 'POST':
+        title_tm = (request.POST.get('title_tm') or request.POST.get('title') or '').strip()
+        if not title_tm:
+            messages.error(request, 'Sözbasy (TM) hökmanydyr!')
+            return render(request, 'panel/bilim_news_form.html', {'action': 'add', 'post': request.POST})
+
+        item = BilimNews(
+            title_tm=title_tm,
+            title_en=request.POST.get('title_en', '').strip(),
+            title_ru=request.POST.get('title_ru', '').strip(),
+            description_tm=(request.POST.get('description_tm') or '').strip(),
+            description_en=request.POST.get('description_en', '').strip(),
+            description_ru=request.POST.get('description_ru', '').strip(),
+            content_tm=(request.POST.get('content_tm') or '').strip(),
+            content_en=request.POST.get('content_en', '').strip(),
+            content_ru=request.POST.get('content_ru', '').strip(),
+            image_url=request.POST.get('image_url', '').strip(),
+            source_url=request.POST.get('source_url', '').strip(),
+        )
+        if 'image' in request.FILES:
+            item.image = request.FILES['image']
+        item.save()
+        messages.success(request, 'Bilim täzeligi üstünlikli goşuldy!')
+        return redirect('panel_bilim_news')
+    return render(request, 'panel/bilim_news_form.html', {'action': 'add'})
+
+
+@panel_login_required
 def panel_bilim_news_edit(request, pk):
     item = get_object_or_404(BilimNews, pk=pk)
     if request.method == 'POST':
@@ -500,6 +529,12 @@ def panel_page_add(request):
 
         parent = Page.objects.filter(pk=parent_id).first()
         section = parent.section if parent else request.POST.get('section', 'other')
+
+        if not slug:
+            slug = generate_unique_slug(title_tm)
+        elif Page.objects.filter(slug=slug).exists():
+            slug = generate_unique_slug(slug)
+
         page = Page(
             title_tm=title_tm,
             title_en=request.POST.get('title_en', ''),

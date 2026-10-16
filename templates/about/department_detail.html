@@ -24,7 +24,12 @@
             </div>
             
             <div class="department-body">
-                {% render_lang department 'description' current_lang|linebreaks %}
+                {% render_lang department 'description' current_lang as dept_desc %}
+                {% if '<' in dept_desc %}
+                    {{ dept_desc|safe }}
+                {% else %}
+                    {{ dept_desc|linebreaks }}
+                {% endif %}
             </div>
             
             <div class="department-footer mt-5">

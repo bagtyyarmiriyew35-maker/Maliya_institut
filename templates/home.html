@@ -163,7 +163,8 @@
         {% for slide in sliders %}
         <div class="slide {% if forloop.first %}active{% endif %}" {% if slide.image %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('{{ slide.image.url }}');"{% else %}style="background-color: #0b1320;"{% endif %}>
             {% if slide.video %}
-            <video class="slide-video-bg" autoplay muted playsinline poster="{% if slide.image %}{{ slide.image.url }}{% endif %}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+            <video class="slide-video-bg" autoplay loop muted playsinline preload="metadata" poster="{% if slide.image %}{{ slide.image.url }}{% endif %}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+                <source src="{{ slide.video.url }}" type="video/webm">
                 <source src="{{ slide.video.url }}" type="video/mp4">
             </video>
             <div class="slide-video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.6)); z-index: 2;"></div>
@@ -240,12 +241,12 @@
                 </div>
             </a>
             {% empty %}
-            <p class="no-data">Häzirki wagtda täzelik ýok.</p>
+            <p class="no-data">{% ui_label 'no_data' current_lang %}</p>
             {% endfor %}
         </div>
         
         <div class="text-center mt-5">
-            <a href="{% url 'news_list' %}" class="btn btn-secondary">Hemme täzelikler <i class="fa-solid fa-newspaper"></i></a>
+            <a href="{% url 'news_list' %}" class="btn btn-secondary">{% ui_label 'all_news' current_lang %} <i class="fa-solid fa-newspaper"></i></a>
         </div>
     </div>
 </section>
@@ -302,43 +303,89 @@
     </div>
 </section>
 
-<!-- Elektron Neşirler (Publications) Showcase Section (Images 1 & 2) -->
+<!-- Elektron Neşirler (Publications) Showcase Section -->
 <section class="journal-showcase-section" id="zurnallar">
     <div class="container">
-        <div class="journal-showcase-box" id="journalShowcaseBox">
-            <div class="journal-showcase-slides" id="journalShowcaseSlides">
-                {% for book in featured_books %}
-                <div class="journal-showcase-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
-                    <a href="{% url 'library_book_detail' book.pk %}" class="journal-showcase-frame" title="{% render_lang book 'title' current_lang %}">
-                        {% if book.display_image %}
-                        <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-showcase-cover">
-                        {% else %}
-                        <div class="journal-showcase-fallback">
-                            <i class="fa-solid fa-book-open" style="font-size: 32px;"></i>
-                            <span>{{ book.title_tm }}</span>
-                        </div>
-                        {% endif %}
-                    </a>
-                    
-                    <div class="journal-showcase-body">
-                        <a href="{% url 'library_book_detail' book.pk %}" class="journal-showcase-title">
-                            {% render_lang book 'title' current_lang %}
+        <!-- Başlyk we Ählisi düwmesi -->
+        <div class="journal-section-header">
+            <div class="journal-header-title-box">
+                <span class="journal-tagline">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    {% if current_lang == 'eng' %}Publications & Journals{% elif current_lang == 'rus' %}Публикации и журналы{% else %}Elektron neşirler we žurnallar{% endif %}
+                </span>
+                <h2 class="journal-section-title">
+                    {% if featured_category %}
+                        {% render_lang featured_category 'name' current_lang %}
+                    {% else %}
+                        {% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}
+                    {% endif %}
+                </h2>
+                <div class="journal-header-divider"></div>
+            </div>
+            <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-header-all-btn">
+                <span>{% if current_lang == 'eng' %}All publications{% elif current_lang == 'rus' %}Все издания{% else %}Ählisi{% endif %}</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Kartlaryň / Slaýderiň Daşy -->
+        <div class="journal-showcase-wrapper" id="journalShowcaseWrapper">
+            {% if featured_books|length > 4 %}
+            <button type="button" class="journal-nav-btn prev" id="journalSliderPrev" aria-label="Geri" title="Geri">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            {% endif %}
+
+            <div class="journal-showcase-viewport" id="journalShowcaseViewport">
+                <div class="journal-showcase-track {% if featured_books|length <= 4 %}is-static{% endif %}" id="journalShowcaseTrack">
+                    {% for book in featured_books %}
+                    <div class="journal-card-item" data-index="{{ forloop.counter0 }}">
+                        <a href="{% url 'library_book_detail' book.pk %}" class="journal-card" title="{% render_lang book 'title' current_lang %}">
+                            <div class="journal-card-cover-box">
+                                {% if book.display_image %}
+                                <img src="{{ book.display_image.url }}" alt="{% render_lang book 'title' current_lang %}" class="journal-card-img" loading="lazy">
+                                {% else %}
+                                <div class="journal-card-no-img">
+                                    <i class="fa-solid fa-book-open"></i>
+                                    <span>{% render_lang book 'title' current_lang %}</span>
+                                </div>
+                                {% endif %}
+                                <div class="journal-card-hover-mask">
+                                    <span class="journal-card-read-label">
+                                        <i class="fa-solid fa-eye"></i>
+                                        {% if current_lang == 'eng' %}Open{% elif current_lang == 'rus' %}Открыть{% else %}Okamak{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="journal-card-details">
+                                <h4 class="journal-card-title">
+                                    {% render_lang book 'title' current_lang %}
+                                </h4>
+                            </div>
                         </a>
                     </div>
+                    {% empty %}
+                    <div class="journal-empty-container">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <p>{% if current_lang == 'eng' %}No publications available at the moment.{% elif current_lang == 'rus' %}В настоящее время издания отсутствуют.{% else %}Häzirki wagtda neşir ýok.{% endif %}</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <div style="text-align:center; padding: 40px; color: #64748b;">
-                    <p>Häzirki wagtda neşir ýok.</p>
-                </div>
-                {% endfor %}
             </div>
 
-            <!-- Sabit durýan "Ählisi" baglanyşygy (slaýder bilen süýşmeýär) -->
-            <div class="journal-showcase-footer">
-                <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-view-all-link">
-                    {% if current_lang == 'eng' %}All{% elif current_lang == 'rus' %}Все{% else %}Ählisi{% endif %}
-                </a>
-            </div>
+            {% if featured_books|length > 4 %}
+            <button type="button" class="journal-nav-btn next" id="journalSliderNext" aria-label="Öňe" title="Öňe">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Altyndaky "Ählisi" baglanyşygy -->
+        <div class="journal-showcase-footer">
+            <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-view-all-link">
+                <span>{% if current_lang == 'eng' %}View all publications{% elif current_lang == 'rus' %}Посмотреть все публикации{% else %}Ähli neşirleri görmek{% endif %}</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </div>
     </div>
 </section>
@@ -365,7 +412,7 @@
                 <span class="partner-country"><i class="fa-solid fa-earth-americas"></i> {% render_lang partner 'country' current_lang %}</span>
             </div>
             {% empty %}
-            <p class="no-data">Halkara hyzmatdaş tapylmady.</p>
+            <p class="no-data">{% ui_label 'no_data' current_lang %}</p>
             {% endfor %}
         </div>
     </div>
@@ -394,7 +441,8 @@
                                 {% else %}
                                     <div class="report-card-placeholder">
                                         <i class="{{ item.icon }}"></i>
-                                        <span class="pdf-badge">{{ item.badge|upper }}</span>
+                                        {% render_lang item 'badge' current_lang as item_badge %}
+                                        <span class="pdf-badge">{{ item_badge|upper }}</span>
                                     </div>
                                 {% endif %}
                             </div>
@@ -408,7 +456,7 @@
                         </a>
                     </div>
                     {% empty %}
-                    <p class="no-data">Maglumat tapylmady.</p>
+                    <p class="no-data">{% ui_label 'no_data' current_lang %}</p>
                     {% endfor %}
                 </div>
             </div>
@@ -463,7 +511,7 @@
                 </div>
             </a>
             {% empty %}
-            <p class="no-data" style="grid-column: 1 / -1; text-align: center;">Häzirki wagtda täzelik ýok.</p>
+            <p class="no-data" style="grid-column: 1 / -1; text-align: center;">{% ui_label 'no_data' current_lang %}</p>
             {% endfor %}
         </div>
     </div>
@@ -474,80 +522,181 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // 1. Elektron Neşirler Showcase Slider (Yana süýşýän karusel, her 3 sekuntdan)
+    // 1. Elektron Neşirler Karuseli (4 kart yan yana, 4-den köp bolsa awtomatik süzülip aýlanýar)
     function initJournalShowcase() {
-        const box = document.getElementById('journalShowcaseBox');
-        if (!box) return;
+        const wrapper = document.getElementById('journalShowcaseWrapper');
+        if (!wrapper) return;
 
-        const slidesContainer = document.getElementById('journalShowcaseSlides');
-        if (!slidesContainer) return;
+        const viewport = document.getElementById('journalShowcaseViewport');
+        const track = document.getElementById('journalShowcaseTrack');
+        if (!viewport || !track) return;
 
-        const originalSlides = Array.from(slidesContainer.querySelectorAll('.journal-showcase-slide'));
-        if (originalSlides.length <= 1) return;
+        const prevBtn = document.getElementById('journalSliderPrev');
+        const nextBtn = document.getElementById('journalSliderNext');
 
-        // Bizarar çäksiz aýlanmagy üçin birinji slaýdy ahyryna klonlaýarys
-        const firstClone = originalSlides[0].cloneNode(true);
-        firstClone.classList.remove('active');
-        firstClone.setAttribute('data-clone', 'true');
-        slidesContainer.appendChild(firstClone);
+        const rawItems = Array.from(track.querySelectorAll('.journal-card-item:not([data-clone="true"])'));
+        const totalItems = rawItems.length;
 
-        let currentIndex = 0;
-        let isTransitioning = false;
-        let autoTimer = null;
-        const totalSlides = originalSlides.length;
-
-        function setTrackPosition(index, withTransition) {
-            if (withTransition) {
-                slidesContainer.style.transition = 'transform 1s cubic-bezier(0.25, 1, 0.4, 1)';
-            } else {
-                slidesContainer.style.transition = 'none';
-            }
-            slidesContainer.style.transform = 'translateX(-' + (index * 100) + '%)';
-            if (!withTransition) {
-                void slidesContainer.offsetHeight; // Reflow üpjün edýär
-            }
+        // 4 ýa-da ondan az kitap bar bolsa, slaýdere zerurlyk ýok, kartlar setirde durýar
+        if (totalItems <= 4) {
+            track.classList.add('is-static');
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+            return;
         }
 
-        slidesContainer.addEventListener('transitionend', function(e) {
-            if (e.target !== slidesContainer) return;
-            isTransitioning = false;
+        // 4-den köp bolsa (5 ýa-da 6 kitap), çäksiz (infinite loop) slaýder işe girizilýär
+        let baseItems = rawItems.slice();
+        while (baseItems.length < 8) {
+            baseItems = baseItems.concat(rawItems.map(el => el.cloneNode(true)));
+        }
 
-            // Ahyrky klona ýetende garaşsyz dessine 1-nji slaýda yzyna bökýär
-            if (currentIndex >= totalSlides) {
-                currentIndex = 0;
-                setTrackPosition(0, false);
-            }
+        const N = baseItems.length;
+
+        track.innerHTML = '';
+        const set1 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.setAttribute('data-clone', 'true');
+            return c;
+        });
+        const set2 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.removeAttribute('data-clone');
+            return c;
+        });
+        const set3 = baseItems.map(el => {
+            const c = el.cloneNode(true);
+            c.setAttribute('data-clone', 'true');
+            return c;
         });
 
-        function nextSlide() {
-            if (isTransitioning) return;
+        [...set1, ...set2, ...set3].forEach(item => track.appendChild(item));
+
+        let currentIndex = N;
+        let isTransitioning = false;
+        let autoSlideTimer = null;
+        let transitionTimeout = null;
+
+        function getStep() {
+            const all = track.children;
+            if (all.length < 2) return 280;
+            const r0 = all[0].getBoundingClientRect();
+            const r1 = all[1].getBoundingClientRect();
+            const diff = r1.left - r0.left;
+            return diff > 0 ? diff : (r0.width + 24);
+        }
+
+        function setPosition(index, animate = false, duration = 0.5) {
+            if (animate) {
+                track.style.transition = `transform ${duration}s cubic-bezier(0.25, 1, 0.5, 1)`;
+            } else {
+                track.style.transition = 'none';
+            }
+            const step = getStep();
+            const offset = -(index * step);
+            track.style.transform = `translate3d(${offset}px, 0, 0)`;
+        }
+
+        setPosition(currentIndex, false);
+
+        function checkLoopBounds() {
+            let didReset = false;
+            if (currentIndex >= 2 * N) {
+                currentIndex -= N;
+                didReset = true;
+            } else if (currentIndex < N) {
+                currentIndex += N;
+                didReset = true;
+            }
+            if (didReset) {
+                setPosition(currentIndex, false);
+                void track.offsetHeight;
+            }
+            isTransitioning = false;
+        }
+
+        track.addEventListener('transitionend', function(e) {
+            if (e.target !== track) return;
+            checkLoopBounds();
+        });
+
+        function goToNext(count = 1) {
+            if (currentIndex >= 2 * N + 4) {
+                currentIndex -= N;
+                setPosition(currentIndex, false);
+                void track.offsetHeight;
+            }
             isTransitioning = true;
-            currentIndex++;
-            setTrackPosition(currentIndex, true);
+            currentIndex += count;
+            setPosition(currentIndex, true, 0.5);
+            clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(checkLoopBounds, 520);
         }
 
-        function startAuto() {
-            stopAuto();
-            autoTimer = setInterval(nextSlide, 4000); // Her kart üýtgände arasynda takyk 4 sekunt
+        function goToPrev(count = 1) {
+            if (currentIndex <= N - 4) {
+                currentIndex += N;
+                setPosition(currentIndex, false);
+                void track.offsetHeight;
+            }
+            isTransitioning = true;
+            currentIndex -= count;
+            setPosition(currentIndex, true, 0.5);
+            clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(checkLoopBounds, 520);
         }
 
-        function stopAuto() {
-            if (autoTimer) {
-                clearInterval(autoTimer);
-                autoTimer = null;
+        function startAutoSlide() {
+            stopAutoSlide();
+            autoSlideTimer = setInterval(() => {
+                if (!isTransitioning) {
+                    goToNext(1);
+                }
+            }, 3800);
+        }
+
+        function stopAutoSlide() {
+            if (autoSlideTimer) {
+                clearInterval(autoSlideTimer);
+                autoSlideTimer = null;
             }
         }
 
-        box.addEventListener('mouseenter', stopAuto);
-        box.addEventListener('mouseleave', startAuto);
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                stopAutoSlide();
+                goToNext(1);
+                startAutoSlide();
+            });
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                stopAutoSlide();
+                goToPrev(1);
+                startAutoSlide();
+            });
+        }
+
+        wrapper.addEventListener('mouseenter', stopAutoSlide);
+        wrapper.addEventListener('mouseleave', startAutoSlide);
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                setPosition(currentIndex, false);
+            }, 100);
+        });
 
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden) stopAuto();
-            else startAuto();
+            if (document.hidden) stopAutoSlide();
+            else startAutoSlide();
         });
 
-        setTrackPosition(0, false);
-        startAuto();
+        startAutoSlide();
     }
 
     // 2. Soňky goşulan maglumatlar karuseli (Recent Contents Infinite Responsive Slider)

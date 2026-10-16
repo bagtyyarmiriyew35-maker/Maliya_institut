@@ -91,3 +91,5 @@ register_slides.py
 update_faq.py
 *.json
 *.zip
+*.tar
+*.tar.gz

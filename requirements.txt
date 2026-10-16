@@ -1,0 +1,7 @@
+Django>=4.2
+Pillow
+PyPDF2
+gunicorn
+django-tinymce
+psycopg[binary]>=3.1.18
+python-dotenv>=1.0.0

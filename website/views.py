@@ -271,10 +271,16 @@ def set_language(request):
         target_lang = 'tm'
 
     request.session['lang'] = target_lang
+    request.session.modified = True
         
     # Redirect back to the referrer or homepage
-    referrer = request.META.get('HTTP_REFERER', '/')
-    return redirect(referrer)
+    referrer = request.META.get('HTTP_REFERER') or '/'
+    response = redirect(referrer)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    response.set_cookie('site_lang', target_lang, max_age=365 * 24 * 60 * 60, path='/', samesite='Lax')
+    return response
 
 
 try:

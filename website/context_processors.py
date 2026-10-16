@@ -6,7 +6,8 @@ def language_processor(request):
     the list of faculties, the page menu hierarchy, site settings,
     and admin panel unread messages count available globally in templates.
     """
-    raw_lang = str(request.session.get('lang', 'tm')).strip().lower()
+    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    raw_lang = str(raw_lang).strip().lower()
     if raw_lang in ['eng', 'en']:
         lang = 'eng'
     elif raw_lang in ['rus', 'ru']:

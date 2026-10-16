@@ -6,14 +6,26 @@ def language_processor(request):
     the list of faculties, the page menu hierarchy, site settings,
     and admin panel unread messages count available globally in templates.
     """
-    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
-    raw_lang = str(raw_lang).strip().lower()
-    if raw_lang in ['eng', 'en']:
-        lang = 'eng'
-    elif raw_lang in ['rus', 'ru']:
-        lang = 'rus'
+    get_lang = request.GET.get('lang')
+    if get_lang:
+        candidate = str(get_lang).strip().lower()
+        if candidate in ['eng', 'en']:
+            lang = 'eng'
+        elif candidate in ['rus', 'ru']:
+            lang = 'rus'
+        else:
+            lang = 'tm'
+        request.session['lang'] = lang
+        request.session.modified = True
     else:
-        lang = 'tm'
+        raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+        raw_lang = str(raw_lang).strip().lower()
+        if raw_lang in ['eng', 'en']:
+            lang = 'eng'
+        elif raw_lang in ['rus', 'ru']:
+            lang = 'rus'
+        else:
+            lang = 'tm'
         
     faculties_menu = Faculty.objects.all()
     menu_pages = Page.objects.filter(parent=None).prefetch_related('subpages__subpages')

@@ -236,21 +236,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. Language Selector Instant Switch (Bypass Browser Cache) ---
+    // --- 7. Language Selector Instant Switch ---
     const langButtons = document.querySelectorAll('.lang-btn');
     langButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            if (!href) return;
-            e.preventDefault();
+        btn.addEventListener('click', function() {
+            const href = this.getAttribute('href') || '';
             const langMatch = href.match(/lang=([a-zA-Z]+)/);
             if (langMatch) {
                 const l = langMatch[1].toLowerCase();
                 const code = (l === 'eng' || l === 'en') ? 'eng' : ((l === 'rus' || l === 'ru') ? 'rus' : 'tm');
                 document.cookie = "site_lang=" + code + ";path=/;max-age=31536000;SameSite=Lax";
             }
-            const sep = href.includes('?') ? '&' : '?';
-            window.location.href = href + sep + '_t=' + Date.now();
         });
     });
 });

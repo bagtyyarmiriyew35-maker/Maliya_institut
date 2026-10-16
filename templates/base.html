@@ -87,13 +87,13 @@
             </nav>
             
             <div class="lang-selector header-lang-selector">
-                <a href="{% url 'set_language' %}?lang=tm" class="lang-btn {% if current_lang == 'tm' %}active{% endif %}">
+                <a href="{% lang_switch_url 'tm' %}" class="lang-btn {% if current_lang == 'tm' %}active{% endif %}">
                     <img src="/static/images/flag_tm.png" alt="TM" onerror="this.style.display='none'"> TM
                 </a>
-                <a href="{% url 'set_language' %}?lang=eng" class="lang-btn {% if current_lang == 'eng' %}active{% endif %}">
+                <a href="{% lang_switch_url 'eng' %}" class="lang-btn {% if current_lang == 'eng' %}active{% endif %}">
                     <img src="/static/images/flag_uk.png" alt="EN" onerror="this.style.display='none'"> EN
                 </a>
-                <a href="{% url 'set_language' %}?lang=rus" class="lang-btn {% if current_lang == 'rus' %}active{% endif %}">
+                <a href="{% lang_switch_url 'rus' %}" class="lang-btn {% if current_lang == 'rus' %}active{% endif %}">
                     <img src="/static/images/flag_rus.png" alt="RU" onerror="this.style.display='none'"> RU
                 </a>
             </div>

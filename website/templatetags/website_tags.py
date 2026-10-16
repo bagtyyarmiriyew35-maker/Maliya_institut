@@ -336,3 +336,17 @@ def clean_excerpt(val, num_words=20):
         return " ".join(words[:num_words]) + "..."
     return text
 
+
+@register.simple_tag(takes_context=True)
+def lang_switch_url(context, lang_code):
+    """
+    Builds the current page URL with the given lang parameter.
+    Preserves all existing query params and replaces or appends ?lang=<code>.
+    """
+    request = context.get('request')
+    if not request:
+        return f"?lang={lang_code}"
+    query = request.GET.copy()
+    query['lang'] = lang_code
+    return mark_safe(f"{request.path}?{query.urlencode()}")
+

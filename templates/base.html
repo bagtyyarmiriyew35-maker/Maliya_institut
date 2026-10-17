@@ -304,8 +304,8 @@
 
         // Attach active language to all internal links so every navigation click preserves language and bypasses server stale cache
         document.addEventListener('DOMContentLoaded', function() {
-            var activeLang = langParam || localStorage.getItem('site_lang') || curLang;
-            if (activeLang && activeLang !== 'tm') {
+            var activeLang = langParam || localStorage.getItem('site_lang') || curLang || 'tm';
+            if (activeLang) {
                 document.querySelectorAll('a[href]').forEach(function(a) {
                     var href = a.getAttribute('href');
                     if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('http://') || href.startsWith('https://')) {

@@ -279,6 +279,49 @@
     });
     </script>
 
+    <!-- Language Persistence and Auto-Propagation -->
+    <script>
+    (function() {
+        var curLang = "{{ current_lang|default:'tm' }}";
+        var urlParams = new URLSearchParams(window.location.search);
+        var langParam = urlParams.get('lang');
+        
+        if (langParam) {
+            var normalized = langParam.toLowerCase();
+            if (normalized === 'en') normalized = 'eng';
+            if (normalized === 'ru') normalized = 'rus';
+            localStorage.setItem('site_lang', normalized);
+            document.cookie = "site_lang=" + normalized + "; path=/; max-age=31536000; SameSite=Lax";
+        } else {
+            var savedLang = localStorage.getItem('site_lang');
+            // If user previously selected EN or RU, but server returned TM (e.g. from Nginx stale cache):
+            if (savedLang && savedLang !== 'tm' && curLang !== savedLang) {
+                urlParams.set('lang', savedLang);
+                window.location.replace(window.location.pathname + '?' + urlParams.toString() + window.location.hash);
+                return;
+            }
+        }
+
+        // Attach active language to all internal links so every navigation click preserves language and bypasses server stale cache
+        document.addEventListener('DOMContentLoaded', function() {
+            var activeLang = langParam || localStorage.getItem('site_lang') || curLang;
+            if (activeLang && activeLang !== 'tm') {
+                document.querySelectorAll('a[href]').forEach(function(a) {
+                    var href = a.getAttribute('href');
+                    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('http://') || href.startsWith('https://')) {
+                        return;
+                    }
+                    if (href.indexOf('lang=') === -1 && !href.startsWith('/panel/') && !href.startsWith('/admin/')) {
+                        var parts = href.split('#');
+                        var sep = parts[0].indexOf('?') !== -1 ? '&' : '?';
+                        a.setAttribute('href', parts[0] + sep + 'lang=' + encodeURIComponent(activeLang) + (parts[1] ? '#' + parts[1] : ''));
+                    }
+                });
+            }
+        });
+    })();
+    </script>
+
     <!-- Custom JS -->
     <script src="/static/js/main.js"></script>
     {% block extra_js %}{% endblock %}

@@ -35,6 +35,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', '216.250.10.252', '20.20.21.143']
 
+# Disable Cross-Origin-Opener-Policy on plain HTTP (IP address) to prevent browser console error
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
 
 # Application definition
 

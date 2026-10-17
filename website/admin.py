@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook
+from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook, BilimNews
 
 @admin.register(LibraryCategory)
 class LibraryCategoryAdmin(admin.ModelAdmin):
@@ -17,10 +17,15 @@ class LibraryBookAdmin(admin.ModelAdmin):
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
-    list_display = ('title_tm', 'slug', 'parent', 'order')
-    list_filter = ('parent',)
-    search_fields = ('title_tm', 'title_en', 'title_ru', 'content_tm', 'slug')
+    list_display = ('title_tm', 'source_name_tm', 'slug', 'parent', 'order', 'show_in_tm', 'show_in_en', 'show_in_ru', 'has_pdf')
+    list_filter = ('parent', 'section', 'show_in_tm', 'show_in_en', 'show_in_ru')
+    search_fields = ('title_tm', 'title_en', 'title_ru', 'pdf_title_tm', 'pdf_title_en', 'pdf_title_ru', 'source_name_tm', 'source_name_en', 'source_name_ru', 'source_name', 'source_url', 'content_tm', 'slug')
     prepopulated_fields = {'slug': ('title_tm',)}
+
+    def has_pdf(self, obj):
+        return bool(obj.pdf_file)
+    has_pdf.boolean = True
+    has_pdf.short_description = "PDF"
 
 
 @admin.register(SliderImage)
@@ -32,9 +37,9 @@ class SliderImageAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('title_tm', 'published_date', 'has_image', 'has_video', 'views_count')
+    list_display = ('title_tm', 'source_name_tm', 'published_date', 'has_image', 'has_video', 'has_pdf', 'views_count')
     list_filter = ('published_date',)
-    search_fields = ('title_tm', 'title_en', 'title_ru', 'content_tm', 'content_en', 'content_ru')
+    search_fields = ('title_tm', 'title_en', 'title_ru', 'pdf_title_tm', 'pdf_title_en', 'pdf_title_ru', 'source_name_tm', 'source_name_en', 'source_name_ru', 'source_name', 'source_url', 'content_tm', 'content_en', 'content_ru')
     readonly_fields = ('views_count',)
 
     def has_image(self, obj):
@@ -46,6 +51,11 @@ class NewsAdmin(admin.ModelAdmin):
         return bool(obj.video or obj.video_url)
     has_video.boolean = True
     has_video.short_description = "Wideo"
+
+    def has_pdf(self, obj):
+        return bool(obj.pdf_file)
+    has_pdf.boolean = True
+    has_pdf.short_description = "PDF"
 
 
 class DepartmentInline(admin.TabularInline):
@@ -96,3 +106,21 @@ class ContactMessageAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         return False  # messages come from the public site form only
+
+
+@admin.register(BilimNews)
+class BilimNewsAdmin(admin.ModelAdmin):
+    list_display = ('title_tm', 'published_date', 'has_image', 'has_pdf', 'views_count')
+    list_filter = ('published_date',)
+    search_fields = ('title_tm', 'title_en', 'title_ru', 'pdf_title_tm', 'pdf_title_en', 'pdf_title_ru', 'content_tm')
+    readonly_fields = ('views_count', 'created_at', 'updated_at')
+
+    def has_image(self, obj):
+        return bool(obj.image or obj.image_url)
+    has_image.boolean = True
+    has_image.short_description = "Surat"
+
+    def has_pdf(self, obj):
+        return bool(obj.pdf_file)
+    has_pdf.boolean = True
+    has_pdf.short_description = "PDF"

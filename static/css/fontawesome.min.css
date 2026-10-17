@@ -49,3 +49,5 @@ body {
 .fa-magnifying-glass::before { content: '🔍'; }
 .fa-check::before { content: '✓'; }
 .fa-xmark::before { content: '✕'; }
+.fa-link::before { content: '🔗'; }
+.fa-arrow-up-right-from-square::before, .fa-external-link::before, .fa-external-link-alt::before, .fa-share-from-square::before { content: '↗'; }

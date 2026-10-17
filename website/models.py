@@ -33,9 +33,28 @@ class Page(models.Model):
     image_en = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (English)")
     image_ru = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (Russian)")
     pdf_file = models.FileField(upload_to='pages/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
+    pdf_title_tm = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (Turkmen)")
+    pdf_title_en = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (English)")
+    pdf_title_ru = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (Russian)")
+    source_name_tm = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Turkmen)")
+    source_name_en = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (English)")
+    source_name_ru = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Russian)")
+    source_name = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Esasy)")
+    source_url = models.URLField(max_length=1000, blank=True, verbose_name="Çeşme URL (Asyl sahypanyň salgysy)")
+    show_in_tm = models.BooleanField(default=True, verbose_name="Türkmen dilinde görkezilsin (TM)")
+    show_in_en = models.BooleanField(default=True, verbose_name="Iňlis dilinde görkezilsin (EN)")
+    show_in_ru = models.BooleanField(default=True, verbose_name="Rus dilinde görkezilsin (RU)")
     order = models.IntegerField(default=0, verbose_name="Order")
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Döredilen senesi")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Üýtgedilen senesi")
+
+    def is_visible_in_lang(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if 'eng' in l or l == 'en':
+            return self.show_in_en
+        if 'rus' in l or l == 'ru':
+            return self.show_in_ru
+        return self.show_in_tm
 
     def get_image(self, lang='tm'):
         l = str(lang or 'tm').lower()
@@ -44,6 +63,56 @@ class Page(models.Model):
         if ('rus' in l or l == 'ru') and self.image_ru:
             return self.image_ru
         return self.image
+
+    def get_source_name(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        name = ''
+        if ('eng' in l or l == 'en') and self.source_name_en:
+            name = self.source_name_en.strip()
+        elif ('rus' in l or l == 'ru') and self.source_name_ru:
+            name = self.source_name_ru.strip()
+        elif self.source_name_tm:
+            name = self.source_name_tm.strip()
+        elif self.source_name:
+            name = self.source_name.strip()
+
+        if name:
+            return name
+
+        if self.source_url:
+            import urllib.parse
+            try:
+                domain = urllib.parse.urlparse(self.source_url).netloc
+                return domain.replace('www.', '')
+            except Exception:
+                return self.source_url
+        return ''
+
+    @property
+    def display_source_name(self):
+        return self.get_source_name('tm')
+
+    def get_pdf_title(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en'):
+            if self.pdf_title_en and self.pdf_title_en.strip():
+                return self.pdf_title_en.strip()
+            if self.title_en and self.title_en.strip():
+                return self.title_en.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if ('rus' in l or l == 'ru'):
+            if self.pdf_title_ru and self.pdf_title_ru.strip():
+                return self.pdf_title_ru.strip()
+            if self.title_ru and self.title_ru.strip():
+                return self.title_ru.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if self.pdf_title_tm and self.pdf_title_tm.strip():
+            return self.pdf_title_tm.strip()
+        return self.title_tm or str(self)
 
     class Meta:
         ordering = ['order', 'title_tm']
@@ -106,6 +175,15 @@ class News(models.Model):
     image_ru = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name="Surat (Russian)")
     video = models.FileField(upload_to='news/videos/', blank=True, null=True, verbose_name="Wideo (Video - MP4/WebM)")
     video_url = models.URLField(blank=True, verbose_name="Wideo URL (YouTube / Çeşme)")
+    source_name_tm = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Turkmen)")
+    source_name_en = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (English)")
+    source_name_ru = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Russian)")
+    source_name = models.CharField(max_length=255, blank=True, verbose_name="Çeşme ady (Esasy)")
+    source_url = models.URLField(max_length=1000, blank=True, verbose_name="Çeşme URL (Habaryň asyl salgysy)")
+    pdf_file = models.FileField(upload_to='news/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
+    pdf_title_tm = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (Turkmen)")
+    pdf_title_en = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (English)")
+    pdf_title_ru = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (Russian)")
     published_date = models.DateTimeField(default=timezone.now, verbose_name="Published Date")
     views_count = models.IntegerField(default=0, verbose_name="Views Count")
 
@@ -116,6 +194,56 @@ class News(models.Model):
         if ('rus' in l or l == 'ru') and self.image_ru:
             return self.image_ru
         return self.image
+
+    def get_source_name(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        name = ''
+        if ('eng' in l or l == 'en') and self.source_name_en:
+            name = self.source_name_en.strip()
+        elif ('rus' in l or l == 'ru') and self.source_name_ru:
+            name = self.source_name_ru.strip()
+        elif self.source_name_tm:
+            name = self.source_name_tm.strip()
+        elif self.source_name:
+            name = self.source_name.strip()
+
+        if name:
+            return name
+
+        if self.source_url:
+            import urllib.parse
+            try:
+                domain = urllib.parse.urlparse(self.source_url).netloc
+                return domain.replace('www.', '')
+            except Exception:
+                return self.source_url
+        return ''
+
+    @property
+    def display_source_name(self):
+        return self.get_source_name('tm')
+
+    def get_pdf_title(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en'):
+            if self.pdf_title_en and self.pdf_title_en.strip():
+                return self.pdf_title_en.strip()
+            if self.title_en and self.title_en.strip():
+                return self.title_en.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if ('rus' in l or l == 'ru'):
+            if self.pdf_title_ru and self.pdf_title_ru.strip():
+                return self.pdf_title_ru.strip()
+            if self.title_ru and self.title_ru.strip():
+                return self.title_ru.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if self.pdf_title_tm and self.pdf_title_tm.strip():
+            return self.pdf_title_tm.strip()
+        return self.title_tm or str(self)
 
     class Meta:
         ordering = ['-published_date']
@@ -166,6 +294,10 @@ class BilimNews(models.Model):
     image_en = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat (English)")
     image_ru = models.ImageField(upload_to='bilim_news/', blank=True, null=True, verbose_name="Ýerli Surat (Russian)")
     source_url = models.URLField(max_length=700, blank=True, verbose_name="Çeşme URL")
+    pdf_file = models.FileField(upload_to='bilim_news/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
+    pdf_title_tm = models.CharField(max_length=500, blank=True, default='', verbose_name="PDF ady (Turkmen)")
+    pdf_title_en = models.CharField(max_length=500, blank=True, default='', verbose_name="PDF ady (English)")
+    pdf_title_ru = models.CharField(max_length=500, blank=True, default='', verbose_name="PDF ady (Russian)")
     published_date = models.DateTimeField(default=timezone.now, verbose_name="Çap edilen senesi")
     views_count = models.IntegerField(default=0, verbose_name="Görülen sany")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -178,6 +310,28 @@ class BilimNews(models.Model):
         if ('rus' in l or l == 'ru') and self.image_ru:
             return self.image_ru
         return self.image
+
+    def get_pdf_title(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en'):
+            if self.pdf_title_en and self.pdf_title_en.strip():
+                return self.pdf_title_en.strip()
+            if self.title_en and self.title_en.strip():
+                return self.title_en.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if ('rus' in l or l == 'ru'):
+            if self.pdf_title_ru and self.pdf_title_ru.strip():
+                return self.pdf_title_ru.strip()
+            if self.title_ru and self.title_ru.strip():
+                return self.title_ru.strip()
+            if self.pdf_title_tm and self.pdf_title_tm.strip():
+                return self.pdf_title_tm.strip()
+            return self.title_tm or str(self)
+        if self.pdf_title_tm and self.pdf_title_tm.strip():
+            return self.pdf_title_tm.strip()
+        return self.title_tm or str(self)
 
     class Meta:
         ordering = ['-published_date', '-id']

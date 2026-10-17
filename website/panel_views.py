@@ -47,15 +47,23 @@ def generate_unique_slug(title_tm, current_pk=None):
 
 
 # ─────────────────────────────────────────────
-# Decorator helper — require staff login
+from django.views.decorators.cache import never_cache
+
+# Decorator helper — require staff login & prevent caching
 # ─────────────────────────────────────────────
 
 def panel_login_required(view_func):
-    """Redirect to panel login if not authenticated."""
+    """Redirect to panel login if not authenticated and prevent stale browser caching."""
+    @never_cache
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_staff:
             return redirect('panel_login')
-        return view_func(request, *args, **kwargs)
+        response = view_func(request, *args, **kwargs)
+        if hasattr(response, '__setitem__'):
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+        return response
     wrapper.__name__ = view_func.__name__
     return wrapper
 
@@ -223,6 +231,9 @@ def panel_news_add(request):
         if not title_tm or not content_tm:
             messages.error(request, 'Türkmençe at we mazmun hökmanydyr!')
             return render(request, 'panel/news_form.html', {'action': 'add', 'post': request.POST})
+        source_name_tm = request.POST.get('source_name_tm', '').strip() or request.POST.get('source_name', '').strip()
+        source_name_en = request.POST.get('source_name_en', '').strip()
+        source_name_ru = request.POST.get('source_name_ru', '').strip()
         news = News(
             title_tm=title_tm,
             title_en=request.POST.get('title_en', ''),
@@ -231,6 +242,14 @@ def panel_news_add(request):
             content_en=request.POST.get('content_en', ''),
             content_ru=request.POST.get('content_ru', ''),
             video_url=request.POST.get('video_url', '').strip(),
+            source_name_tm=source_name_tm,
+            source_name_en=source_name_en,
+            source_name_ru=source_name_ru,
+            source_name=source_name_tm,
+            source_url=request.POST.get('source_url', '').strip(),
+            pdf_title_tm=request.POST.get('pdf_title_tm', '').strip(),
+            pdf_title_en=request.POST.get('pdf_title_en', '').strip(),
+            pdf_title_ru=request.POST.get('pdf_title_ru', '').strip(),
         )
         if 'image' in request.FILES:
             news.image = request.FILES['image']
@@ -240,6 +259,8 @@ def panel_news_add(request):
             news.image_ru = request.FILES['image_ru']
         if 'video' in request.FILES:
             news.video = request.FILES['video']
+        if 'pdf_file' in request.FILES:
+            news.pdf_file = request.FILES['pdf_file']
         news.save()
         messages.success(request, 'Täzelik üstünlikli goşuldy!')
         return redirect('panel_news')
@@ -257,6 +278,14 @@ def panel_news_edit(request, pk):
         news.content_en = request.POST.get('content_en', '')
         news.content_ru = request.POST.get('content_ru', '')
         news.video_url = request.POST.get('video_url', '').strip()
+        news.source_name_tm = request.POST.get('source_name_tm', '').strip()
+        news.source_name_en = request.POST.get('source_name_en', '').strip()
+        news.source_name_ru = request.POST.get('source_name_ru', '').strip()
+        news.source_name = news.source_name_tm or request.POST.get('source_name', '').strip()
+        news.source_url = request.POST.get('source_url', '').strip()
+        news.pdf_title_tm = request.POST.get('pdf_title_tm', '').strip()
+        news.pdf_title_en = request.POST.get('pdf_title_en', '').strip()
+        news.pdf_title_ru = request.POST.get('pdf_title_ru', '').strip()
         
         if 'image' in request.FILES:
             news.image = request.FILES['image']
@@ -275,8 +304,13 @@ def panel_news_edit(request, pk):
 
         if 'video' in request.FILES:
             news.video = request.FILES['video']
-        elif 'clear_video' in request.POST:
+        elif 'clear_video' in request.POST or request.POST.get('clear_video') == '1':
             news.video = None
+
+        if 'pdf_file' in request.FILES:
+            news.pdf_file = request.FILES['pdf_file']
+        elif 'clear_pdf_file' in request.POST or request.POST.get('clear_pdf_file') == '1':
+            news.pdf_file = None
 
         news.save()
         messages.success(request, 'Täzelik üstünlikli üýtgedildi!')
@@ -333,6 +367,9 @@ def panel_bilim_news_add(request):
             content_ru=request.POST.get('content_ru', '').strip(),
             image_url=request.POST.get('image_url', '').strip(),
             source_url=request.POST.get('source_url', '').strip(),
+            pdf_title_tm=request.POST.get('pdf_title_tm', '').strip(),
+            pdf_title_en=request.POST.get('pdf_title_en', '').strip(),
+            pdf_title_ru=request.POST.get('pdf_title_ru', '').strip(),
         )
         if 'image' in request.FILES:
             item.image = request.FILES['image']
@@ -340,6 +377,8 @@ def panel_bilim_news_add(request):
             item.image_en = request.FILES['image_en']
         if 'image_ru' in request.FILES:
             item.image_ru = request.FILES['image_ru']
+        if 'pdf_file' in request.FILES:
+            item.pdf_file = request.FILES['pdf_file']
         item.save()
         messages.success(request, 'Bilim täzeligi üstünlikli goşuldy!')
         return redirect('panel_bilim_news')
@@ -368,6 +407,9 @@ def panel_bilim_news_edit(request, pk):
         src_url = request.POST.get('source_url', '').strip()
         if src_url:
             item.source_url = src_url
+        item.pdf_title_tm = request.POST.get('pdf_title_tm', '').strip()
+        item.pdf_title_en = request.POST.get('pdf_title_en', '').strip()
+        item.pdf_title_ru = request.POST.get('pdf_title_ru', '').strip()
 
         pub_date_str = request.POST.get('published_date', '').strip()
         if pub_date_str:
@@ -395,6 +437,11 @@ def panel_bilim_news_edit(request, pk):
             item.image_ru = request.FILES['image_ru']
         elif 'clear_image_ru' in request.POST or request.POST.get('clear_image_ru') == '1':
             item.image_ru = None
+
+        if 'pdf_file' in request.FILES:
+            item.pdf_file = request.FILES['pdf_file']
+        elif 'clear_pdf_file' in request.POST or request.POST.get('clear_pdf_file') == '1':
+            item.pdf_file = None
 
         item.save()
         messages.success(request, 'Bilim täzeligi üstünlikli üýtgedildi!')
@@ -582,6 +629,10 @@ def panel_page_add(request):
         elif Page.objects.filter(slug=slug).exists():
             slug = generate_unique_slug(slug)
 
+        source_name_tm = request.POST.get('source_name_tm', '').strip() or request.POST.get('source_name', '').strip()
+        source_name_en = request.POST.get('source_name_en', '').strip()
+        source_name_ru = request.POST.get('source_name_ru', '').strip()
+
         page = Page(
             title_tm=title_tm,
             title_en=request.POST.get('title_en', ''),
@@ -591,6 +642,17 @@ def panel_page_add(request):
             content_tm=request.POST.get('content_tm', ''),
             content_en=request.POST.get('content_en', ''),
             content_ru=request.POST.get('content_ru', ''),
+            show_in_tm=bool(request.POST.get('show_in_tm')),
+            show_in_en=bool(request.POST.get('show_in_en')),
+            show_in_ru=bool(request.POST.get('show_in_ru')),
+            source_name_tm=source_name_tm,
+            source_name_en=source_name_en,
+            source_name_ru=source_name_ru,
+            source_name=source_name_tm,
+            source_url=request.POST.get('source_url', '').strip(),
+            pdf_title_tm=request.POST.get('pdf_title_tm', '').strip(),
+            pdf_title_en=request.POST.get('pdf_title_en', '').strip(),
+            pdf_title_ru=request.POST.get('pdf_title_ru', '').strip(),
             parent=parent,
             order=int(request.POST.get('order', 0) or 0),
         )
@@ -642,6 +704,17 @@ def panel_page_edit(request, pk):
         page.content_tm = request.POST.get('content_tm', '')
         page.content_en = request.POST.get('content_en', '')
         page.content_ru = request.POST.get('content_ru', '')
+        page.show_in_tm = bool(request.POST.get('show_in_tm'))
+        page.show_in_en = bool(request.POST.get('show_in_en'))
+        page.show_in_ru = bool(request.POST.get('show_in_ru'))
+        page.source_name_tm = request.POST.get('source_name_tm', '').strip()
+        page.source_name_en = request.POST.get('source_name_en', '').strip()
+        page.source_name_ru = request.POST.get('source_name_ru', '').strip()
+        page.source_name = page.source_name_tm or request.POST.get('source_name', '').strip()
+        page.source_url = request.POST.get('source_url', '').strip()
+        page.pdf_title_tm = request.POST.get('pdf_title_tm', '').strip()
+        page.pdf_title_en = request.POST.get('pdf_title_en', '').strip()
+        page.pdf_title_ru = request.POST.get('pdf_title_ru', '').strip()
         if page.parent is not None:
             parent_id = request.POST.get('parent')
             if parent_id:

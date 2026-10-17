@@ -125,7 +125,19 @@
                   <a href="{% url 'panel_page_edit' page.pk %}" style="color: var(--panel-text); text-decoration: none; display: block;" title="Düzetmek üçin basyň">
                     <strong style="font-size: 15px; font-weight: 700; color: var(--panel-text);">{{ page.title_tm }}</strong>
                   </a>
-                  {% if page.title_en %}<span style="color: var(--panel-text-muted); font-size: 12px;">{{ page.title_en|truncatechars:40 }}</span>{% endif %}
+                  {% if page.title_en %}<span style="color: var(--panel-text-muted); font-size: 12px; display: block;">{{ page.title_en|truncatechars:40 }}</span>{% endif %}
+                  {% if page.pdf_file %}
+                  <div style="margin-top: 3px;">
+                    <a href="{{ page.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #dc2626; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                      <i class="fa-solid fa-file-pdf"></i> PDF resminama
+                    </a>
+                  </div>
+                  {% endif %}
+                  <div style="display: flex; align-items: center; gap: 4px; margin-top: 5px;">
+                    <span class="badge-panel {% if page.show_in_tm %}badge-success{% else %}badge-neutral{% endif %}" style="font-size: 10px; padding: 2px 6px; font-weight: 700; {% if not page.show_in_tm %}opacity: 0.45; text-decoration: line-through;{% endif %}" title="Türkmen dilinde {% if page.show_in_tm %}görkezilýär{% else %}gizlenen{% endif %}">TM</span>
+                    <span class="badge-panel {% if page.show_in_en %}badge-info{% else %}badge-neutral{% endif %}" style="font-size: 10px; padding: 2px 6px; font-weight: 700; {% if not page.show_in_en %}opacity: 0.45; text-decoration: line-through;{% endif %}" title="Iňlis dilinde {% if page.show_in_en %}görkezilýär{% else %}gizlenen{% endif %}">EN</span>
+                    <span class="badge-panel {% if page.show_in_ru %}badge-danger{% else %}badge-neutral{% endif %}" style="font-size: 10px; padding: 2px 6px; font-weight: 700; {% if not page.show_in_ru %}opacity: 0.45; text-decoration: line-through;{% endif %}" title="Rus dilinde {% if page.show_in_ru %}görkezilýär{% else %}gizlenen{% endif %}">RU</span>
+                  </div>
                 </div>
               </div>
             </td>

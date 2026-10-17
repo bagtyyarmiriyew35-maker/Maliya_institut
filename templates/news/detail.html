@@ -29,7 +29,7 @@
 
                 <h1 class="article-title">{% render_lang news_item 'title' current_lang %}</h1>
                 
-                <div class="article-meta" style="margin-bottom: 25px;">
+                <div class="article-meta" style="margin-bottom: 25px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 14px; height: 14px; fill: currentColor; display: inline-block; vertical-align: middle; margin-right: 4px;">
                             <path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v320c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64h-40V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192h352v256c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192z"/>
@@ -42,11 +42,101 @@
                         </svg>
                         {{ news_item.views_count }}
                     </span>
+                    {% if news_item.source_url %}
+                    <span style="margin-left: auto;">
+                        <a href="{{ news_item.source_url }}" target="_blank" rel="noopener noreferrer" style="color: #0a5d36; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px;" title="{% ui_label 'read_on_source' current_lang %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            <span>{% ui_label 'source' current_lang %}: {% render_source_name news_item current_lang %}</span>
+                        </a>
+                    </span>
+                    {% endif %}
                 </div>
                 
                 <div class="article-body">
                     {% render_lang news_item 'content' current_lang %}
                 </div>
+
+                {% if news_item.source_url %}
+                <!-- Asyl Çeşme Zolagy (Sleek Modern Citation) -->
+                <div class="article-source-bar" style="margin: 28px 0 24px 0; padding: 12px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 32px; height: 32px; border-radius: 8px; background: #ecfdf5; color: #0a5d36; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #a7f3d0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #64748b;">
+                                {% ui_label 'original_source' current_lang %}:
+                            </span>
+                            <span style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-left: 4px;">
+                                {% render_source_name news_item current_lang %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ news_item.source_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #0a5d36; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(10,93,54,0.18);" onmouseover="this.style.background='#064e29';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0a5d36';this.style.transform='none';">
+                            <span>{% ui_label 'read_on_source' current_lang %}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                <polyline points="7 7 17 7 17 17"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if news_item.pdf_file %}
+                <!-- PDF Resminama Ýüklemek Zolagy (Sleek Document Download Bar) -->
+                <div class="article-pdf-bar" style="margin: 0 0 24px 0; padding: 14px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 42px; height: 42px; border-radius: 10px; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #fecaca;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                                {% render_pdf_title news_item current_lang %}
+                            </div>
+                            {% if news_item.pdf_file.size %}
+                            <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
+                                {% ui_label 'file_size' current_lang %}: {{ news_item.pdf_file.size|filesizeformat }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <a href="{{ news_item.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span>{% ui_label 'open' current_lang %}</span>
+                        </a>
+                        <a href="{{ news_item.pdf_file.url }}" download class="btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #0a5d36; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(10,93,54,0.18);" onmouseover="this.style.background='#064e29';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0a5d36';this.style.transform='none';">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>{% ui_label 'download' current_lang %}</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
                 
                 <div class="article-footer">
                     <a href="{% url 'news_list' %}" class="btn btn-outline">

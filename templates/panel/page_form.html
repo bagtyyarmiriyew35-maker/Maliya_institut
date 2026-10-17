@@ -102,27 +102,6 @@
       </div>
     </div>
 
-    <!-- PDF Resminama -->
-    <div class="panel-form-section">
-      <div class="panel-form-section-title"><i class="fa-solid fa-file-pdf" style="color: #f85149;"></i> PDF Resminama (Mazmunyň yerine göni açylyp görkeziler)</div>
-      {% if action == 'edit' and obj.pdf_file %}
-      <div class="current-file-info" style="margin-bottom:12px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <i class="fa-solid fa-file-pdf" style="color: #f85149;"></i>
-          Häzirki PDF: <a href="{{ obj.pdf_file.url }}" target="_blank" style="color: #58a6ff; font-weight: 600;">PDF resminamany gör</a>
-        </div>
-        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--panel-danger);">
-          <input type="checkbox" name="clear_pdf_file" value="1"> PDF resminamany aýyr (öçür)
-        </label>
-      </div>
-      {% endif %}
-      <div class="file-upload-area">
-        <input type="file" name="pdf_file" accept=".pdf,application/pdf">
-        <div class="file-upload-icon"><i class="fa-solid fa-file-pdf" style="color: #f85149;"></i></div>
-        <div class="file-upload-text">PDF resminama saýlaň (.pdf)<br><strong>Sahypa girilende mazmunyň yerine göni PDF okalaç görkeziler</strong></div>
-      </div>
-    </div>
-
     <!-- Meta -->
     <div class="panel-form-section">
       <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Sahypa maglumatlary</div>
@@ -179,6 +158,97 @@
       </div>
     </div>
 
+    <!-- Diller boýunça görkezilmegi (TM, EN, RU) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-eye" style="color: #048848;"></i> Diller boýunça görkezilmegi (Web sahypada haýsy dillerde görünsin)
+      </div>
+      <p style="font-size: 13px; color: var(--panel-text-muted); margin-top: -6px; margin-bottom: 16px;">
+        Ulanyjy sahypanyň ýokarsynda baýdaklary üýtgedende (TM, EN, RU), bu bölümiň haýsy dilde görkezilmelidigini belläň. Eger haýsydyr bir diliň belligini aýyrsaňyz, şol dil saýlananda bu bölüm menýuda we degişli sahypalarda görünmez.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+        <!-- TM Checkbox -->
+        <label style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--panel-surface, #fff); border: 2px solid {% if not obj or obj.show_in_tm %}#22c55e{% else %}var(--panel-border, #e2e8f0){% endif %}; border-radius: 12px; cursor: pointer; transition: all 0.2s;" id="label_show_in_tm">
+          <input type="checkbox" name="show_in_tm" id="chk_show_in_tm" value="1" {% if not obj or obj.show_in_tm %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #048848; cursor: pointer;">
+          <img src="/static/images/flag_tm.png" style="width: 24px; height: 16px; object-fit: cover; border-radius: 3px;">
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--panel-text);">Türkmençe (TM)</div>
+            <div style="font-size: 12px; color: var(--panel-text-muted);">TM dilde görkezilsin</div>
+          </div>
+        </label>
+
+        <!-- EN Checkbox -->
+        <label style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--panel-surface, #fff); border: 2px solid {% if not obj or obj.show_in_en %}#3b82f6{% else %}var(--panel-border, #e2e8f0){% endif %}; border-radius: 12px; cursor: pointer; transition: all 0.2s;" id="label_show_in_en">
+          <input type="checkbox" name="show_in_en" id="chk_show_in_en" value="1" {% if not obj or obj.show_in_en %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #2563eb; cursor: pointer;">
+          <img src="/static/images/flag_uk.png" style="width: 24px; height: 16px; object-fit: cover; border-radius: 3px;">
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--panel-text);">Iňlisçe (EN)</div>
+            <div style="font-size: 12px; color: var(--panel-text-muted);">EN dilde görkezilsin</div>
+          </div>
+        </label>
+
+        <!-- RU Checkbox -->
+        <label style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--panel-surface, #fff); border: 2px solid {% if not obj or obj.show_in_ru %}#ef4444{% else %}var(--panel-border, #e2e8f0){% endif %}; border-radius: 12px; cursor: pointer; transition: all 0.2s;" id="label_show_in_ru">
+          <input type="checkbox" name="show_in_ru" id="chk_show_in_ru" value="1" {% if not obj or obj.show_in_ru %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #dc2626; cursor: pointer;">
+          <img src="/static/images/flag_rus.png" style="width: 24px; height: 16px; object-fit: cover; border-radius: 3px;">
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--panel-text);">Rusça (RU)</div>
+            <div style="font-size: 12px; color: var(--panel-text-muted);">RU dilde görkezilsin</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Habaryň / Sahypanyň Asyl Çeşmesi (3 Dilde) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-link" style="color: #2563eb;"></i> Asyl Çeşmesi / Salgysy (Web sahypa linki we 3 dilde ady)
+      </div>
+      <p style="font-size: 13px; color: var(--panel-text-muted); margin-bottom: 14px;">
+        Eger bu maglumat başga bir çeşmeden alnan bolsa, bu ýere asyl web sahypasynyň linkini (URL) we çeşmäniň adyny 3 dilde (TM, EN, RU) giriziň. Ulanyjy saýtda haýsy dili saýlasa, şol dilde çeşmäniň ady görkeziler.
+      </p>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label><i class="fa-solid fa-globe" style="color: #2563eb;"></i> Çeşme URL (Asyl web sahypanyň linki)</label>
+        <input type="url" name="source_url" class="form-control-panel" value="{% if obj %}{{ obj.source_url|default:'' }}{% elif post %}{{ post.source_url|default:'' }}{% endif %}" placeholder="https://...">
+        <small style="color:var(--panel-text-muted);font-size:11px;">Okyjylar bu linke basyp maglumaty asyl çeşmesinden açyp bilerler</small>
+      </div>
+
+      <div style="font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
+        <i class="fa-solid fa-language" style="color: #0a5c36;"></i> Çeşmäniň ady (3 dilde / TM, EN, RU):
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+        <!-- TM -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_tm.png" style="width: 16px; vertical-align: middle;"> Çeşmäniň ady (TM)</span>
+            <span class="badge-panel badge-success" style="font-size: 10px;">TM</span>
+          </label>
+          <input type="text" name="source_name_tm" class="form-control-panel" value="{% if obj %}{% if obj.source_name_tm %}{{ obj.source_name_tm }}{% else %}{{ obj.source_name|default:'' }}{% endif %}{% elif post %}{{ post.source_name_tm|default:'' }}{% endif %}" placeholder="Mysal: TDH, Türkmenistan: Altyn Asyr...">
+        </div>
+
+        <!-- EN -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_uk.png" style="width: 16px; vertical-align: middle;"> Source Name (EN)</span>
+            <span class="badge-panel badge-info" style="font-size: 10px;">EN</span>
+          </label>
+          <input type="text" name="source_name_en" class="form-control-panel" value="{% if obj %}{{ obj.source_name_en|default:'' }}{% elif post %}{{ post.source_name_en|default:'' }}{% endif %}" placeholder="Example: TDH, State News Agency...">
+        </div>
+
+        <!-- RU -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; justify-content: space-between;">
+            <span><img src="/static/images/flag_rus.png" style="width: 16px; vertical-align: middle;"> Название источника (RU)</span>
+            <span class="badge-panel badge-danger" style="font-size: 10px;">RU</span>
+          </label>
+          <input type="text" name="source_name_ru" class="form-control-panel" value="{% if obj %}{{ obj.source_name_ru|default:'' }}{% elif post %}{{ post.source_name_ru|default:'' }}{% endif %}" placeholder="Например: TDH, Золотой век...">
+        </div>
+      </div>
+    </div>
+
     <!-- TM -->
     <div class="panel-form-section">
       <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
@@ -214,11 +284,85 @@
       </div>
     </div>
 
+    <!-- PDF Resminama (Ýükläp almak üçin) -->
+    <div class="panel-form-section">
+      <div class="panel-form-section-title">
+        <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> PDF Resminama (Sahypa degişli faýl)
+      </div>
+      <p style="font-size: 13px; color: var(--panel-text-muted); margin-bottom: 14px;">
+        Eger bu sahypa degişli resmi resminama, bildiriş, düzgünnama ýa-da golýazma faýly bar bolsa, PDF görnüşinde ýükläň. Okyjylar sahypanyň aşagyndan bu PDF faýly gönüden-göni ýükläp alyp bilerler.
+      </p>
+
+      {% if action == 'edit' and obj.pdf_file %}
+      <div class="current-file-info" style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; background: var(--panel-surface, #fff); padding: 12px 16px; border: 1px solid var(--panel-border, #e2e8f0); border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 22px;"></i>
+          <div>
+            <div style="font-weight: 600; font-size: 13.5px; color: var(--panel-text);">
+              Häzirki PDF: <a href="{{ obj.pdf_file.url }}" target="_blank" style="color: #2563eb; text-decoration: underline;">PDF faýly gör</a>
+            </div>
+            {% if obj.pdf_file.size %}
+            <div style="font-size: 12px; color: var(--panel-text-muted);">Faýlyň göwrümi: {{ obj.pdf_file.size|filesizeformat }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--panel-danger); font-weight: 600;">
+          <input type="checkbox" name="clear_pdf_file" value="1"> PDF faýly aýyr (öçür)
+        </label>
+      </div>
+      {% endif %}
+
+      <div class="file-upload-area" style="margin-bottom: 16px;">
+        <input type="file" name="pdf_file" accept=".pdf,application/pdf">
+        <div class="file-upload-icon"><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i></div>
+        <div class="file-upload-text">PDF resminama saýlaň (.pdf)<br><strong>Okyjylar üçin sahypada ýükläp alma zolagy dörediler</strong></div>
+      </div>
+
+      <!-- PDF Resminama Ady (3 dilde) -->
+      <div style="background: var(--panel-surface, #fff); border: 1px solid var(--panel-border, #e2e8f0); border-radius: 10px; padding: 14px 16px;">
+        <div style="font-weight: 700; font-size: 13.5px; color: var(--panel-text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-heading" style="color: var(--panel-primary, #0a5d36);"></i>
+          <span>PDF Resminamasynyň Ady (3 dilde - Islege görä)</span>
+        </div>
+        <p style="font-size: 12px; color: var(--panel-text-muted); margin-bottom: 12px;">
+          Resminama üçin aýratyn sözbasy/at girizmek isleseňiz aşakdaky öýjüklere ýazyň. <strong>Eger boş goýsaňyz, awtomatiki ýagdaýda sahypanyň öz ady ulanylar.</strong>
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+              <img src="/static/images/flag_tm.png" style="width: 16px; vertical-align: middle;">
+              <span>PDF ady (TM)</span>
+            </label>
+            <input type="text" name="pdf_title_tm" class="form-control-panel" value="{{ obj.pdf_title_tm|default:'' }}" placeholder="Boş goýulsa sahypanyň ady ulanylar">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+              <img src="/static/images/flag_uk.png" style="width: 16px; vertical-align: middle;">
+              <span>PDF Title (EN)</span>
+            </label>
+            <input type="text" name="pdf_title_en" class="form-control-panel" value="{{ obj.pdf_title_en|default:'' }}" placeholder="Default: English title of page">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+              <img src="/static/images/flag_rus.png" style="width: 16px; vertical-align: middle;">
+              <span>Название PDF (RU)</span>
+            </label>
+            <input type="text" name="pdf_title_ru" class="form-control-panel" value="{{ obj.pdf_title_ru|default:'' }}" placeholder="По умолчанию: заголовок на русском">
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel-form-footer">
       <button type="submit" class="btn-panel btn-panel-primary">
-        <i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}
+        <i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatda sakla{% else %}Goş{% endif %}
       </button>
-      <a href="{% url 'panel_pages' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+      <a href="{% url 'panel_pages' %}" class="btn-panel btn-panel-ghost">
+        <i class="fa-solid fa-xmark"></i> Ýatyr
+      </a>
     </div>
   </div>
 </form>
@@ -277,6 +421,27 @@ document.addEventListener('DOMContentLoaded', function() {
     sectionSelect.addEventListener('change', filterParents);
     filterParents();
   }
+
+  // Language visibility checkbox visual state sync
+  ['tm', 'en', 'ru'].forEach(lang => {
+    const chk = document.getElementById(`chk_show_in_${lang}`);
+    const lbl = document.getElementById(`label_show_in_${lang}`);
+    const colorMap = { tm: '#22c55e', en: '#3b82f6', ru: '#ef4444' };
+    if (chk && lbl) {
+      chk.addEventListener('change', function() {
+        if (this.checked) {
+          lbl.style.borderColor = colorMap[lang];
+          lbl.style.opacity = '1';
+        } else {
+          lbl.style.borderColor = 'var(--panel-border, #e2e8f0)';
+          lbl.style.opacity = '0.6';
+        }
+      });
+      if (!chk.checked) {
+        lbl.style.opacity = '0.6';
+      }
+    }
+  });
 });
 </script>
 {% endblock %}

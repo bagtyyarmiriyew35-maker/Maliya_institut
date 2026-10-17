@@ -3,16 +3,24 @@ from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, SiteSettings, LibraryCategory, LibraryBook, BilimNews
 
-def get_recent_contents(limit=10):
+def get_recent_contents(lang='tm', limit=10):
     """
     Fetches the 10 latest added contents across the site:
-    - Pages from sections (institut and its subpages/sub-subpages, ylym, olimpiada, baslesikler, halkara, dalasgar)
+    - Pages from sections (filtered by language visibility)
     - Documents (reports, etc.)
     EXCLUDES:
     - News (News, BilimNews)
     - FAQ / Sorag-jogap (section='sorag_jogap')
     """
-    pages = list(Page.objects.select_related('parent').exclude(section='sorag_jogap').order_by('-created_at', '-id')[:limit])
+    l = str(lang or 'tm').lower()
+    if 'eng' in l or l == 'en':
+        lang_filter = {'show_in_en': True}
+    elif 'rus' in l or l == 'ru':
+        lang_filter = {'show_in_ru': True}
+    else:
+        lang_filter = {'show_in_tm': True}
+
+    pages = list(Page.objects.filter(**lang_filter).select_related('parent').exclude(section='sorag_jogap').order_by('-created_at', '-id')[:limit])
     docs = list(Document.objects.all().order_by('-uploaded_at', '-id')[:limit])
 
     section_icon_map = {
@@ -112,7 +120,8 @@ def home(request):
     news_list = News.objects.all()[:6]
     partners = Partner.objects.all()
     recent_reports = Document.objects.filter(category='Hasabat')[:6]
-    recent_contents = get_recent_contents(limit=10)
+    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    recent_contents = get_recent_contents(lang=raw_lang, limit=10)
     
     # Fetch stats dynamically from SiteSettings
     settings_obj = SiteSettings.get_settings()
@@ -303,12 +312,22 @@ def page_detail(request, slug):
     """
     page = get_object_or_404(Page, slug=slug)
     
-    subpages = page.subpages.all().order_by('order', 'title_tm')
+    # Active language
+    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    lang_str = str(raw_lang).strip().lower()
+    if 'eng' in lang_str or lang_str == 'en':
+        lang_filter = {'show_in_en': True}
+    elif 'rus' in lang_str or lang_str == 'ru':
+        lang_filter = {'show_in_ru': True}
+    else:
+        lang_filter = {'show_in_tm': True}
+    
+    subpages = page.subpages.filter(**lang_filter).order_by('order', 'title_tm')
     
     # Get sibling pages for sidebar navigation
     siblings = []
     if page.parent:
-        siblings = page.parent.subpages.all().order_by('order', 'title_tm')
+        siblings = page.parent.subpages.filter(**lang_filter).order_by('order', 'title_tm')
     elif subpages.exists():
         siblings = subpages
 

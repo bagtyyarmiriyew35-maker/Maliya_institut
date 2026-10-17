@@ -40,6 +40,20 @@
           <td>
             <strong>{{ item.title_tm|truncatechars:45 }}</strong>
             {% if item.title_en %}<br><span class="text-muted">{{ item.title_en|truncatechars:35 }}</span>{% endif %}
+            {% if item.source_url %}
+            <div style="margin-top: 4px;">
+              <a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #2563eb; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i> Çeşme: {{ item.display_source_name }}
+              </a>
+            </div>
+            {% endif %}
+            {% if item.pdf_file %}
+            <div style="margin-top: 3px;">
+              <a href="{{ item.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #dc2626; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                <i class="fa-solid fa-file-pdf" style="font-size: 11px;"></i> PDF resminama
+              </a>
+            </div>
+            {% endif %}
           </td>
           <td><span class="text-muted">{{ item.published_date|date:"d.m.Y H:i" }}</span></td>
           <td><span class="badge-panel badge-info"><i class="fa-regular fa-eye"></i> {{ item.views_count }}</span></td>

@@ -39,128 +39,82 @@
                         {{ page.content_tm|safe }}
                     {% endif %}
 
-                    {% if page.pdf_file %}
-                    <!-- Direct Inline Continuous PDF Document Pages (PyPDF2 inspected, no iframe/google viewer) -->
-                    <div class="page-inline-pdf-container" style="margin-top: 24px; margin-bottom: 32px; border-radius: 16px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #525659;">
-                        <!-- PDF Header Toolbar -->
-                        <div class="pdf-toolbar" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: #1e293b; color: white; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <div style="display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
-                                <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 22px;"></i>
-                                <span>{% render_lang page 'title' current_lang %}</span>
-                                {% if pdf_page_count %}
-                                <span style="background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 12px; font-size: 12px; color: #cbd5e1;">
-                                    {{ pdf_page_count }} sahypa
-                                </span>
-                                {% endif %}
+                    {% if page.source_url %}
+                    <!-- Asyl Çeşme Zolagy (Sleek Modern Citation) -->
+                    <div class="article-source-bar" style="margin: 28px 0 24px 0; padding: 12px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: #ecfdf5; color: #0a5d36; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #a7f3d0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
                             </div>
-                            
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <!-- Zoom Controls -->
-                                <div style="display: flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;">
-                                    <button type="button" id="pdfZoomOut" style="background: none; border: none; color: white; padding: 6px 12px; cursor: pointer;" title="Keltelt"><i class="fa-solid fa-minus"></i></button>
-                                    <span id="pdfZoomVal" style="font-size: 13px; font-weight: 600; padding: 0 8px;">100%</span>
-                                    <button type="button" id="pdfZoomIn" style="background: none; border: none; color: white; padding: 6px 12px; cursor: pointer;" title="Ulalt"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                                
-                                <a href="{{ page.pdf_file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                                    <i class="fa-solid fa-download"></i> Ýükle
-                                </a>
+                            <div>
+                                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #64748b;">
+                                    {% ui_label 'original_source' current_lang %}:
+                                </span>
+                                <span style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-left: 4px;">
+                                    {% render_source_name page current_lang %}
+                                </span>
                             </div>
                         </div>
-
-                        <!-- Continuous PDF Rendered Pages Canvas Container -->
-                        <div id="inlinePdfPagesViewer" style="padding: 24px 16px; overflow-y: auto; max-height: 850px; display: flex; flex-direction: column; align-items: center; gap: 20px; background: #525659;">
-                            <div id="pdfLoadingState" style="color: white; padding: 40px; text-align: center; font-size: 15px;">
-                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 24px; margin-bottom: 10px; display: block; color: #38bdf8;"></i>
-                                PDF sahypalary görkezilýär...
-                            </div>
+                        
+                        <div>
+                            <a href="{{ page.source_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #0a5d36; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(10,93,54,0.18);" onmouseover="this.style.background='#064e29';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0a5d36';this.style.transform='none';">
+                                <span>{% ui_label 'read_on_source' current_lang %}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                                    <polyline points="7 7 17 7 17 17"></polyline>
+                                </svg>
+                            </a>
                         </div>
                     </div>
+                    {% endif %}
 
-                    <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const pdfUrl = "{{ page.pdf_file.url }}";
-                        const container = document.getElementById('inlinePdfPagesViewer');
-                        const loadingState = document.getElementById('pdfLoadingState');
-                        const zoomInBtn = document.getElementById('pdfZoomIn');
-                        const zoomOutBtn = document.getElementById('pdfZoomOut');
-                        const zoomValEl = document.getElementById('pdfZoomVal');
+                    {% if page.pdf_file %}
+                    <!-- PDF Resminama Ýüklemek Zolagy (Sleek Document Download Bar) -->
+                    <div class="article-pdf-bar" style="margin: 0 0 24px 0; padding: 14px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #fecaca;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                                    {% render_pdf_title page current_lang %}
+                                </div>
+                                {% if page.pdf_file.size %}
+                                <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
+                                    {% ui_label 'file_size' current_lang %}: {{ page.pdf_file.size|filesizeformat }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                         
-                        if (!pdfUrl || !container || typeof pdfjsLib === 'undefined') return;
-                        
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-                        
-                        let currentScale = 1.25;
-                        let pdfDoc = null;
-                        
-                        async function renderAllPages() {
-                            if (!pdfDoc) return;
-                            container.innerHTML = '';
-                            
-                            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                                const page = await pdfDoc.getPage(pageNum);
-                                const viewport = page.getViewport({ scale: currentScale });
-                                
-                                const pageCard = document.createElement('div');
-                                pageCard.className = 'inline-pdf-page-card';
-                                pageCard.style.cssText = 'background: white; border-radius: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; max-width: 100%; margin: 0 auto;';
-                                
-                                const canvas = document.createElement('canvas');
-                                canvas.style.display = 'block';
-                                canvas.style.maxWidth = '100%';
-                                canvas.style.height = 'auto';
-                                
-                                const context = canvas.getContext('2d');
-                                canvas.height = viewport.height;
-                                canvas.width = viewport.width;
-                                
-                                const badge = document.createElement('div');
-                                badge.innerText = pageNum + ' / ' + pdfDoc.numPages;
-                                badge.style.cssText = 'position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; pointer-events: none;';
-                                
-                                pageCard.appendChild(canvas);
-                                pageCard.appendChild(badge);
-                                container.appendChild(pageCard);
-                                
-                                await page.render({
-                                    canvasContext: context,
-                                    viewport: viewport
-                                }).promise;
-                            }
-                        }
-                        
-                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
-                            pdfDoc = pdf;
-                            if (loadingState) loadingState.remove();
-                            renderAllPages();
-                        }).catch(function(err) {
-                            console.error('PDF rendering error:', err);
-                            if (loadingState) {
-                                loadingState.innerHTML = '<div style="color:#f87171;"><i class="fa-solid fa-triangle-exclamation"></i> PDF resminamasyny ýükläp bolmady.</div>';
-                            }
-                        });
-                        
-                        if (zoomInBtn) {
-                            zoomInBtn.addEventListener('click', function() {
-                                if (currentScale < 2.5) {
-                                    currentScale += 0.25;
-                                    if (zoomValEl) zoomValEl.innerText = Math.round((currentScale / 1.25) * 100) + '%';
-                                    renderAllPages();
-                                }
-                            });
-                        }
-                        
-                        if (zoomOutBtn) {
-                            zoomOutBtn.addEventListener('click', function() {
-                                if (currentScale > 0.5) {
-                                    currentScale -= 0.25;
-                                    if (zoomValEl) zoomValEl.innerText = Math.round((currentScale / 1.25) * 100) + '%';
-                                    renderAllPages();
-                                }
-                            });
-                        }
-                    });
-                    </script>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <a href="{{ page.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>{% ui_label 'open' current_lang %}</span>
+                            </a>
+                            <a href="{{ page.pdf_file.url }}" download class="btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #0a5d36; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(10,93,54,0.18);" onmouseover="this.style.background='#064e29';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0a5d36';this.style.transform='none';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>{% ui_label 'download' current_lang %}</span>
+                            </a>
+                        </div>
+                    </div>
                     {% endif %}
 
                     {% if weekly_reports %}

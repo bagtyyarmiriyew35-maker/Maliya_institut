@@ -32,53 +32,74 @@
                 <ul>
                     
                     {% for p_page in menu_pages %}
-                        {% if p_page.slug == 'faq' %}
-                            <li><a href="{% url 'page_detail' p_page.slug %}">{% render_lang p_page 'title' current_lang %}</a></li>
+                        {% if current_lang == 'eng' and p_page.show_in_en == False %}
+                            {# hidden in English #}
+                        {% elif current_lang == 'rus' and p_page.show_in_ru == False %}
+                            {# hidden in Russian #}
+                        {% elif current_lang == 'tm' and p_page.show_in_tm == False %}
+                            {# hidden in Turkmen #}
                         {% else %}
-                            <li class="dropdown-item">
-                                <a href="#">{% render_lang p_page 'title' current_lang %} <i class="fa-solid fa-chevron-down"></i></a>
-                                <ul class="dropdown-menu">
-                                     <!-- Dynamic Subpages -->
-                                     {% for sub in p_page.subpages.all %}
-                                         {% if sub.subpages.all or sub.slug == 'hepdelik-sanly-hasabat' or 'hasabat' in sub.slug %}
-                                             <li class="dropdown-submenu-item">
-                                                 <a href="{% url 'page_detail' sub.slug %}" style="display: flex; align-items: center; justify-content: space-between;">
-                                                     <span>{% render_lang sub 'title' current_lang %}</span>
-                                                     <i class="fa-solid fa-chevron-right" style="font-size: 11px; opacity: 0.7;"></i>
-                                                 </a>
-                                                 <ul class="submenu-dropdown">
-                                                     {% for sub_sub in sub.subpages.all %}
-                                                     <li><a href="{% url 'page_detail' sub_sub.slug %}">{% render_lang sub_sub 'title' current_lang %}</a></li>
-                                                     {% endfor %}
-                                                     
-                                                     {% if sub.slug == 'hepdelik-sanly-hasabat' or 'hasabat' in sub.slug %}
-                                                         {% for doc in weekly_reports_menu %}
-                                                         <li>
-                                                             <a href="{% url 'document_detail' doc.pk %}" style="display: flex; align-items: center; gap: 8px;">
-                                                                 <i class="fa-solid fa-file-pdf" style="color: #f85149; font-size: 13px;"></i>
-                                                                 <span>{% render_lang doc 'title' current_lang %}</span>
-                                                             </a>
-                                                         </li>
-                                                         {% empty %}
-                                                         {% if not sub.subpages.all %}
-                                                         <li>
-                                                             <span style="display: block; padding: 10px 18px; font-size: 12px; color: #94a3b8; font-style: italic;">Hasabat tapylmady</span>
-                                                         </li>
-                                                         {% endif %}
-                                                         {% endfor %}
-                                                     {% endif %}
-                                                 </ul>
-                                             </li>
-                                         {% else %}
-                                             <li><a href="{% url 'page_detail' sub.slug %}">{% render_lang sub 'title' current_lang %}</a></li>
-                                         {% endif %}
-                                     {% endfor %}
-                                    
-                                    
-                                </ul>
-                            </li>
+                            {% if p_page.slug == 'faq' %}
+                                <li><a href="{% url 'page_detail' p_page.slug %}">{% render_lang p_page 'title' current_lang %}</a></li>
+                            {% else %}
+                                <li class="dropdown-item">
+                                    <a href="#">{% render_lang p_page 'title' current_lang %} <i class="fa-solid fa-chevron-down"></i></a>
+                                    <ul class="dropdown-menu">
+                                         <!-- Dynamic Subpages -->
+                                         {% for sub in p_page.subpages.all %}
+                                             {% if current_lang == 'eng' and sub.show_in_en == False %}
+                                                 {# skip in English #}
+                                             {% elif current_lang == 'rus' and sub.show_in_ru == False %}
+                                                 {# skip in Russian #}
+                                             {% elif current_lang == 'tm' and sub.show_in_tm == False %}
+                                                 {# skip in Turkmen #}
+                                             {% else %}
+                                                 {% if sub.subpages.all or sub.slug == 'hepdelik-sanly-hasabat' or 'hasabat' in sub.slug %}
+                                                     <li class="dropdown-submenu-item">
+                                                         <a href="{% url 'page_detail' sub.slug %}" style="display: flex; align-items: center; justify-content: space-between;">
+                                                             <span>{% render_lang sub 'title' current_lang %}</span>
+                                                             <i class="fa-solid fa-chevron-right" style="font-size: 11px; opacity: 0.7;"></i>
+                                                         </a>
+                                                         <ul class="submenu-dropdown">
+                                                             {% for sub_sub in sub.subpages.all %}
+                                                                 {% if current_lang == 'eng' and sub_sub.show_in_en == False %}
+                                                                     {# skip #}
+                                                                 {% elif current_lang == 'rus' and sub_sub.show_in_ru == False %}
+                                                                     {# skip #}
+                                                                 {% elif current_lang == 'tm' and sub_sub.show_in_tm == False %}
+                                                                     {# skip #}
+                                                                 {% else %}
+                                                                     <li><a href="{% url 'page_detail' sub_sub.slug %}">{% render_lang sub_sub 'title' current_lang %}</a></li>
+                                                                 {% endif %}
+                                                             {% endfor %}
+                                                             
+                                                             {% if sub.slug == 'hepdelik-sanly-hasabat' or 'hasabat' in sub.slug %}
+                                                                 {% for doc in weekly_reports_menu %}
+                                                                 <li>
+                                                                     <a href="{% url 'document_detail' doc.pk %}" style="display: flex; align-items: center; gap: 8px;">
+                                                                         <i class="fa-solid fa-file-pdf" style="color: #f85149; font-size: 13px;"></i>
+                                                                         <span>{% render_lang doc 'title' current_lang %}</span>
+                                                                     </a>
+                                                                 </li>
+                                                                 {% empty %}
+                                                                 {% if not sub.subpages.all %}
+                                                                 <li>
+                                                                     <span style="display: block; padding: 10px 18px; font-size: 12px; color: #94a3b8; font-style: italic;">Hasabat tapylmady</span>
+                                                                 </li>
+                                                                 {% endif %}
+                                                                 {% endfor %}
+                                                             {% endif %}
+                                                         </ul>
+                                                     </li>
+                                                 {% else %}
+                                                     <li><a href="{% url 'page_detail' sub.slug %}">{% render_lang sub 'title' current_lang %}</a></li>
+                                                 {% endif %}
+                                             {% endif %}
+                                         {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
                         {% endif %}
-                        
                     {% endfor %}
                     
                     <li><a href="{% url 'news_list' %}">{% ui_label 'news' current_lang %}</a></li>

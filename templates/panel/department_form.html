@@ -53,8 +53,8 @@
       <div class="form-group"><label>Описание</label><textarea name="description_ru" class="form-control-panel wysiwyg-editor">{{ obj.description_ru|default:'' }}</textarea></div>
     </div>
     <div class="panel-form-footer">
-      <button type="submit" class="btn-panel btn-panel-primary"><i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}</button>
-      <a href="{% url 'panel_departments' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+      <button type="submit" class="btn-panel btn-panel-primary"><i class="fa-solid fa-floppy-disk"></i> {% if action == 'edit' %}Ýatda sakla{% else %}Goş{% endif %}</button>
+      <a href="{% url 'panel_departments' %}" class="btn-panel btn-panel-ghost"><i class="fa-solid fa-xmark"></i> Ýatyr</a>
     </div>
   </div>
 </form>

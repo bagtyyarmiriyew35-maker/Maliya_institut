@@ -245,10 +245,40 @@ UI_VOCABULARY = {
         'eng': 'Source',
         'rus': 'Источник'
     },
+    'original_source': {
+        'tm': 'Habaryň asyl çeşmesi',
+        'eng': 'Original Source',
+        'rus': 'Первоисточник'
+    },
+    'read_on_source': {
+        'tm': 'Çeşmesinden okaň',
+        'eng': 'Read on source',
+        'rus': 'Читать в источнике'
+    },
+    'source_note': {
+        'tm': 'Bu maglumat asyl çeşmesinden alnan bolup, ony çeşmäniň öz sahypasyndan hem okap bilersiňiz.',
+        'eng': 'This information is obtained from the original source; you can also read it directly on the source website.',
+        'rus': 'Эта информация взята из первоисточника; вы также можете прочитать её непосредственно на сайте источника.'
+    },
     'views': {
         'tm': 'gezek görüldi',
         'eng': 'views',
         'rus': 'просмотров'
+    },
+    'download_pdf': {
+        'tm': 'PDF ýükle',
+        'eng': 'Download PDF',
+        'rus': 'Скачать PDF'
+    },
+    'pdf_document': {
+        'tm': 'PDF resminama',
+        'eng': 'PDF Document',
+        'rus': 'PDF документ'
+    },
+    'file_size': {
+        'tm': 'Faýlyň göwrümi',
+        'eng': 'File size',
+        'rus': 'Размер файла'
     }
 }
 
@@ -393,4 +423,75 @@ def lang_switch_url(context, lang_code):
     query = request.GET.copy()
     query['lang'] = lang_code
     return mark_safe(f"{request.path}?{query.urlencode()}")
+
+
+@register.simple_tag
+def render_source_name(obj, current_lang='tm'):
+    """
+    Renders the multilingual source name for an object (News or Page).
+    Falls back gracefully: selected language -> Turkmen (_tm) -> main -> domain from URL.
+    Usage: {% render_source_name news_item current_lang %}
+    """
+    if not obj:
+        return ""
+    if hasattr(obj, 'get_source_name'):
+        return obj.get_source_name(current_lang)
+    return getattr(obj, 'display_source_name', '')
+
+
+@register.simple_tag
+def render_pdf_title(obj, current_lang='tm'):
+    """
+    Renders the multilingual PDF title for an object (Page, News, BilimNews).
+    If custom PDF title is set for the active language, uses it.
+    Otherwise, automatically falls back to the object's title in that language.
+    Usage: {% render_pdf_title page current_lang %}
+    """
+    if not obj:
+        return ""
+    if hasattr(obj, 'get_pdf_title'):
+        return obj.get_pdf_title(current_lang)
+
+    l = str(current_lang or 'tm').lower()
+    if ('eng' in l or l == 'en'):
+        return getattr(obj, 'pdf_title_en', '') or getattr(obj, 'title_en', '') or getattr(obj, 'title_tm', '') or str(obj)
+    if ('rus' in l or l == 'ru'):
+        return getattr(obj, 'pdf_title_ru', '') or getattr(obj, 'title_ru', '') or getattr(obj, 'title_tm', '') or str(obj)
+    return getattr(obj, 'pdf_title_tm', '') or getattr(obj, 'title_tm', '') or str(obj)
+
+
+@register.filter
+def visible_in_lang(pages, lang='tm'):
+    """
+    Filter an iterable/queryset of Page objects based on active language visibility (TM, EN, RU).
+    Usage: {% for sub in p_page.subpages.all|visible_in_lang:current_lang %}
+    """
+    if not pages:
+        return []
+    l = str(lang or 'tm').lower()
+    if 'eng' in l or l == 'en':
+        return [p for p in pages if getattr(p, 'show_in_en', True)]
+    elif 'rus' in l or l == 'ru':
+        return [p for p in pages if getattr(p, 'show_in_ru', True)]
+    else:
+        return [p for p in pages if getattr(p, 'show_in_tm', True)]
+
+
+@register.filter
+def is_visible_in(page, lang='tm'):
+    """
+    Check if a single Page object is visible in the given language.
+    Usage: {% if p_page|is_visible_in:current_lang %}
+    """
+    if not page:
+        return True
+    l = str(lang or 'tm').lower()
+    if 'eng' in l or l == 'en':
+        return getattr(page, 'show_in_en', True)
+    elif 'rus' in l or l == 'ru':
+        return getattr(page, 'show_in_ru', True)
+    else:
+        return getattr(page, 'show_in_tm', True)
+
+
 

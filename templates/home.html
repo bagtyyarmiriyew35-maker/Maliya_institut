@@ -229,8 +229,13 @@
                     <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                     {% else %}
                     <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
-                    {% endif %}
                     <span class="news-card-date"><i class="fa-regular fa-calendar"></i> {{ item.published_date|date:"d.m.Y" }}</span>
+                    {% if item.source_url %}
+                    <span class="news-source-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(4px); color: #ffffff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; z-index: 5;">
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 9px;"></i> {% render_source_name item current_lang %}
+                    </span>
+                    {% endif %}
+                    {% endif %}
                 </div>
                 <div class="news-card-content">
                     <h3 class="news-card-title">{% render_lang item 'title' current_lang %}</h3>

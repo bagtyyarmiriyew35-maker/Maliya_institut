@@ -158,9 +158,11 @@
     <div class="panel-form-footer">
       <button type="submit" class="btn-panel btn-panel-primary">
         <i class="fa-solid fa-floppy-disk"></i>
-        {% if action == 'edit' %}Ýatyr{% else %}Goş{% endif %}
+        {% if action == 'edit' %}Ýatda sakla{% else %}Goş{% endif %}
       </button>
-      <a href="{% url 'panel_sliders' %}" class="btn-panel btn-panel-ghost">Ýatyr</a>
+      <a href="{% url 'panel_sliders' %}" class="btn-panel btn-panel-ghost">
+        <i class="fa-solid fa-xmark"></i> Ýatyr
+      </a>
     </div>
 
   </div>

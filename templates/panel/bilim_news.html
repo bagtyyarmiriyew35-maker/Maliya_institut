@@ -72,6 +72,13 @@
             {% if item.description_tm %}
             <span class="text-muted" style="font-size: 12px; display: block; margin-top: 4px;">{{ item.description_tm|truncatechars:70 }}</span>
             {% endif %}
+            {% if item.pdf_file %}
+            <div style="margin-top: 3px;">
+              <a href="{{ item.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #dc2626; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                <i class="fa-solid fa-file-pdf"></i> PDF resminama
+              </a>
+            </div>
+            {% endif %}
           </td>
           <td>
             <span class="text-muted" style="font-size: 13px;">

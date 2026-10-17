@@ -120,7 +120,7 @@ def home(request):
     news_list = News.objects.all()[:6]
     partners = Partner.objects.all()
     recent_reports = Document.objects.filter(category='Hasabat')[:6]
-    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    raw_lang = request.GET.get('lang') or request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
     recent_contents = get_recent_contents(lang=raw_lang, limit=10)
     
     # Fetch stats dynamically from SiteSettings
@@ -313,7 +313,7 @@ def page_detail(request, slug):
     page = get_object_or_404(Page, slug=slug)
     
     # Active language
-    raw_lang = request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    raw_lang = request.GET.get('lang') or request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
     lang_str = str(raw_lang).strip().lower()
     if 'eng' in lang_str or lang_str == 'en':
         lang_filter = {'show_in_en': True}

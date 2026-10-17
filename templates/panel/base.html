@@ -176,7 +176,24 @@
     }
   }, true);
 </script>
+<script>
+  // Automatically append unique timestamp to admin panel edit/action links to completely bypass any browser/ISP disk cache
+  document.addEventListener('DOMContentLoaded', function () {
+    var ts = Date.now();
+    document.querySelectorAll('a[href]').forEach(function (a) {
+      var href = a.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (href.indexOf('/panel/') !== -1 && (href.indexOf('/edit/') !== -1 || href.indexOf('/add/') !== -1)) {
+        if (href.indexOf('_t=') === -1) {
+          var sep = href.indexOf('?') !== -1 ? '&' : '?';
+          a.setAttribute('href', href + sep + '_t=' + ts);
+        }
+      }
+    });
+  });
+</script>
 <script src="/static/js/panel.js"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>
+

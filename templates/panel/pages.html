@@ -34,7 +34,7 @@
         </div>
         {% if card.parent_obj %}
         <div style="display: flex; align-items: center; gap: 8px;">
-          <a href="{% url 'panel_page_edit' card.parent_obj.pk %}" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.35); border-radius: 10px; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;" title="Üýtget (Kalem)">
+          <a href="{% url 'panel_page_edit' card.parent_obj.pk %}?v=2" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.35); border-radius: 10px; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;" title="Üýtget (Kalem)">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -122,7 +122,7 @@
                   </div>
                 {% endif %}
                 <div>
-                  <a href="{% url 'panel_page_edit' page.pk %}" style="color: var(--panel-text); text-decoration: none; display: block;" title="Düzetmek üçin basyň">
+                  <a href="{% url 'panel_page_edit' page.pk %}?v=2" style="color: var(--panel-text); text-decoration: none; display: block;" title="Düzetmek üçin basyň">
                     <strong style="font-size: 15px; font-weight: 700; color: var(--panel-text);">{{ page.title_tm }}</strong>
                   </a>
                   {% if page.title_en %}<span style="color: var(--panel-text-muted); font-size: 12px; display: block;">{{ page.title_en|truncatechars:40 }}</span>{% endif %}
@@ -150,7 +150,7 @@
             <td style="text-align: center; padding: 14px 16px; white-space: nowrap;">
               <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                 <!-- Edit / Üýtget Button -->
-                <a href="{% url 'panel_page_edit' page.pk %}" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 8px; padding: 6px 12px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Düzet / Üýtget">
+                <a href="{% url 'panel_page_edit' page.pk %}?v=2" class="btn-panel btn-panel-sm" style="background: rgba(88, 166, 255, 0.18); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 8px; padding: 6px 12px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Düzet / Üýtget">
                   <i class="fa-solid fa-pen-to-square"></i> Üýtget
                 </a>
 

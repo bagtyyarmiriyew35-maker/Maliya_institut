@@ -103,7 +103,10 @@ def convert_video_to_webm(field_file):
         return None
 
     # Only process newly uploaded files to avoid re-encoding on simple edits
-    is_new_upload = hasattr(field_file, 'file') and isinstance(field_file.file, UploadedFile)
+    try:
+        is_new_upload = hasattr(field_file, 'file') and isinstance(field_file.file, UploadedFile)
+    except (FileNotFoundError, OSError):
+        return None
     if not is_new_upload:
         return None
 

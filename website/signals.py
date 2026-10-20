@@ -31,6 +31,9 @@ def auto_optimize_uploaded_media(sender, instance, **kwargs):
     Automatically converts any newly uploaded image to WebP,
     and any newly uploaded video to WebM before saving to database.
     """
+    # Skip during fixture loading (e.g. loaddata)
+    if kwargs.get('raw', False):
+        return
     # 1. Process Images -> WebP
     if sender in IMAGE_FIELD_MAPPING:
         for field_name in IMAGE_FIELD_MAPPING[sender]:

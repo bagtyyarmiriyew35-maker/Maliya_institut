@@ -27,9 +27,70 @@
 <div class="container" style="padding-top: 32px; padding-bottom: 50px;">
     <div style="width: 100%;">
         
-        <!-- Document PDF & Cover Card -->
+        <!-- Document Media & Cover Card -->
         <div class="card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
             {% if document.file %}
+            {% with cat=document.file|file_category %}
+            {% if cat == 'video' %}
+            <div class="preview-box" style="border: none; padding: 0; background: transparent;">
+                <div style="border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 4px 16px rgba(0,0,0,0.18);">
+                    <video controls preload="metadata" playsinline style="width: 100%; max-height: 650px; display: block; outline: none;">
+                        <source src="{{ document.file.url }}">
+                        Siziň brauzeriňiz wideo pleýeri goldamaýar.
+                    </video>
+                </div>
+                <div class="preview-footer" style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span style="font-size: 13px; color: #64748b; font-weight: 500;">
+                        <i class="fa-solid fa-file-video" style="color: #8b5cf6;"></i> {% render_lang document 'title' current_lang %}
+                        {% if document.file.size %} &bull; {{ document.file.size|filesizeformat }}{% endif %}
+                    </span>
+                    <a href="{{ document.file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2); margin-left: auto;">
+                        <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
+                    </a>
+                </div>
+            </div>
+            {% elif cat == 'audio' %}
+            <div class="preview-box" style="border: none; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: #ffe4e6; color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                        <i class="fa-solid fa-file-audio"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 17px; font-weight: 700; color: #0f172a;">{% render_lang document 'title' current_lang %}</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                            <span>{% file_category_label document.file current_lang %}</span>
+                            {% if document.file.size %} &bull; {{ document.file.size|filesizeformat }}{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <audio controls style="width: 100%; outline: none;">
+                    <source src="{{ document.file.url }}">
+                    Siziň brauzeriňiz ses pleýeri goldamaýar.
+                </audio>
+                <div style="margin-top: 16px; text-align: right;">
+                    <a href="{{ document.file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2);">
+                        <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
+                    </a>
+                </div>
+            </div>
+            {% elif cat == 'image' %}
+            <div class="preview-box" style="border: none; padding: 0; background: transparent; text-align: center;">
+                <div style="border-radius: 12px; overflow: hidden; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 16px;">
+                    <a href="{{ document.file.url }}" target="_blank">
+                        <img src="{{ document.file.url }}" alt="{% render_lang document 'title' current_lang %}" style="max-width: 100%; max-height: 750px; height: auto; object-fit: contain; border-radius: 8px; display: block; margin: 0 auto;">
+                    </a>
+                </div>
+                <div class="preview-footer" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span style="font-size: 13px; color: #64748b; font-weight: 500;">
+                        <i class="fa-solid fa-file-image" style="color: #0284c7;"></i> {% render_lang document 'title' current_lang %}
+                        {% if document.file.size %} &bull; {{ document.file.size|filesizeformat }}{% endif %}
+                    </span>
+                    <a href="{{ document.file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2); margin-left: auto;">
+                        <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
+                    </a>
+                </div>
+            </div>
+            {% elif cat == 'pdf' %}
             <div class="preview-box" style="border: none; padding: 0; background: transparent;">
                 <div id="file-preview-container" class="preview-content" style="height: 850px; border: 1px solid #cbd5e1; border-radius: 8px; display: block; background: #ffffff; overflow: hidden;">
                     <iframe src="{{ document.file.url }}#toolbar=0&navpanes=0&scrollbar=1&view=FitH" width="100%" height="850px" style="border: none; width: 100%; height: 850px; display: block; background: #ffffff;" title="{% render_lang document 'title' current_lang %}"></iframe>
@@ -37,12 +98,34 @@
                 <div class="preview-footer" style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                     <span style="font-size: 13px; color: #64748b; font-weight: 500;">
                         <i class="fa-solid fa-file-pdf" style="color: #048848;"></i> {% render_lang document 'title' current_lang %}
+                        {% if document.file.size %} &bull; {{ document.file.size|filesizeformat }}{% endif %}
                     </span>
                     <a href="{{ document.file.url }}" download class="btn btn-sm" style="background: #048848; color: white; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2); margin-left: auto;">
                         <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
                     </a>
                 </div>
             </div>
+            {% else %}
+            <!-- Office Document / Archive / General File -->
+            <div class="preview-box" style="border: none; padding: 30px 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 54px; height: 54px; border-radius: 12px; background: {{ document.file|file_bg_color }}; color: {{ document.file|file_color }}; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid rgba(0,0,0,0.06);">
+                        <i class="{{ document.file|file_icon }}"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: 700; color: #0f172a;">{% render_lang document 'title' current_lang %}</div>
+                        <div style="font-size: 13px; color: #64748b; margin-top: 3px;">
+                            <span style="background: {{ document.file|file_bg_color }}; color: {{ document.file|file_color }}; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 11px;">{% file_category_label document.file current_lang %}</span>
+                            {% if document.file.size %} &bull; <span>{{ document.file.size|filesizeformat }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ document.file.url }}" download class="btn" style="background: #048848; color: white; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(4, 136, 72, 0.2);">
+                    <i class="fa-solid fa-download"></i> {% if current_lang == 'eng' %}Download{% elif current_lang == 'rus' %}Скачать{% else %}Ýükle{% endif %}
+                </a>
+            </div>
+            {% endif %}
+            {% endwith %}
             {% render_multilingual_image document current_lang as doc_img %}
             {% elif doc_img %}
             <div class="article-image-wrap" style="text-align: center;">
@@ -50,7 +133,7 @@
             </div>
             {% else %}
             <div style="padding: 30px; text-align: center; color: #64748b;">
-                <i class="fa-solid fa-file-pdf" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+                <i class="fa-solid fa-file" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
                 {% if current_lang == 'eng' %}No file uploaded for this document.{% elif current_lang == 'rus' %}Для этого документа файл не загружен.{% else %}Bu resminama üçin faýl ýüklenilmedik.{% endif %}
             </div>
             {% endif %}

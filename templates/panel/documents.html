@@ -1,4 +1,5 @@
 {% extends 'panel/base.html' %}
+{% load website_tags %}
 {% block title %}Resminamalar{% endblock %}
 {% block breadcrumb %}Resminamalar{% endblock %}
 {% block content %}
@@ -7,16 +8,28 @@
   <a href="{% url 'panel_document_add' %}" class="btn-panel btn-panel-primary"><i class="fa-solid fa-plus"></i> Resminama goş</a>
 </div>
 
-<!-- Filter -->
+<!-- Tip Banner for Mazmuny linking -->
+<div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #a7f3d0; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 2px 8px rgba(10,92,54,0.04);">
+  <div style="width: 38px; height: 38px; border-radius: 10px; background: #0a5c36; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+    <i class="fa-solid fa-lightbulb"></i>
+  </div>
+  <div style="flex: 1; font-size: 13.5px; color: #166534; line-height: 1.55;">
+    <strong>Bu ýerde ýüklenen ähli faýllary (PDF, Word, Excel, Suratlar we ş.m.) Sahypalar we Habarlar ýazanyňyzda "Mazmuny" meýdançasynyň içine göni ýükläp alma düwmesi hökmünde goşup bilersiňiz!</strong><br>
+    <span style="font-size: 12.5px; color: #047857;">
+      Sahypa ýa-da Habar goşanyňyzda Mazmunyň ýokarsyndaky <strong>"Resminamalardan faýl goş"</strong> düwmesine basyp göni saýlap bilersiňiz. Şeýle-de, aşakdaky tablisanyň her setirindäki <strong>"📋 Salgyny göçür"</strong> ýa-da <strong>"📋 Karty göçür"</strong> düwmelerine basyp mazmunyň içine goýup bilersiňiz.
+    </span>
+  </div>
+</div>
+
+<!-- Filter & Search -->
 <div class="panel-card" style="padding:14px 20px;margin-bottom:16px;border-radius:var(--panel-radius);">
-  <form method="GET" class="panel-filter-bar">
-    <select name="category" onchange="this.form.submit()">
-      <option value="">Hemme kategorýalar</option>
-      {% for val, label in categories %}
-      <option value="{{ val }}" {% if selected_category == val %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-    {% if selected_category %}
+  <form method="GET" class="panel-filter-bar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <div style="flex:1; min-width:240px; position:relative;">
+      <input type="text" name="q" value="{{ search_query|default:'' }}" class="form-control-panel" placeholder="Resminamanyň ady ýa-da faýl boýunça gözle..." style="padding-left:34px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:11px; color:var(--panel-text-muted);"></i>
+    </div>
+    <button type="submit" class="btn-panel btn-panel-primary btn-panel-sm"><i class="fa-solid fa-magnifying-glass"></i> Gözle</button>
+    {% if search_query %}
     <a href="{% url 'panel_documents' %}" class="btn-panel btn-panel-ghost btn-panel-sm"><i class="fa-solid fa-xmark"></i> Arassala</a>
     {% endif %}
   </form>
@@ -26,7 +39,14 @@
   <div class="panel-table-wrap">
     <table class="panel-table">
       <thead>
-        <tr><th>#</th><th>At</th><th>Kategoriýa</th><th>Faýl</th><th>Senesi</th><th>Hereketler</th></tr>
+        <tr>
+          <th>#</th>
+          <th>At</th>
+          <th>Faýl & Görnüş</th>
+          <th>Mazmun üçin (Salgy / Kod)</th>
+          <th>Senesi</th>
+          <th>Hereketler</th>
+        </tr>
       </thead>
       <tbody>
         {% for doc in docs %}
@@ -42,8 +62,27 @@
             </div>
             {% endif %}
           </td>
-          <td><span class="badge-panel badge-neutral">{{ doc.get_category_display }}</span></td>
-          <td><a href="{{ doc.file.url }}" target="_blank" style="color:var(--panel-info);font-size:12px;"><i class="fa-solid fa-file-pdf"></i> Açmak</a></td>
+          <td>
+            <a href="{{ doc.file.url }}" target="_blank" style="color:{{ doc.file|file_color }};font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+              <span style="background:{{ doc.file|file_bg_color }};width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;">
+                <i class="{{ doc.file|file_icon }}"></i>
+              </span>
+              <span>{% file_category_label doc.file 'tm' %}</span>
+            </a>
+          </td>
+          <td>
+            <div style="display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="copyGreenLinkHtml('{{ doc.file.url|escapejs }}', 'Maksatnamany görmek')" title="Ýaşyl link koduny göçür (Basylanda ilki içini görkezer)">
+                <i class="fa-solid fa-arrow-up-right-from-square" style="color:#0a5c36;"></i> Ýaşyl linki göçür
+              </button>
+              <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="copyFileUrl('{{ doc.file.url }}')" title="Faýlyň salgysyny (URL) göçür">
+                <i class="fa-solid fa-link" style="color:#0284c7;"></i> Salgyny göçür
+              </button>
+              <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="copyDownloadCardHtml('{{ doc.file.url|escapejs }}', '{{ doc.title_tm|escapejs }}', '{{ doc.file|file_ext|upper }}', '{{ doc.file|file_icon }}', '{{ doc.file|file_color }}', '{{ doc.file|file_bg_color }}')" title="Mazmunyň içine goýmak üçin ýükläp alyş kartynyň HTML kodyny göçür">
+                <i class="fa-solid fa-code" style="color:#16a34a;"></i> Karty göçür
+              </button>
+            </div>
+          </td>
           <td><span class="text-muted">{{ doc.uploaded_at|date:"d.m.Y" }}</span></td>
           <td>
             <div class="panel-actions">
@@ -61,4 +100,58 @@
     </table>
   </div>
 </div>
+
+<script>
+function copyGreenLinkHtml(url, defaultText) {
+  var text = prompt('Linkiň ýaşyl ýazgysyny giriziň (meselem: Maksatnamany görmek):', defaultText || 'Maksatnamany görmek');
+  if (!text) return;
+  // Green link, opens in new tab to view first (NO forced download attribute):
+  var html = '<p style="margin: 12px 0 16px 0;"><a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color: #0a5c36; font-weight: 700; font-size: 16px; text-decoration: underline; display: inline-block;"><u>' + text + '</u></a></p>';
+  navigator.clipboard.writeText(html).then(function() {
+    if (typeof showPanelToast === 'function') {
+      showPanelToast('Ýaşyl link kody göçürildi: "' + text + '"', 'success');
+    } else {
+      alert('Ýaşyl link kody göçürildi!\nMazmuny meýdançasyna goýup bilersiňiz:\n' + html);
+    }
+  });
+}
+
+function copyFileUrl(url) {
+  var fullUrl = window.location.origin + url;
+  navigator.clipboard.writeText(url).then(function() {
+    if (typeof showPanelToast === 'function') {
+      showPanelToast('Faýlyň salgysy göçürildi: ' + url, 'success');
+    } else {
+      alert('Faýlyň salgysy göçürildi!\nMazmuny meýdançasyna goýup bilersiňiz:\n' + url);
+    }
+  });
+}
+
+function copyDownloadCardHtml(url, title, ext, icon, color, bgColor) {
+  var html = '<p class="content-doc-download-wrapper" style="margin: 20px 0;">' +
+    '<a href="' + url + '" class="content-doc-download-card" target="_blank" download style="display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04); font-family: inherit;">' +
+      '<span class="cdd-icon-box" style="width: 44px; height: 44px; border-radius: 10px; background: ' + (bgColor || '#eff6ff') + '; color: ' + (color || '#2563eb') + '; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">' +
+        '<i class="' + (icon || 'fa-solid fa-file') + '"></i>' +
+      '</span>' +
+      '<span class="cdd-info" style="flex: 1; min-width: 0; display: inline-flex; flex-direction: column; gap: 3px;">' +
+        '<strong class="cdd-title" style="font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35;">' + title + '</strong>' +
+        '<span class="cdd-meta" style="font-size: 12px; color: #64748b; font-weight: 500;">' +
+          '<i class="fa-solid fa-download"></i> Faýly ýükläp al (' + ext + ')' +
+        '</span>' +
+      '</span>' +
+      '<span class="cdd-badge" style="padding: 7px 14px; background: #0a5c36; color: #ffffff; border-radius: 8px; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">' +
+        'Ýükle <i class="fa-solid fa-arrow-down"></i>' +
+      '</span>' +
+    '</a>' +
+  '</p>';
+
+  navigator.clipboard.writeText(html).then(function() {
+    if (typeof showPanelToast === 'function') {
+      showPanelToast('Mazmun üçin ýükläp alyş kartynyň HTML kody göçürildi!', 'success');
+    } else {
+      alert('HTML kody göçürildi! Mazmuna goýup bilersiňiz.');
+    }
+  });
+}
+</script>
 {% endblock %}

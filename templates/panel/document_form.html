@@ -1,4 +1,5 @@
 {% extends 'panel/base.html' %}
+{% load website_tags %}
 {% block title %}{% if action == 'edit' %}Resminamany Üýtget{% else %}Resminama Goş{% endif %}{% endblock %}
 {% block breadcrumb %}Resminamalar / {% if action == 'edit' %}Üýtget{% else %}Goş{% endif %}{% endblock %}
 {% block content %}
@@ -11,20 +12,9 @@
   <div class="panel-form-card">
     <div class="panel-form-section">
       <div class="panel-form-section-title"><i class="fa-solid fa-circle-info"></i> Resminama maglumatlary</div>
-      <div class="form-row form-row-2" style="margin-bottom:14px;">
-        <div class="form-group">
-          <label>At (TM) <span class="required">*</span></label>
-          <input type="text" name="title_tm" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.title_tm }}{% else %}{{ post.title_tm }}{% endif %}" required placeholder="Resminamanyň adyny giriziň">
-        </div>
-        <div class="form-group">
-          <label>Kategoriýa <span class="required">*</span></label>
-          <select name="category" class="form-control-panel" required>
-            <option value="">— Saýla —</option>
-            {% for val, label in categories %}
-            <option value="{{ val }}" {% if action == 'edit' and obj.category == val or post.category == val %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>At (TM / Esasy) <span class="required">*</span></label>
+        <input type="text" name="title_tm" class="form-control-panel" value="{% if action == 'edit' %}{{ obj.title_tm }}{% else %}{{ post.title_tm }}{% endif %}" required placeholder="Resminamanyň adyny giriziň">
       </div>
       <div class="form-row form-row-2">
         <div class="form-group">
@@ -96,18 +86,29 @@
       </div>
     </div>
 
-    <!-- PDF Faýl -->
+    <!-- Faýl / Resminama / Media -->
     <div class="panel-form-section">
-      <div class="panel-form-section-title"><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> PDF Resminama Faýly</div>
+      <div class="panel-form-section-title"><i class="fa-solid fa-paperclip" style="color: #048848;"></i> Faýl / Resminama / Media (PDF, Video, Surat, Aýdym, Word, Excel...)</div>
       {% if action == 'edit' and obj.file %}
-      <div class="current-file-info" style="margin-bottom:12px;">
-        <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Häzirki faýl: <a href="{{ obj.file.url }}" target="_blank" style="color:#0284c7; font-weight:600;">{{ obj.file.name }}</a>
+      <div class="current-file-info" style="margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+        <i class="{{ obj.file|file_icon }}" style="color:{{ obj.file|file_color }}; font-size:20px;"></i>
+        <div>
+          Häzirki faýl: <a href="{{ obj.file.url }}" target="_blank" style="color:#0284c7; font-weight:600;">{{ obj.file.name }}</a>
+          <span style="background: {{ obj.file|file_bg_color }}; color: {{ obj.file|file_color }}; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-left: 6px;">{% file_category_label obj.file 'tm' %}</span>
+        </div>
       </div>
       {% endif %}
       <div class="file-upload-area">
-        <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx" {% if action != 'edit' %}required{% endif %}>
-        <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-        <div class="file-upload-text">Faýl saýla ýa-da süýr<br><strong>PDF, DOC, DOCX, XLS</strong></div>
+        <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z,.mp4,.webm,.ogg,.mov,.avi,.mp3,.wav,.m4a,.jpg,.jpeg,.png,.webp,.gif,image/*,video/*,audio/*" {% if action != 'edit' %}required{% endif %}>
+        <div class="file-upload-icon" style="display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 22px;">
+          <i class="fa-solid fa-file-pdf" style="color: #ef4444;" title="PDF"></i>
+          <i class="fa-solid fa-file-word" style="color: #2563eb;" title="Word"></i>
+          <i class="fa-solid fa-file-excel" style="color: #16a34a;" title="Excel"></i>
+          <i class="fa-solid fa-file-video" style="color: #8b5cf6;" title="Wideo"></i>
+          <i class="fa-solid fa-file-image" style="color: #0284c7;" title="Surat"></i>
+          <i class="fa-solid fa-file-audio" style="color: #e11d48;" title="Aýdym/Ses"></i>
+        </div>
+        <div class="file-upload-text">Faýl saýlaň ýa-da süýräň<br><strong>PDF, Word, Excel, Video, Surat, Aýdym, Zip...</strong></div>
         <div id="file_name" style="margin-top:8px;font-size:12px;color:var(--panel-text-muted);"></div>
       </div>
     </div>

@@ -127,6 +127,11 @@ class Page(models.Model):
     def get_section_display_name(self):
         return dict(self.SECTION_CHOICES).get(self.section, 'Beýleki')
 
+    def save(self, *args, **kwargs):
+        if self.parent and self.parent.section and (not self.section or self.section == 'other' or self.section != self.parent.section):
+            self.section = self.parent.section
+        super().save(*args, **kwargs)
+
 
 class SliderImage(models.Model):
     image = models.ImageField(upload_to='slides/', blank=True, null=True, verbose_name="Slider Image (TM / Esasy)")
@@ -459,10 +464,14 @@ class Partner(models.Model):
 
 class Document(models.Model):
     CATEGORY_CHOICES = [
-        ('Kitaphana', 'Kitaphana (Library)'),
-        ('Sanly Bilim', 'Sanly Bilim (Digital Education)'),
+        ('Resminama', 'Resminamalar (Official Documents)'),
+        ('Maglumat', 'Maglumatlar / Faýllar (Files & Info)'),
+        ('Gollanma', 'Gollanmalar we Düzgünnamalar (Guidelines)'),
         ('Hasabat', 'Hepdelik Hasabat (Weekly Report)'),
         ('Maksatnama', 'Maksatnamalar (Programs)'),
+        ('Kitaphana', 'Kitaphana (Library)'),
+        ('Sanly Bilim', 'Sanly Bilim (Digital Education)'),
+        ('Basga', 'Başga (Other)'),
     ]
     
     title_tm = models.CharField(max_length=255, verbose_name="Title (Turkmen)")
@@ -473,7 +482,7 @@ class Document(models.Model):
     image_en = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (English)")
     image_ru = models.ImageField(upload_to='documents/headers/', blank=True, null=True, verbose_name="Başlyk Suraty (Russian)")
     file = models.FileField(upload_to='documents/')
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Hasabat', verbose_name="Category")
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Resminama', blank=True, verbose_name="Category")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Uploaded At")
 
     def get_image(self, lang='tm'):
@@ -490,7 +499,7 @@ class Document(models.Model):
         verbose_name_plural = "Documents"
 
     def __str__(self):
-        return f"{self.title_tm} ({self.get_category_display()})"
+        return self.title_tm
 
 
 class ContactMessage(models.Model):
@@ -513,6 +522,15 @@ class ContactMessage(models.Model):
 class SiteSettings(models.Model):
     """Singleton model — site-wide settings editable from the custom admin panel."""
 
+    # Institute Branding / Logo & Name
+    logo = models.ImageField(upload_to='settings/logo/', blank=True, null=True, verbose_name="Baş Sahypa Logo Suraty")
+    logo_title_tm = models.CharField(max_length=255, blank=True, default="TÜRKMEN DÖWLET", verbose_name="Logo Başlyk 1-nji setir (TM)")
+    logo_subtitle_tm = models.CharField(max_length=255, blank=True, default="MALIÝE INSTITUTY", verbose_name="Logo Başlyk 2-nji setir (TM)")
+    logo_title_en = models.CharField(max_length=255, blank=True, default="TURKMEN STATE", verbose_name="Logo Title Line 1 (EN)")
+    logo_subtitle_en = models.CharField(max_length=255, blank=True, default="FINANCE INSTITUTE", verbose_name="Logo Title Line 2 (EN)")
+    logo_title_ru = models.CharField(max_length=255, blank=True, default="ТУРКМЕНСКИЙ ГОСУДАРСТВЕННЫЙ", verbose_name="Logo Title Line 1 (RU)")
+    logo_subtitle_ru = models.CharField(max_length=255, blank=True, default="ФИНАНСОВЫЙ ИНСТИТУТ", verbose_name="Logo Title Line 2 (RU)")
+
     # Statistics
     stat_books = models.CharField(max_length=100, default="45 000+", verbose_name="Books Count Text")
     stat_majors = models.CharField(max_length=100, default="12", verbose_name="Majors Count Text")
@@ -531,6 +549,7 @@ class SiteSettings(models.Model):
     address_en = models.CharField(max_length=500, blank=True, verbose_name="Address (English)")
     address_ru = models.CharField(max_length=500, blank=True, verbose_name="Address (Russian)")
     phone = models.CharField(max_length=50, blank=True, default="+993 12 496309", verbose_name="Phone")
+    phone2 = models.CharField(max_length=50, blank=True, verbose_name="Phone 2 (Goşmaça)")
     email = models.EmailField(blank=True, default="info@tdmai.edu.tm", verbose_name="Email")
 
     # Social Media
@@ -539,6 +558,56 @@ class SiteSettings(models.Model):
     linkedin_url = models.URLField(blank=True, verbose_name="LinkedIn URL")
     instagram_url = models.URLField(blank=True, verbose_name="Instagram URL")
     youtube_url = models.URLField(blank=True, verbose_name="YouTube URL")
+    telegram_url = models.URLField(blank=True, verbose_name="Telegram URL")
+    tiktok_url = models.URLField(blank=True, verbose_name="TikTok URL")
+
+    # Footer Branding (1-nji sütün: Logo/At we Düşündiriş)
+    footer_title_tm = models.CharField(max_length=255, blank=True, default="TDMai", verbose_name="Footer Başlyk (TM)")
+    footer_title_en = models.CharField(max_length=255, blank=True, default="TDMai", verbose_name="Footer Title (EN)")
+    footer_title_ru = models.CharField(max_length=255, blank=True, default="ТГФИ", verbose_name="Footer Title (RU)")
+    footer_desc_tm = models.TextField(blank=True, default="Türkmenistanyň ykdysady we maliýe pudaklary üçin ýokary derejeli hünärmenleri taýýarlaýan öňdebaryjy ýokary okuw mekdebi.", verbose_name="Footer Düşündiriş (TM)")
+    footer_desc_en = models.TextField(blank=True, default="A leading higher educational institution training top-level specialists for the economic and financial sectors of Turkmenistan.", verbose_name="Footer Description (EN)")
+    footer_desc_ru = models.TextField(blank=True, default="Ведущее высшее учебное заведение, готовящее специалистов высшей квалификации для экономической и финансовой сфер Туркменистана.", verbose_name="Footer Description (RU)")
+
+    # Footer Column 2 (2-nji sütün: Institut we Çykgytlar)
+    footer_col2_title_tm = models.CharField(max_length=255, blank=True, default="Institut", verbose_name="Footer 2-nji sütün başlyk (TM)")
+    footer_col2_title_en = models.CharField(max_length=255, blank=True, default="Institute", verbose_name="Footer Col 2 Title (EN)")
+    footer_col2_title_ru = models.CharField(max_length=255, blank=True, default="Институт", verbose_name="Footer Col 2 Title (RU)")
+
+    footer_col2_l1_text_tm = models.CharField(max_length=255, blank=True, default="Taryhy", verbose_name="2-nji sütün 1-nji link ýazgysy (TM)")
+    footer_col2_l1_text_en = models.CharField(max_length=255, blank=True, default="History", verbose_name="Col 2 Link 1 Text (EN)")
+    footer_col2_l1_text_ru = models.CharField(max_length=255, blank=True, default="История", verbose_name="Col 2 Link 1 Text (RU)")
+    footer_col2_l1_url = models.CharField(max_length=255, blank=True, default="/?lang=tm#taryhy", verbose_name="2-nji sütün 1-nji link URL")
+
+    footer_col2_l2_text_tm = models.CharField(max_length=255, blank=True, default="Olimpiadalar", verbose_name="2-nji sütün 2-nji link ýazgysy (TM)")
+    footer_col2_l2_text_en = models.CharField(max_length=255, blank=True, default="Olympiads", verbose_name="Col 2 Link 2 Text (EN)")
+    footer_col2_l2_text_ru = models.CharField(max_length=255, blank=True, default="Олимпиады", verbose_name="Col 2 Link 2 Text (RU)")
+    footer_col2_l2_url = models.CharField(max_length=255, blank=True, default="/olympiads/", verbose_name="2-nji sütün 2-nji link URL")
+
+    footer_col2_l3_text_tm = models.CharField(max_length=255, blank=True, default="Täzelikler", verbose_name="2-nji sütün 3-nji link ýazgysy (TM)")
+    footer_col2_l3_text_en = models.CharField(max_length=255, blank=True, default="News", verbose_name="Col 2 Link 3 Text (EN)")
+    footer_col2_l3_text_ru = models.CharField(max_length=255, blank=True, default="Новости", verbose_name="Col 2 Link 3 Text (RU)")
+    footer_col2_l3_url = models.CharField(max_length=255, blank=True, default="/news/", verbose_name="2-nji sütün 3-nji link URL")
+
+    footer_col2_l4_text_tm = models.CharField(max_length=255, blank=True, default="Kitaphana", verbose_name="2-nji sütün 4-nji link ýazgysy (TM)")
+    footer_col2_l4_text_en = models.CharField(max_length=255, blank=True, default="Library", verbose_name="Col 2 Link 4 Text (EN)")
+    footer_col2_l4_text_ru = models.CharField(max_length=255, blank=True, default="Библиотека", verbose_name="Col 2 Link 4 Text (RU)")
+    footer_col2_l4_url = models.CharField(max_length=255, blank=True, default="/library/1/", verbose_name="2-nji sütün 4-nji link URL")
+
+    # Footer Column 3 (3-nji sütün: Fakultetler)
+    footer_col3_title_tm = models.CharField(max_length=255, blank=True, default="Fakultetler", verbose_name="Footer 3-nji sütün başlyk (TM)")
+    footer_col3_title_en = models.CharField(max_length=255, blank=True, default="Faculties", verbose_name="Footer Col 3 Title (EN)")
+    footer_col3_title_ru = models.CharField(max_length=255, blank=True, default="Факультеты", verbose_name="Footer Col 3 Title (RU)")
+
+    # Footer Column 4 (4-nji sütün: Habarlaşmak)
+    footer_col4_title_tm = models.CharField(max_length=255, blank=True, default="Habarlaşmak", verbose_name="Footer 4-nji sütün başlyk (TM)")
+    footer_col4_title_en = models.CharField(max_length=255, blank=True, default="Contact", verbose_name="Footer Col 4 Title (EN)")
+    footer_col4_title_ru = models.CharField(max_length=255, blank=True, default="Контакты", verbose_name="Footer Col 4 Title (RU)")
+
+    # Footer Bottom Copyright
+    copyright_text_tm = models.CharField(max_length=500, blank=True, default="© Hemme hukuklary goralan - 2026. Türkmen Döwlet Maliýe Instituty.", verbose_name="Copyright (TM)")
+    copyright_text_en = models.CharField(max_length=500, blank=True, default="© All rights reserved - 2026. Turkmen State Finance Institute.", verbose_name="Copyright (EN)")
+    copyright_text_ru = models.CharField(max_length=500, blank=True, default="© Все права защищены - 2026. Туркменский государственный финансовый институт.", verbose_name="Copyright (RU)")
 
     class Meta:
         verbose_name = "Site Settings"

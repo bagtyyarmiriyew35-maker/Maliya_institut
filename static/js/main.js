@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdownItems = document.querySelectorAll('.dropdown-item > a, .dropdown-submenu-item > a');
     dropdownItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            if (window.innerWidth <= 1199) {
+            if (window.innerWidth <= 1240) {
                 e.preventDefault();
                 const parent = item.parentElement;
                 parent.classList.toggle('active-mobile');

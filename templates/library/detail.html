@@ -1,37 +1,45 @@
 {% extends 'base.html' %}
 {% load website_tags %}
 
+{% block title %}
+    {% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %} | {% ui_label 'institute_name' current_lang %}
+{% endblock %}
+
 {% block content %}
-<section class="section journal-list-section">
+<!-- Page Header / Breadcrumb Banner -->
+<div class="page-header" style="background: linear-gradient(135deg, #064e29 0%, #048848 100%); color: white; padding: 40px 0 30px; position: relative;">
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; opacity: 0.85; margin-bottom: 12px; flex-wrap: wrap;">
+            <a href="{% url 'home' %}" style="color: white; text-decoration: none;"><i class="fa-solid fa-house"></i> {% ui_label 'home' current_lang %}</a>
+            <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+            <span style="opacity: 1; font-weight: 600;">{% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}</span>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-book-bookmark" style="color: #a7f3d0;"></i>
+            {% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}
+        </h1>
+    </div>
+</div>
+
+<section class="section journal-list-section" style="padding-top: 36px; padding-bottom: 60px;">
     <div class="container">
         
-        <!-- Category switcher tabs (if multiple categories) -->
-        {% if all_categories|length > 1 %}
-        <div class="journal-categories-tabs">
-            {% for cat in all_categories %}
-            <a href="{% url 'library_detail' cat.pk %}" class="journal-category-tab {% if cat.pk == category.pk %}active{% endif %}">
-                {% render_lang cat 'name' current_lang %}
-            </a>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Journal Heading with blue vertical line (Matching Image 3) -->
-        <div class="journal-list-header">
-            <h2 class="journal-list-heading">
+        <!-- Journal Heading with accent bar -->
+        <div class="journal-list-header" style="margin-bottom: 25px;">
+            <h2 class="journal-list-heading" style="margin: 0;">
                 <span class="journal-list-accent-bar"></span>
                 {% if current_lang == 'eng' %}
-                    "{{ category.name_en|default:category.name_tm }}" journals
+                    All Publications & Journals
                 {% elif current_lang == 'rus' %}
-                    Журналы "{{ category.name_ru|default:category.name_tm }}"
+                    Все публикации и журналы
                 {% else %}
-                    "{{ category.name_tm }}" žurnallary
+                    Ähli neşirler we žurnallar
                 {% endif %}
             </h2>
         </div>
 
         {% if books %}
-        <!-- 4-column Grid matching Image 3 -->
+        <!-- 4-column Grid -->
         <div class="journal-issues-grid">
             {% for book in books %}
             {% render_multilingual_image book current_lang as book_img %}
@@ -54,13 +62,18 @@
                 </div>
 
                 <div class="journal-issue-card-footer">
+                    {% if book.category %}
+                    <span style="font-size: 11px; font-weight: 600; color: #048848; background: #e8f5e9; padding: 2px 8px; border-radius: 12px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {% render_lang book.category 'name' current_lang %}
+                    </span>
+                    {% endif %}
                     {% if book.pdf_file %}
                     <span class="journal-issue-download-link" title="Ýükle" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ book.pdf_file.url }}';">
                         <i class="fa-solid fa-download"></i>
                     </span>
                     {% else %}
                     <span class="journal-issue-download-link" title="Okamak">
-                        <i class="fa-solid fa-download"></i>
+                        <i class="fa-solid fa-eye"></i>
                     </span>
                     {% endif %}
                 </div>
@@ -70,7 +83,7 @@
         {% else %}
         <div style="background: #ffffff; border-radius: 16px; padding: 40px; text-align: center; border: 1px dashed #cbd5e1; margin-top: 20px;">
             <i class="fa-solid fa-folder-open" style="font-size: 40px; color: #94a3b8; margin-bottom: 15px;"></i>
-            <h4 style="color: #475569; font-size: 1.1rem; margin-bottom: 6px;">Bu neşir üçin heniz san goşulmandyr</h4>
+            <h4 style="color: #475569; font-size: 1.1rem; margin-bottom: 6px;">Heniz neşir goşulmandyr</h4>
             <p style="color: #64748b; font-size: 0.9rem;">Ýakyn wagtda täze sanlar dolandyryş panelinden ýüklener.</p>
         </div>
         {% endif %}

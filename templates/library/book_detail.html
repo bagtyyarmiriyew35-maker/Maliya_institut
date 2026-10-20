@@ -13,7 +13,7 @@
         <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; opacity: 0.85; margin-bottom: 12px; flex-wrap: wrap;">
             <a href="{% url 'home' %}" style="color: white; text-decoration: none;"><i class="fa-solid fa-house"></i> {% ui_label 'home' current_lang %}</a>
             <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-            <a href="{% url 'library_detail' book.category.pk %}" style="color: white; text-decoration: none;">{% render_lang book.category 'name' current_lang %}</a>
+            <a href="{% url 'library_list' %}" style="color: white; text-decoration: none;">{% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}</a>
             <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
             <span style="opacity: 1; font-weight: 600;">{% render_lang book 'title' current_lang %}</span>
         </div>
@@ -73,7 +73,7 @@
         <div style="margin-top: 50px; padding-top: 35px; border-top: 1px solid #e2e8f0;">
             <div class="section-header" style="text-align: left; margin-bottom: 25px;">
                 <h3 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #064e29; margin: 0;">
-                    «{% render_lang book.category 'name' current_lang %}» {% if current_lang == 'eng' %}other issues{% elif current_lang == 'rus' %}другие выпуски издания{% else %}neşiriniň beýleki sanlary{% endif %}
+                    {% if current_lang == 'eng' %}Other Publications{% elif current_lang == 'rus' %}Другие издания{% else %}Beýleki neşirler{% endif %}
                 </h3>
                 <div class="section-divider left" style="margin-top: 8px;"></div>
             </div>

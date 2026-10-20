@@ -14,7 +14,7 @@ IMAGE_FIELD_MAPPING = {
     Faculty: ['image', 'image_en', 'image_ru'],
     Partner: ['logo'],
     Document: ['image', 'image_en', 'image_ru'],
-    SiteSettings: ['stat_books_icon', 'stat_majors_icon', 'stat_teachers_icon', 'stat_students_icon', 'stats_bg_image'],
+    SiteSettings: ['logo', 'stat_books_icon', 'stat_majors_icon', 'stat_teachers_icon', 'stat_students_icon', 'stats_bg_image'],
     LibraryCategory: ['icon'],
     LibraryBook: ['image', 'image_en', 'image_ru', 'cover_image'],
 }

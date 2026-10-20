@@ -52,6 +52,8 @@ urlpatterns = [
     path('documents/add/', panel_views.panel_document_add, name='panel_document_add'),
     path('documents/<int:pk>/edit/', panel_views.panel_document_edit, name='panel_document_edit'),
     path('documents/<int:pk>/delete/', panel_views.panel_document_delete, name='panel_document_delete'),
+    path('api/documents/', panel_views.panel_api_documents, name='panel_api_documents'),
+    path('api/documents/quick-upload/', panel_views.panel_api_document_quick_upload, name='panel_api_document_quick_upload'),
 
     # Olympiads
     path('olympiads/', panel_views.panel_olympiads, name='panel_olympiads'),

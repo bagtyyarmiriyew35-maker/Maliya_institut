@@ -9,6 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils.text import slugify
+from django.http import JsonResponse
+import os
+
+from .templatetags.website_tags import (
+    file_category, file_icon, file_color, file_bg_color, file_category_label
+)
 
 from .models import (
     Page, SliderImage, News, Faculty, Department,
@@ -476,26 +482,6 @@ NAV_SECTIONS = [
 
 def get_section_cards(section_code=None):
     """Bölümdäki her bir ýokary derejeli sahypa / topar üçin aýratyn kart döredýär."""
-    if section_code:
-        qs = Page.objects.filter(section=section_code)
-    else:
-        qs = Page.objects.all()
-
-    all_pages = list(qs.select_related('parent').prefetch_related('subpages').order_by('order', 'title_tm'))
-
-    root_section_page = next((p for p in all_pages if p.parent is None), None)
-
-    if root_section_page:
-        top_pages = [p for p in all_pages if p != root_section_page and (p.parent_id == root_section_page.pk or p.parent_id is None)]
-    else:
-        top_pages = [p for p in all_pages if p.parent_id is None]
-
-    # Eger hiç hili top_pages tapylmasa, ähli sahypalary görkez
-    if not top_pages:
-        top_pages = all_pages
-
-    cards = []
-
     icon_map = {
         'Fakultetler': 'fa-solid fa-graduation-cap',
         'Kafedralar': 'fa-solid fa-chalkboard-user',
@@ -511,8 +497,38 @@ def get_section_cards(section_code=None):
         'Kitaphana': 'fa-solid fa-book-bookmark',
         'Wakansiýalar': 'fa-solid fa-briefcase',
         'Hepdelik sanly hasabat': 'fa-solid fa-file-contract',
+        'Maksatnamalar': 'fa-solid fa-list-check',
     }
 
+    if section_code:
+        # Bölümiň esasy baş sahypasyny tapýarys (mysal üçin slug='ylym' ýa-da section='ylym')
+        root_section_page = Page.objects.filter(
+            Q(slug=section_code) | Q(section=section_code),
+            parent__isnull=True
+        ).first()
+
+        if root_section_page:
+            # Root sahypanyň gös-göni aşagyndaky ähli toparlary we sahypalary alýarys
+            # Bu ýerde Page.section başgaça bolan ýagdaýynda hem (mysal üçin 'Maksatnamalar'),
+            # ata sahypasy 'ylym' bolsa hökman tapylar we section täzelener.
+            top_pages = list(Page.objects.filter(
+                Q(parent=root_section_page) |
+                (Q(section=section_code) & Q(parent__isnull=True) & ~Q(pk=root_section_page.pk))
+            ).select_related('parent').prefetch_related('subpages').order_by('order', 'title_tm'))
+
+            # Section meýdançasyny esasy bölüm kody bilen deňleşdirýäris
+            for p in top_pages:
+                if p.section != section_code:
+                    p.section = section_code
+                    p.save(update_fields=['section'])
+        else:
+            top_pages = list(Page.objects.filter(section=section_code, parent__isnull=True).prefetch_related('subpages').order_by('order', 'title_tm'))
+            if not top_pages:
+                top_pages = list(Page.objects.filter(section=section_code).prefetch_related('subpages').order_by('order', 'title_tm'))
+    else:
+        top_pages = list(Page.objects.filter(parent__isnull=True).prefetch_related('subpages').order_by('order', 'title_tm'))
+
+    cards = []
     for page in top_pages:
         subpages = list(page.subpages.order_by('order', 'title_tm'))
         sub_count = len(subpages)
@@ -559,11 +575,14 @@ def panel_pages_by_section(request, section):
     if parent_param:
         if parent_param == 'root':
             active_parent = None
-            pages = Page.objects.filter(section=section, parent__parent=None).exclude(subpages__isnull=False).order_by('order', 'title_tm')
+            pages = Page.objects.filter(
+                Q(section=section) | Q(parent__section=section),
+                parent__parent=None
+            ).exclude(subpages__isnull=False).order_by('order', 'title_tm')
             category_title = f"{section_label} Sahypalary"
         else:
             active_parent = get_object_or_404(Page, pk=parent_param)
-            pages = Page.objects.filter(section=section, parent=active_parent).order_by('order', 'title_tm')
+            pages = Page.objects.filter(parent=active_parent).order_by('order', 'title_tm')
             category_title = active_parent.title_tm
 
         return render(request, 'panel/pages.html', {
@@ -746,6 +765,8 @@ def panel_page_edit(request, pk):
 
         page.save()
         messages.success(request, 'Sahypa üstünlikli üýtgedildi!')
+        if page.parent and page.parent.parent is not None:
+            return redirect(f"{reverse('panel_pages_by_section', kwargs={'section': page.section})}?parent={page.parent.pk}")
         return redirect('panel_pages_by_section', section=page.section)
     return render(request, 'panel/page_form.html', {
         'action': 'edit',
@@ -928,14 +949,18 @@ def panel_department_delete(request, pk):
 
 @panel_login_required
 def panel_documents(request):
-    category = request.GET.get('category', '')
+    q = request.GET.get('q', '').strip()
     docs = Document.objects.order_by('-uploaded_at')
-    if category:
-        docs = docs.filter(category=category)
+    if q:
+        docs = docs.filter(
+            Q(title_tm__icontains=q) |
+            Q(title_en__icontains=q) |
+            Q(title_ru__icontains=q) |
+            Q(file__icontains=q)
+        )
     return render(request, 'panel/documents.html', {
         'docs': docs,
-        'categories': Document.CATEGORY_CHOICES,
-        'selected_category': category,
+        'search_query': q,
     })
 
 
@@ -943,11 +968,11 @@ def panel_documents(request):
 def panel_document_add(request):
     if request.method == 'POST':
         title_tm = request.POST.get('title_tm', '').strip()
-        category = request.POST.get('category', '')
-        if not title_tm or not category or 'file' not in request.FILES:
-            messages.error(request, 'At, kategoriýa we faýl hökmanydyr!')
+        category = request.POST.get('category', '').strip() or 'Resminama'
+        if not title_tm or 'file' not in request.FILES:
+            messages.error(request, 'At we faýl hökmanydyr!')
             return render(request, 'panel/document_form.html', {
-                'categories': Document.CATEGORY_CHOICES, 'post': request.POST, 'action': 'add'
+                'post': request.POST, 'action': 'add'
             })
         doc = Document(
             title_tm=title_tm,
@@ -965,7 +990,7 @@ def panel_document_add(request):
         doc.save()
         messages.success(request, 'Resminama üstünlikli goşuldy!')
         return redirect('panel_documents')
-    return render(request, 'panel/document_form.html', {'categories': Document.CATEGORY_CHOICES, 'action': 'add'})
+    return render(request, 'panel/document_form.html', {'action': 'add'})
 
 
 @panel_login_required
@@ -996,7 +1021,7 @@ def panel_document_edit(request, pk):
         doc.save()
         messages.success(request, 'Resminama üstünlikli üýtgedildi!')
         return redirect('panel_documents')
-    return render(request, 'panel/document_form.html', {'categories': Document.CATEGORY_CHOICES, 'obj': doc, 'action': 'edit'})
+    return render(request, 'panel/document_form.html', {'obj': doc, 'action': 'edit'})
 
 
 @panel_login_required
@@ -1006,6 +1031,104 @@ def panel_document_delete(request, pk):
         doc.delete()
         messages.success(request, 'Resminama öçürildi.')
     return redirect('panel_documents')
+
+
+def serialize_document_for_panel(doc):
+    """Serialize Document model into clean JSON for TinyMCE & panel pickers."""
+    try:
+        file_url = doc.file.url if doc.file else ''
+    except Exception:
+        file_url = ''
+    try:
+        file_name = os.path.basename(doc.file.name) if doc.file else ''
+    except Exception:
+        file_name = ''
+
+    ext = os.path.splitext(file_name)[1].lower().replace('.', '')
+    cat = file_category(doc.file) if doc.file else 'other'
+
+    size_str = ''
+    if doc.file:
+        try:
+            sz = doc.file.size
+            if sz < 1024:
+                size_str = f"{sz} B"
+            elif sz < 1024 * 1024:
+                size_str = f"{sz / 1024:.1f} KB"
+            else:
+                size_str = f"{sz / (1024 * 1024):.1f} MB"
+        except Exception:
+            size_str = ''
+
+    return {
+        'id': doc.pk,
+        'title_tm': doc.title_tm,
+        'title_en': doc.title_en or doc.title_tm,
+        'title_ru': doc.title_ru or doc.title_tm,
+        'category': doc.category,
+        'category_display': doc.get_category_display(),
+        'file_url': file_url,
+        'page_url': f'/document/{doc.pk}/',
+        'file_name': file_name,
+        'ext': ext,
+        'cat_type': cat,
+        'icon': file_icon(doc.file),
+        'color': file_color(doc.file),
+        'bg_color': file_bg_color(doc.file),
+        'label_tm': file_category_label(doc.file, 'tm'),
+        'size': size_str,
+        'date': doc.uploaded_at.strftime('%d.%m.%Y'),
+    }
+
+
+@panel_login_required
+def panel_api_documents(request):
+    """JSON API to search and list documents for Mazmuny TinyMCE picker."""
+    q = request.GET.get('q', '').strip()
+    docs = Document.objects.all().order_by('-uploaded_at')
+    if q:
+        docs = docs.filter(
+            Q(title_tm__icontains=q) |
+            Q(title_en__icontains=q) |
+            Q(title_ru__icontains=q) |
+            Q(file__icontains=q)
+        )
+    items = [serialize_document_for_panel(d) for d in docs[:150]]
+    return JsonResponse({'status': 'ok', 'documents': items, 'count': len(items)})
+
+
+@panel_login_required
+def panel_api_document_quick_upload(request):
+    """Direct quick-upload endpoint from Mazmuny TinyMCE modal."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Diňe POST goldanylýar'}, status=405)
+
+    title_tm = request.POST.get('title_tm', '').strip()
+    category = request.POST.get('category', 'Resminama').strip() or 'Resminama'
+    title_en = request.POST.get('title_en', '').strip()
+    title_ru = request.POST.get('title_ru', '').strip()
+
+    if not title_tm:
+        return JsonResponse({'status': 'error', 'message': 'Resminamanyň ady (TM) hökmanydyr!'}, status=400)
+
+    if 'file' not in request.FILES:
+        return JsonResponse({'status': 'error', 'message': 'Faýl saýlanmadyk!'}, status=400)
+
+    uploaded_file = request.FILES['file']
+    doc = Document(
+        title_tm=title_tm,
+        title_en=title_en,
+        title_ru=title_ru,
+        category=category,
+        file=uploaded_file,
+    )
+    doc.save()
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Resminama üstünlikli ýüklendi!',
+        'document': serialize_document_for_panel(doc)
+    })
 
 
 # ─────────────────────────────────────────────
@@ -1182,16 +1305,81 @@ def panel_settings(request):
         site_settings.address_en = request.POST.get('address_en', '')
         site_settings.address_ru = request.POST.get('address_ru', '')
         site_settings.phone = request.POST.get('phone', '')
+        site_settings.phone2 = request.POST.get('phone2', '')
         site_settings.email = request.POST.get('email', '')
         site_settings.facebook_url = request.POST.get('facebook_url', '')
         site_settings.twitter_url = request.POST.get('twitter_url', '')
         site_settings.linkedin_url = request.POST.get('linkedin_url', '')
         site_settings.instagram_url = request.POST.get('instagram_url', '')
         site_settings.youtube_url = request.POST.get('youtube_url', '')
+        site_settings.telegram_url = request.POST.get('telegram_url', '')
+        site_settings.tiktok_url = request.POST.get('tiktok_url', '')
+
+        # Footer 1-nji sütün: Brand & Düşündiriş
+        site_settings.footer_title_tm = request.POST.get('footer_title_tm', site_settings.footer_title_tm).strip()
+        site_settings.footer_title_en = request.POST.get('footer_title_en', site_settings.footer_title_en).strip()
+        site_settings.footer_title_ru = request.POST.get('footer_title_ru', site_settings.footer_title_ru).strip()
+        site_settings.footer_desc_tm = request.POST.get('footer_desc_tm', site_settings.footer_desc_tm).strip()
+        site_settings.footer_desc_en = request.POST.get('footer_desc_en', site_settings.footer_desc_en).strip()
+        site_settings.footer_desc_ru = request.POST.get('footer_desc_ru', site_settings.footer_desc_ru).strip()
+
+        # Footer 2-nji sütün: Institut & Çykgytlar
+        site_settings.footer_col2_title_tm = request.POST.get('footer_col2_title_tm', site_settings.footer_col2_title_tm).strip()
+        site_settings.footer_col2_title_en = request.POST.get('footer_col2_title_en', site_settings.footer_col2_title_en).strip()
+        site_settings.footer_col2_title_ru = request.POST.get('footer_col2_title_ru', site_settings.footer_col2_title_ru).strip()
+
+        site_settings.footer_col2_l1_text_tm = request.POST.get('footer_col2_l1_text_tm', site_settings.footer_col2_l1_text_tm).strip()
+        site_settings.footer_col2_l1_text_en = request.POST.get('footer_col2_l1_text_en', site_settings.footer_col2_l1_text_en).strip()
+        site_settings.footer_col2_l1_text_ru = request.POST.get('footer_col2_l1_text_ru', site_settings.footer_col2_l1_text_ru).strip()
+        site_settings.footer_col2_l1_url = request.POST.get('footer_col2_l1_url', site_settings.footer_col2_l1_url).strip()
+
+        site_settings.footer_col2_l2_text_tm = request.POST.get('footer_col2_l2_text_tm', site_settings.footer_col2_l2_text_tm).strip()
+        site_settings.footer_col2_l2_text_en = request.POST.get('footer_col2_l2_text_en', site_settings.footer_col2_l2_text_en).strip()
+        site_settings.footer_col2_l2_text_ru = request.POST.get('footer_col2_l2_text_ru', site_settings.footer_col2_l2_text_ru).strip()
+        site_settings.footer_col2_l2_url = request.POST.get('footer_col2_l2_url', site_settings.footer_col2_l2_url).strip()
+
+        site_settings.footer_col2_l3_text_tm = request.POST.get('footer_col2_l3_text_tm', site_settings.footer_col2_l3_text_tm).strip()
+        site_settings.footer_col2_l3_text_en = request.POST.get('footer_col2_l3_text_en', site_settings.footer_col2_l3_text_en).strip()
+        site_settings.footer_col2_l3_text_ru = request.POST.get('footer_col2_l3_text_ru', site_settings.footer_col2_l3_text_ru).strip()
+        site_settings.footer_col2_l3_url = request.POST.get('footer_col2_l3_url', site_settings.footer_col2_l3_url).strip()
+
+        site_settings.footer_col2_l4_text_tm = request.POST.get('footer_col2_l4_text_tm', site_settings.footer_col2_l4_text_tm).strip()
+        site_settings.footer_col2_l4_text_en = request.POST.get('footer_col2_l4_text_en', site_settings.footer_col2_l4_text_en).strip()
+        site_settings.footer_col2_l4_text_ru = request.POST.get('footer_col2_l4_text_ru', site_settings.footer_col2_l4_text_ru).strip()
+        site_settings.footer_col2_l4_url = request.POST.get('footer_col2_l4_url', site_settings.footer_col2_l4_url).strip()
+
+        # Footer 3-nji sütün: Fakultetler
+        site_settings.footer_col3_title_tm = request.POST.get('footer_col3_title_tm', site_settings.footer_col3_title_tm).strip()
+        site_settings.footer_col3_title_en = request.POST.get('footer_col3_title_en', site_settings.footer_col3_title_en).strip()
+        site_settings.footer_col3_title_ru = request.POST.get('footer_col3_title_ru', site_settings.footer_col3_title_ru).strip()
+
+        # Footer 4-nji sütün: Habarlaşmak
+        site_settings.footer_col4_title_tm = request.POST.get('footer_col4_title_tm', site_settings.footer_col4_title_tm).strip()
+        site_settings.footer_col4_title_en = request.POST.get('footer_col4_title_en', site_settings.footer_col4_title_en).strip()
+        site_settings.footer_col4_title_ru = request.POST.get('footer_col4_title_ru', site_settings.footer_col4_title_ru).strip()
+
+        # Footer Bottom: Copyright
+        site_settings.copyright_text_tm = request.POST.get('copyright_text_tm', site_settings.copyright_text_tm).strip()
+        site_settings.copyright_text_en = request.POST.get('copyright_text_en', site_settings.copyright_text_en).strip()
+        site_settings.copyright_text_ru = request.POST.get('copyright_text_ru', site_settings.copyright_text_ru).strip()
+
+        # Institute Branding / Logo & Name
+        site_settings.logo_title_tm = request.POST.get('logo_title_tm', site_settings.logo_title_tm).strip()
+        site_settings.logo_subtitle_tm = request.POST.get('logo_subtitle_tm', site_settings.logo_subtitle_tm).strip()
+        site_settings.logo_title_en = request.POST.get('logo_title_en', site_settings.logo_title_en).strip()
+        site_settings.logo_subtitle_en = request.POST.get('logo_subtitle_en', site_settings.logo_subtitle_en).strip()
+        site_settings.logo_title_ru = request.POST.get('logo_title_ru', site_settings.logo_title_ru).strip()
+        site_settings.logo_subtitle_ru = request.POST.get('logo_subtitle_ru', site_settings.logo_subtitle_ru).strip()
+
+        if 'logo' in request.FILES:
+            site_settings.logo = request.FILES['logo']
+        elif request.POST.get('clear_logo') == '1':
+            site_settings.logo = None
+
         if 'stats_bg_image' in request.FILES:
             site_settings.stats_bg_image = request.FILES['stats_bg_image']
         site_settings.save()
-        messages.success(request, 'Sazlamalar üstünlikli ýatyryldy!')
+        messages.success(request, 'Sazlamalar üstünlikli ýatda saklanyldy!')
         return redirect('panel_settings')
     return render(request, 'panel/settings.html', {'site_settings': site_settings})
 
@@ -1301,8 +1489,14 @@ def panel_library_book_add(request):
     if request.method == 'POST':
         title_tm = request.POST.get('title_tm', '').strip()
         category_id = request.POST.get('category')
-        if not title_tm or not category_id:
-            messages.error(request, 'Sözbaşy we kategoriýa saýlamak hökmanydyr!')
+        if not category_id:
+            default_cat = LibraryCategory.objects.order_by('id').first()
+            if not default_cat:
+                default_cat = LibraryCategory.objects.create(name_tm="Elektron neşirler")
+            category_id = default_cat.id
+
+        if not title_tm:
+            messages.error(request, 'Sözbaşy girizmek hökmanydyr!')
             return render(request, 'panel/library_book_form.html', {
                 'action': 'add', 'categories': categories, 'post': request.POST
             })
@@ -1327,7 +1521,7 @@ def panel_library_book_add(request):
             book.image_ru = request.FILES['image_ru']
 
         book.save()
-        messages.success(request, 'Neşir sany üstünlikli goşuldy!')
+        messages.success(request, 'Neşir üstünlikli goşuldy!')
         return redirect('panel_library_books')
     return render(request, 'panel/library_book_form.html', {'action': 'add', 'categories': categories})
 
@@ -1339,8 +1533,16 @@ def panel_library_book_edit(request, pk):
     if request.method == 'POST':
         title_tm = request.POST.get('title_tm', '').strip()
         category_id = request.POST.get('category')
-        if not title_tm or not category_id:
-            messages.error(request, 'Sözbaşy we kategoriýa saýlamak hökmanydyr!')
+        if not category_id:
+            category_id = book.category_id
+            if not category_id:
+                default_cat = LibraryCategory.objects.order_by('id').first()
+                if not default_cat:
+                    default_cat = LibraryCategory.objects.create(name_tm="Elektron neşirler")
+                category_id = default_cat.id
+
+        if not title_tm:
+            messages.error(request, 'Sözbaşy girizmek hökmanydyr!')
             return render(request, 'panel/library_book_form.html', {
                 'action': 'edit', 'obj': book, 'categories': categories
             })

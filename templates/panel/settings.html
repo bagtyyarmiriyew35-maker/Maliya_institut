@@ -10,6 +10,99 @@
   {% csrf_token %}
   <div class="settings-grid">
 
+    <!-- Institute Logo & Name Branding Section -->
+    <div class="settings-section-card" style="grid-column:span 2;">
+      <h3><i class="fa-solid fa-building-columns"></i> Institut Ady we Baş Sahypa Logosy</h3>
+      <p style="font-size:13px; color:var(--panel-text-muted); margin-bottom:18px;">
+        Sahypanyň iň ýokarky çep burçunda ýerleşýän institutyň logosyny we adyny (1-nji we 2-nji setirlerini) her dilde aýratyn dolandyryp bilersiňiz.
+      </p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px; align-items:start; margin-bottom:10px;">
+        
+        <!-- Logo Upload & Preview -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:14px; border:1px solid var(--panel-border, #e2e8f0); text-align:center;">
+          <label style="font-weight:700; font-size:13px; display:block; margin-bottom:10px; text-align:left;">
+            <i class="fa-regular fa-image" style="color:#048848;"></i> Logo Suraty
+          </label>
+          <div style="background:#ffffff; border:1px dashed #cbd5e1; border-radius:10px; padding:16px; margin-bottom:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:120px;">
+            {% if site_settings.logo %}
+              <img src="{{ site_settings.logo.url }}" alt="Logo" id="logoPreviewImg" style="max-height:80px; max-width:100%; object-fit:contain;">
+            {% else %}
+              <img src="/media/loga.png" alt="Logo" id="logoPreviewImg" style="max-height:80px; max-width:100%; object-fit:contain;">
+            {% endif %}
+          </div>
+          {% if site_settings.logo %}
+          <div style="margin-bottom:10px; text-align:left;">
+            <label style="font-size:12px; color:var(--panel-danger, #ef4444); cursor:pointer;">
+              <input type="checkbox" name="clear_logo" value="1"> Häzirki logony aýyr (asyl loga.png ulanylsyn)
+            </label>
+          </div>
+          {% endif %}
+          <input type="file" name="logo" class="form-control-panel" accept="image/*" onchange="if(this.files && this.files[0]){document.getElementById('logoPreviewImg').src=URL.createObjectURL(this.files[0]);}">
+          <small style="color:#64748b; font-size:11px; display:block; margin-top:6px; text-align:left;">PNG, WEBP, JPG ýa-da SVG formatlar maslahat berilýär.</small>
+        </div>
+
+        <!-- Institute Name (3 Languages) -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          
+          <!-- TM -->
+          <div style="background:var(--panel-surface-2, #f8fafc); padding:14px 16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+              <span><img src="/static/images/flag_tm.png" style="width:16px; vertical-align:middle;"> Türkmen dilinde (Esasy)</span>
+              <span class="badge-panel badge-success" style="font-size:10px;">TM</span>
+            </div>
+            <div class="form-row form-row-2">
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">1-nji setir (Ýokarky)</label>
+                <input type="text" name="logo_title_tm" class="form-control-panel" value="{{ site_settings.logo_title_tm }}" placeholder="TÜRKMEN DÖWLET">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">2-nji setir (Aşaky)</label>
+                <input type="text" name="logo_subtitle_tm" class="form-control-panel" value="{{ site_settings.logo_subtitle_tm }}" placeholder="MALIÝE INSTITUTY">
+              </div>
+            </div>
+          </div>
+
+          <!-- EN -->
+          <div style="background:var(--panel-surface-2, #f8fafc); padding:14px 16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+              <span><img src="/static/images/flag_en.png" style="width:16px; vertical-align:middle;"> Iňlis dilinde (English)</span>
+              <span class="badge-panel badge-info" style="font-size:10px;">EN</span>
+            </div>
+            <div class="form-row form-row-2">
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">Line 1 (Top)</label>
+                <input type="text" name="logo_title_en" class="form-control-panel" value="{{ site_settings.logo_title_en }}" placeholder="TURKMEN STATE">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">Line 2 (Bottom)</label>
+                <input type="text" name="logo_subtitle_en" class="form-control-panel" value="{{ site_settings.logo_subtitle_en }}" placeholder="FINANCE INSTITUTE">
+              </div>
+            </div>
+          </div>
+
+          <!-- RU -->
+          <div style="background:var(--panel-surface-2, #f8fafc); padding:14px 16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+              <span><img src="/static/images/flag_ru.png" style="width:16px; vertical-align:middle;"> Rus dilinde (Русский)</span>
+              <span class="badge-panel badge-danger" style="font-size:10px;">RU</span>
+            </div>
+            <div class="form-row form-row-2">
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">Строка 1 (Верхняя)</label>
+                <input type="text" name="logo_title_ru" class="form-control-panel" value="{{ site_settings.logo_title_ru }}" placeholder="ТУРКМЕНСКИЙ ГОСУДАРСТВЕННЫЙ">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px;">Строка 2 (Нижняя)</label>
+                <input type="text" name="logo_subtitle_ru" class="form-control-panel" value="{{ site_settings.logo_subtitle_ru }}" placeholder="ФИНАНСОВЫЙ ИНСТИТУТ">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- Statistics Section -->
     <div class="settings-section-card" style="grid-column:span 2;">
       <h3><i class="fa-solid fa-chart-simple"></i> Statistika Sanlary, Logolary we Fon Suraty</h3>
@@ -117,9 +210,15 @@
     <!-- Contact Settings -->
     <div class="settings-section-card">
       <h3><i class="fa-solid fa-address-book"></i> Habarlaşmak maglumatlary</h3>
-      <div class="form-group" style="margin-bottom:14px;">
-        <label>Telefon</label>
-        <input type="text" name="phone" class="form-control-panel" value="{{ site_settings.phone }}">
+      <div class="form-row form-row-2" style="margin-bottom:14px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Telefon</label>
+          <input type="text" name="phone" class="form-control-panel" value="{{ site_settings.phone }}">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Telefon 2 (Goşmaça)</label>
+          <input type="text" name="phone2" class="form-control-panel" value="{{ site_settings.phone2 }}" placeholder="+993 12 ...">
+        </div>
       </div>
       <div class="form-group" style="margin-bottom:14px;">
         <label>E-poçta</label>
@@ -139,33 +238,243 @@
       </div>
     </div>
 
-    <!-- Social Media Settings -->
+    <!-- Footer (Sahypanyň iň aşaky bölegi) Sazlamalary -->
     <div class="settings-section-card" style="grid-column:span 2;">
-      <h3><i class="fa-solid fa-share-nodes"></i> Durmuş torlary (Social Links)</h3>
-      <div class="form-row form-row-2">
-        <div class="form-group">
-          <label><i class="fa-brands fa-facebook" style="color:#1877f2;"></i> Facebook URL</label>
-          <input type="url" name="facebook_url" class="form-control-panel" value="{{ site_settings.facebook_url }}" placeholder="https://facebook.com/...">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:1px solid var(--panel-border, #e2e8f0); padding-bottom:10px;">
+        <h3 style="margin:0;"><i class="fa-solid fa-table-cells-large" style="color:#048848;"></i> Footer (Sahypanyň iň aşaky bölegi) Sazlamalary</h3>
+        <span class="badge-panel badge-success" style="font-size:12px;"><i class="fa-solid fa-check"></i> Doly dolandyryş</span>
+      </div>
+      <p style="font-size:13px; color:var(--panel-text-muted); margin-bottom:20px;">
+        Aşaky bölekdäki ähli sütüniň atlaryny, düşündiriş tekstlerini, çykgytlary (linkleri) we awtorlyk hukugyny (Copyright) bu ýerden üýtgedip bilersiňiz.
+      </p>
+
+      <!-- 1-nji Sütün: Brand & Düşündiriş -->
+      <div style="background:var(--panel-surface-2, #f8fafc); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:16px; margin-bottom:18px;">
+        <h4 style="margin:0 0 14px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-1" style="background:#048848; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;"></i>
+          1-nji Sütün: Brand Başlygy we Düşündiriş
+        </h4>
+        <div class="form-row form-row-3" style="margin-bottom:12px;">
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_tm.png" style="width:14px; vertical-align:middle;"> Başlyk (TM)</label>
+            <input type="text" name="footer_title_tm" class="form-control-panel" value="{{ site_settings.footer_title_tm }}" placeholder="TDMai">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_en.png" style="width:14px; vertical-align:middle;"> Title (EN)</label>
+            <input type="text" name="footer_title_en" class="form-control-panel" value="{{ site_settings.footer_title_en }}" placeholder="TDMai">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_ru.png" style="width:14px; vertical-align:middle;"> Title (RU)</label>
+            <input type="text" name="footer_title_ru" class="form-control-panel" value="{{ site_settings.footer_title_ru }}" placeholder="ТГФИ">
+          </div>
         </div>
-        <div class="form-group">
-          <label><i class="fa-brands fa-twitter" style="color:#1da1f2;"></i> Twitter URL</label>
-          <input type="url" name="twitter_url" class="form-control-panel" value="{{ site_settings.twitter_url }}" placeholder="https://twitter.com/...">
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_tm.png" style="width:14px; vertical-align:middle;"> Düşündiriş teksti (TM)</label>
+            <textarea name="footer_desc_tm" class="form-control-panel" rows="3" placeholder="Türkmenistanyň ykdysady we maliýe pudaklary üçin...">{{ site_settings.footer_desc_tm }}</textarea>
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_en.png" style="width:14px; vertical-align:middle;"> Description (EN)</label>
+            <textarea name="footer_desc_en" class="form-control-panel" rows="3" placeholder="A leading higher educational institution...">{{ site_settings.footer_desc_en }}</textarea>
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_ru.png" style="width:14px; vertical-align:middle;"> Description (RU)</label>
+            <textarea name="footer_desc_ru" class="form-control-panel" rows="3" placeholder="Ведущее высшее учебное заведение...">{{ site_settings.footer_desc_ru }}</textarea>
+          </div>
         </div>
       </div>
-      <div class="form-row form-row-3" style="margin-top:14px;">
-        <div class="form-group">
-          <label><i class="fa-brands fa-linkedin" style="color:#0a66c2;"></i> LinkedIn URL</label>
-          <input type="url" name="linkedin_url" class="form-control-panel" value="{{ site_settings.linkedin_url }}" placeholder="https://linkedin.com/...">
+
+      <!-- 2-nji Sütün: Institut we Çykgytlar -->
+      <div style="background:var(--panel-surface-2, #f8fafc); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:16px; margin-bottom:18px;">
+        <h4 style="margin:0 0 14px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-2" style="background:#048848; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;"></i>
+          2-nji Sütün: Institut we Çykgytlar (Linkler)
+        </h4>
+        
+        <div class="form-row form-row-3" style="margin-bottom:14px;">
+          <div class="form-group">
+            <label style="font-size:12px;">Sütün Başlygy (TM)</label>
+            <input type="text" name="footer_col2_title_tm" class="form-control-panel" value="{{ site_settings.footer_col2_title_tm }}" placeholder="Institut">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;">Sütün Başlygy (EN)</label>
+            <input type="text" name="footer_col2_title_en" class="form-control-panel" value="{{ site_settings.footer_col2_title_en }}" placeholder="Institute">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;">Sütün Başlygy (RU)</label>
+            <input type="text" name="footer_col2_title_ru" class="form-control-panel" value="{{ site_settings.footer_col2_title_ru }}" placeholder="Институт">
+          </div>
         </div>
-        <div class="form-group">
-          <label><i class="fa-brands fa-instagram" style="color:#c13584;"></i> Instagram URL</label>
-          <input type="url" name="instagram_url" class="form-control-panel" value="{{ site_settings.instagram_url }}" placeholder="https://instagram.com/...">
-        </div>
-        <div class="form-group">
-          <label><i class="fa-brands fa-youtube" style="color:#ff0000;"></i> YouTube URL</label>
-          <input type="url" name="youtube_url" class="form-control-panel" value="{{ site_settings.youtube_url }}" placeholder="https://youtube.com/...">
+
+        <!-- Links Grid -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Link 1 -->
+          <div style="background:#fff; border:1px solid var(--panel-border, #e2e8f0); border-radius:10px; padding:12px;">
+            <div style="font-size:12px; font-weight:700; color:#048848; margin-bottom:8px;">1-nji Çykgyt:</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+              <div>
+                <label style="font-size:11px; color:#64748b;">Ýazgy (TM)</label>
+                <input type="text" name="footer_col2_l1_text_tm" class="form-control-panel" value="{{ site_settings.footer_col2_l1_text_tm }}" placeholder="Taryhy">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Text (EN)</label>
+                <input type="text" name="footer_col2_l1_text_en" class="form-control-panel" value="{{ site_settings.footer_col2_l1_text_en }}" placeholder="History">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Текст (RU)</label>
+                <input type="text" name="footer_col2_l1_text_ru" class="form-control-panel" value="{{ site_settings.footer_col2_l1_text_ru }}" placeholder="История">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">URL Salgysy</label>
+                <input type="text" name="footer_col2_l1_url" class="form-control-panel" value="{{ site_settings.footer_col2_l1_url }}" placeholder="/?lang=tm#taryhy">
+              </div>
+            </div>
+          </div>
+
+          <!-- Link 2 -->
+          <div style="background:#fff; border:1px solid var(--panel-border, #e2e8f0); border-radius:10px; padding:12px;">
+            <div style="font-size:12px; font-weight:700; color:#048848; margin-bottom:8px;">2-nji Çykgyt:</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+              <div>
+                <label style="font-size:11px; color:#64748b;">Ýazgy (TM)</label>
+                <input type="text" name="footer_col2_l2_text_tm" class="form-control-panel" value="{{ site_settings.footer_col2_l2_text_tm }}" placeholder="Olimpiadalar">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Text (EN)</label>
+                <input type="text" name="footer_col2_l2_text_en" class="form-control-panel" value="{{ site_settings.footer_col2_l2_text_en }}" placeholder="Olympiads">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Текст (RU)</label>
+                <input type="text" name="footer_col2_l2_text_ru" class="form-control-panel" value="{{ site_settings.footer_col2_l2_text_ru }}" placeholder="Олимпиады">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">URL Salgysy</label>
+                <input type="text" name="footer_col2_l2_url" class="form-control-panel" value="{{ site_settings.footer_col2_l2_url }}" placeholder="/olympiads/">
+              </div>
+            </div>
+          </div>
+
+          <!-- Link 3 -->
+          <div style="background:#fff; border:1px solid var(--panel-border, #e2e8f0); border-radius:10px; padding:12px;">
+            <div style="font-size:12px; font-weight:700; color:#048848; margin-bottom:8px;">3-nji Çykgyt:</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+              <div>
+                <label style="font-size:11px; color:#64748b;">Ýazgy (TM)</label>
+                <input type="text" name="footer_col2_l3_text_tm" class="form-control-panel" value="{{ site_settings.footer_col2_l3_text_tm }}" placeholder="Täzelikler">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Text (EN)</label>
+                <input type="text" name="footer_col2_l3_text_en" class="form-control-panel" value="{{ site_settings.footer_col2_l3_text_en }}" placeholder="News">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Текст (RU)</label>
+                <input type="text" name="footer_col2_l3_text_ru" class="form-control-panel" value="{{ site_settings.footer_col2_l3_text_ru }}" placeholder="Новости">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">URL Salgysy</label>
+                <input type="text" name="footer_col2_l3_url" class="form-control-panel" value="{{ site_settings.footer_col2_l3_url }}" placeholder="/news/">
+              </div>
+            </div>
+          </div>
+
+          <!-- Link 4 -->
+          <div style="background:#fff; border:1px solid var(--panel-border, #e2e8f0); border-radius:10px; padding:12px;">
+            <div style="font-size:12px; font-weight:700; color:#048848; margin-bottom:8px;">4-nji Çykgyt:</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+              <div>
+                <label style="font-size:11px; color:#64748b;">Ýazgy (TM)</label>
+                <input type="text" name="footer_col2_l4_text_tm" class="form-control-panel" value="{{ site_settings.footer_col2_l4_text_tm }}" placeholder="Kitaphana">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Text (EN)</label>
+                <input type="text" name="footer_col2_l4_text_en" class="form-control-panel" value="{{ site_settings.footer_col2_l4_text_en }}" placeholder="Library">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">Текст (RU)</label>
+                <input type="text" name="footer_col2_l4_text_ru" class="form-control-panel" value="{{ site_settings.footer_col2_l4_text_ru }}" placeholder="Библиотека">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">URL Salgysy</label>
+                <input type="text" name="footer_col2_l4_url" class="form-control-panel" value="{{ site_settings.footer_col2_l4_url }}" placeholder="/library/1/">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- 3-nji & 4-nji Sütün Başlyklary -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:18px; margin-bottom:18px;">
+        
+        <!-- 3-nji Sütün: Fakultetler -->
+        <div style="background:var(--panel-surface-2, #f8fafc); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:16px;">
+          <h4 style="margin:0 0 10px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-3" style="background:#048848; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;"></i>
+            3-nji Sütün: Fakultetler Başlygy
+          </h4>
+          <p style="font-size:12px; color:#64748b; margin-bottom:12px;">
+            * Fakultetleriň atlary "Fakultetler" bölüminden awtomatiki alynýar.
+          </p>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label style="font-size:12px;">Başlyk (TM)</label>
+            <input type="text" name="footer_col3_title_tm" class="form-control-panel" value="{{ site_settings.footer_col3_title_tm }}" placeholder="Fakultetler">
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label style="font-size:12px;">Başlyk (EN)</label>
+            <input type="text" name="footer_col3_title_en" class="form-control-panel" value="{{ site_settings.footer_col3_title_en }}" placeholder="Faculties">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;">Başlyk (RU)</label>
+            <input type="text" name="footer_col3_title_ru" class="form-control-panel" value="{{ site_settings.footer_col3_title_ru }}" placeholder="Факультеты">
+          </div>
+        </div>
+
+        <!-- 4-nji Sütün: Habarlaşmak -->
+        <div style="background:var(--panel-surface-2, #f8fafc); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:16px;">
+          <h4 style="margin:0 0 10px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-4" style="background:#048848; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;"></i>
+            4-nji Sütün: Habarlaşmak Başlygy
+          </h4>
+          <p style="font-size:12px; color:#64748b; margin-bottom:12px;">
+            * Salgy, telefon we email ýokardaky "Habarlaşmak maglumatlary" kartasyndan alynýar.
+          </p>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label style="font-size:12px;">Başlyk (TM)</label>
+            <input type="text" name="footer_col4_title_tm" class="form-control-panel" value="{{ site_settings.footer_col4_title_tm }}" placeholder="Habarlaşmak">
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label style="font-size:12px;">Başlyk (EN)</label>
+            <input type="text" name="footer_col4_title_en" class="form-control-panel" value="{{ site_settings.footer_col4_title_en }}" placeholder="Contact">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;">Başlyk (RU)</label>
+            <input type="text" name="footer_col4_title_ru" class="form-control-panel" value="{{ site_settings.footer_col4_title_ru }}" placeholder="Контакты">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom: Awtorlyk Hukugy (Copyright) -->
+      <div style="background:var(--panel-surface-2, #f8fafc); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:16px;">
+        <h4 style="margin:0 0 10px 0; font-size:15px; color:var(--panel-text); display:flex; align-items:center; gap:8px;">
+          <i class="fa-regular fa-copyright" style="color:#048848;"></i>
+          Iň Aşaky Bölek: Awtorlyk Hukugy (Copyright Text)
+        </h4>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_tm.png" style="width:14px; vertical-align:middle;"> Copyright (TM)</label>
+            <input type="text" name="copyright_text_tm" class="form-control-panel" value="{{ site_settings.copyright_text_tm }}" placeholder="© Hemme hukuklary goralan - 2026. Türkmen Döwlet Maliýe Instituty.">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_en.png" style="width:14px; vertical-align:middle;"> Copyright (EN)</label>
+            <input type="text" name="copyright_text_en" class="form-control-panel" value="{{ site_settings.copyright_text_en }}" placeholder="© All rights reserved - 2026. Turkmen State Finance Institute.">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;"><img src="/static/images/flag_ru.png" style="width:14px; vertical-align:middle;"> Copyright (RU)</label>
+            <input type="text" name="copyright_text_ru" class="form-control-panel" value="{{ site_settings.copyright_text_ru }}" placeholder="© Все права защищены - 2026. Туркменский государственный финансовый институт.">
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>

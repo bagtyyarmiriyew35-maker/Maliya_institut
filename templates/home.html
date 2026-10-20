@@ -316,23 +316,12 @@
         <!-- Başlyk we Ählisi düwmesi -->
         <div class="journal-section-header">
             <div class="journal-header-title-box">
-                <span class="journal-tagline">
-                    <i class="fa-solid fa-book-bookmark"></i>
-                    {% if current_lang == 'eng' %}Publications & Journals{% elif current_lang == 'rus' %}Публикации и журналы{% else %}Elektron neşirler we žurnallar{% endif %}
-                </span>
                 <h2 class="journal-section-title">
-                    {% if featured_category %}
-                        {% render_lang featured_category 'name' current_lang %}
-                    {% else %}
-                        {% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}
-                    {% endif %}
+                    <i class="fa-solid fa-book-bookmark" style="color: var(--primary-color, #0a5d36); margin-right: 8px;"></i>
+                    {% if current_lang == 'eng' %}Electronic Publications{% elif current_lang == 'rus' %}Электронные издания{% else %}Elektron neşirler{% endif %}
                 </h2>
                 <div class="journal-header-divider"></div>
             </div>
-            <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-header-all-btn">
-                <span>{% if current_lang == 'eng' %}All publications{% elif current_lang == 'rus' %}Все издания{% else %}Ählisi{% endif %}</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </a>
         </div>
 
         <!-- Kartlaryň / Slaýderiň Daşy -->
@@ -392,7 +381,7 @@
 
         <!-- Altyndaky "Ählisi" baglanyşygy -->
         <div class="journal-showcase-footer">
-            <a href="{% if featured_category %}{% url 'library_detail' featured_category.pk %}{% else %}{% url 'library_list' %}{% endif %}" class="journal-view-all-link">
+            <a href="{% url 'library_list' %}" class="journal-view-all-link">
                 <span>{% if current_lang == 'eng' %}View all publications{% elif current_lang == 'rus' %}Посмотреть все публикации{% else %}Ähli neşirleri görmek{% endif %}</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </a>

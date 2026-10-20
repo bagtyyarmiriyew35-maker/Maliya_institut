@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', function () {
       "fa-plus": '<path d="M5 12h14M12 5v14"/>',
       "fa-arrow-left": '<path d="M19 12H5M12 19l-7-7 7-7"/>',
       "fa-file-pdf": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M9 15h6M9 11h6"/>',
+      "fa-file-video": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><polygon points="10 11 15 14 10 17 10 11"/>',
+      "fa-file-audio": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 18V12l6-2v6"/><circle cx="8" cy="18" r="1.5"/><circle cx="14" cy="16" r="1.5"/>',
+      "fa-file-image": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="1.5"/><path d="m18 19-3.5-3.5a1 1 0 0 0-1.4 0L7 21"/>',
+      "fa-file-word": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 13 1.5 5 1.5-5 1.5 5 1.5-5"/>',
+      "fa-file-excel": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 13h6M9 16h6M12 11v7"/>',
+      "fa-file-powerpoint": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="12" cy="14" r="3"/>',
+      "fa-file-zipper": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 6h4M10 8h4M10 10h4M10 12h4M10 14h4"/>',
+      "fa-paperclip": '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l7.88-7.88"/>',
       "fa-download": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
       "fa-check": '<polyline points="20 6 9 17 4 12"/>',
       "fa-circle": '<circle cx="12" cy="12" r="10" fill="currentColor"/>',
@@ -207,14 +215,41 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Show filename on file upload areas
+  // Show filename, size & category on file upload areas
   document.querySelectorAll('.file-upload-area input[type="file"]').forEach(function (input) {
     input.addEventListener('change', function () {
       const area = input.closest('.file-upload-area');
       if (!area) return;
       const textEl = area.querySelector('.file-upload-text');
+      const iconEl = area.querySelector('.file-upload-icon');
       if (textEl && input.files && input.files[0]) {
-        textEl.innerHTML = '<strong>' + input.files[0].name + '</strong> saýlandy';
+        const file = input.files[0];
+        const ext = file.name.split('.').pop().toLowerCase();
+        let sizeStr = '';
+        if (file.size < 1024 * 1024) {
+          sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+        } else {
+          sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        let typeBadge = '';
+        if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext)) {
+          typeBadge = '<span style="background:#f3e8ff;color:#7c3aed;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Wideo faýl</span>';
+        } else if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext)) {
+          typeBadge = '<span style="background:#e0f2fe;color:#0284c7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Surat</span>';
+        } else if (['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) {
+          typeBadge = '<span style="background:#ffe4e6;color:#e11d48;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Aýdym / Ses</span>';
+        } else if (['pdf'].includes(ext)) {
+          typeBadge = '<span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">PDF resminama</span>';
+        } else if (['doc', 'docx'].includes(ext)) {
+          typeBadge = '<span style="background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Word resminama</span>';
+        } else if (['xls', 'xlsx', 'csv'].includes(ext)) {
+          typeBadge = '<span style="background:#f0fdf4;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Excel tablisasy</span>';
+        } else if (['zip', 'rar', '7z'].includes(ext)) {
+          typeBadge = '<span style="background:#faf5ff;color:#9333ea;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:6px;">Arhiw (Zip)</span>';
+        }
+        
+        textEl.innerHTML = '<strong style="color:var(--panel-primary, #048848);font-size:14px;">' + file.name + '</strong>' + typeBadge + '<br><span style="color:var(--panel-text-muted);font-size:12px;">Göwrümi: ' + sizeStr + ' &bull; Ýatda saklanynda ulgama ýükleniler</span>';
       }
     });
   });

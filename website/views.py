@@ -332,7 +332,7 @@ def page_detail(request, slug):
         siblings = subpages
 
     pdf_page_count = 0
-    if page.pdf_file and PyPDF2 is not None:
+    if page.pdf_file and str(page.pdf_file.name).lower().endswith('.pdf') and PyPDF2 is not None:
         try:
             reader = PyPDF2.PdfReader(page.pdf_file.path)
             pdf_page_count = len(reader.pages)
@@ -377,29 +377,21 @@ def document_detail(request, pk):
 
 def library_list(request):
     """
-    Renders all publications or redirects to first category with issues grid.
+    Renders all publications and journals together in one comprehensive grid.
     """
-    first_cat = LibraryCategory.objects.order_by('order', 'id').first()
-    if first_cat:
-        return redirect('library_detail', pk=first_cat.pk)
-    return redirect('home')
-
-
-def library_detail(request, pk):
-    """
-    Renders the list of books/issues for a specific LibraryCategory (journal).
-    """
-    category = get_object_or_404(LibraryCategory, pk=pk)
-    books = category.books.all().order_by('id')
-    all_categories = LibraryCategory.objects.all().order_by('order', 'id')
-    
+    books = LibraryBook.objects.all().order_by('-year', '-uploaded_at', '-id')
     context = {
-        'category': category,
         'books': books,
-        'all_categories': all_categories,
-        'title': category.name_tm,
+        'title': 'Elektron neşirler',
     }
     return render(request, 'library/detail.html', context)
+
+
+def library_detail(request, pk=None):
+    """
+    Redirects to unified library_list so all publications and journals are displayed together.
+    """
+    return redirect('library_list')
 
 
 def library_book_detail(request, pk):
@@ -408,7 +400,7 @@ def library_book_detail(request, pk):
     identical to document_detail (Mejlis Arhiw style with header photo).
     """
     book = get_object_or_404(LibraryBook, pk=pk)
-    other_books = LibraryBook.objects.filter(category=book.category).exclude(pk=pk).order_by('-year', '-uploaded_at', '-id')[:8]
+    other_books = LibraryBook.objects.exclude(pk=pk).order_by('-year', '-uploaded_at', '-id')[:8]
     
     context = {
         'book': book,

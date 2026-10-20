@@ -38,6 +38,15 @@
                         <p>{{ site_settings.phone }}</p>
                     </div>
                 </div>
+                {% if site_settings.phone2 %}
+                <div class="contact-detail-item">
+                    <div class="icon-box"><i class="fa-solid fa-phone-volume"></i></div>
+                    <div class="details">
+                        <h4>{% ui_label 'phone' current_lang %} 2</h4>
+                        <p>{{ site_settings.phone2 }}</p>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="contact-detail-item">
                     <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
                     <div class="details">

@@ -1,4 +1,5 @@
 {% extends 'panel/base.html' %}
+{% load website_tags %}
 {% block title %}{% if section_label %}{{ section_label }}{% else %}Sahypalar{% endif %}{% endblock %}
 {% block breadcrumb %}Sahypalar{% if section_label %} / {{ section_label }}{% endif %}{% endblock %}
 {% block content %}
@@ -128,8 +129,8 @@
                   {% if page.title_en %}<span style="color: var(--panel-text-muted); font-size: 12px; display: block;">{{ page.title_en|truncatechars:40 }}</span>{% endif %}
                   {% if page.pdf_file %}
                   <div style="margin-top: 3px;">
-                    <a href="{{ page.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #dc2626; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
-                      <i class="fa-solid fa-file-pdf"></i> PDF resminama
+                    <a href="{{ page.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: {{ page.pdf_file|file_color }}; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                      <i class="{{ page.pdf_file|file_icon }}"></i> {% file_category_label page.pdf_file 'tm' %}
                     </a>
                   </div>
                   {% endif %}

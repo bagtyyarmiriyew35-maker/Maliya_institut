@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>{% block title %}Admin Panel{% endblock %} — TDMai</title>
   <link rel="icon" href="/media/loga.png" type="image/png">
-  <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+  <link rel="stylesheet" href="/static/css/fontawesome.min.css?v=20261020_4">
   <link rel="stylesheet" href="/static/css/panel.css">
   {% block extra_css %}{% endblock %}
 </head>
@@ -34,8 +34,7 @@
       <a href="{% url 'panel_sliders' %}"><i class="fa-solid fa-images"></i> Sliderlar</a>
       <a href="{% url 'panel_news' %}"><i class="fa-solid fa-newspaper"></i> Täzelikler</a>
       <a href="{% url 'panel_bilim_news' %}"><i class="fa-solid fa-graduation-cap"></i> Bilim.tm Täzelikleri</a>
-      <a href="{% url 'panel_library_categories' %}"><i class="fa-solid fa-book-bookmark"></i> Elektron neşirler</a>
-      <a href="{% url 'panel_library_books' %}"><i class="fa-solid fa-book-open"></i> Neşir sanlary</a>
+      <a href="{% url 'panel_library_books' %}"><i class="fa-solid fa-book-bookmark"></i> Elektron neşirler</a>
       <a href="{% url 'panel_documents' %}"><i class="fa-solid fa-folder-open"></i> Resminamalar</a>
       <a href="{% url 'panel_olympiads' %}"><i class="fa-solid fa-file-pdf"></i> Olimpiada netijeleri</a>
       <a href="{% url 'panel_partners' %}"><i class="fa-solid fa-handshake"></i> Hyzmatdaşlar</a>
@@ -144,8 +143,614 @@
   </div>
 </div>
 
+<!-- Panel Toast Notification Container -->
+<div id="panelToastContainer" style="position:fixed; top:20px; right:20px; z-index:9999999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
+
+<!-- Explicit Styles for Document Picker Modal -->
+<style>
+  #docPickerModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    z-index: 9999999 !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+  }
+  #docPickerModal.active {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  #docPickerModal .doc-picker-box {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-radius: 14px !important;
+    max-width: 880px !important;
+    width: 95% !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid #cbd5e1 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+  }
+  .doc-table-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid transparent;
+  }
+</style>
+
+<!-- Document Picker Modal (Mazmuny üçin Resminama Saýlaýjy) -->
+<div id="docPickerModal">
+  <div class="doc-picker-box">
+    
+    <!-- Modal Header -->
+    <div style="padding: 16px 22px; background: linear-gradient(135deg, #0a5c36 0%, #047857 100%); color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15);">
+      <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px;">
+        <i class="fa-solid fa-folder-open" style="font-size: 20px;"></i>
+        <span>Resminamalardan faýl saýlaň we Mazmuna goşuň</span>
+      </div>
+      <button type="button" onclick="window.closeDocPicker()" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff; width: 32px; height: 32px; border-radius: 8px; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" title="Ýap">&times;</button>
+    </div>
+
+    <!-- Modal Navigation Tabs -->
+    <div style="display: flex; gap: 10px; padding: 12px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+      <button type="button" class="btn-panel btn-panel-primary btn-panel-sm" id="tabBtnList" onclick="window.switchDocTab('list')">
+        <i class="fa-solid fa-list"></i> Bar bolan resminamalar
+      </button>
+      <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" id="tabBtnUpload" onclick="window.switchDocTab('upload')">
+        <i class="fa-solid fa-cloud-arrow-up"></i> + Täze faýl ýükle we goş
+      </button>
+    </div>
+
+    <!-- TAB 1: LIST / SEARCH -->
+    <div id="tabContentList" style="padding: 18px 20px; display: flex; flex-direction: column; flex: 1; overflow-y: auto;">
+      
+      <!-- Search & Filters -->
+      <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 220px; position: relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 11px; color: #64748b;"></i>
+          <input type="text" id="docSearchInput" placeholder="Resminamanyň ady, faýly ýa-da görnüşi boýunça gözle..." class="form-control-panel" style="padding-left: 34px; background: #ffffff; color: #1e293b;" oninput="window.loadDocumentsList()">
+        </div>
+        <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="window.loadDocumentsList()" title="Täzele">
+          <i class="fa-solid fa-rotate-right"></i> Täzele
+        </button>
+      </div>
+
+      <!-- Insertion Style Selector -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+          <i class="fa-solid fa-palette" style="color: #0a5c36; margin-right: 4px;"></i> Mazmuna nähili goşmaly:
+        </div>
+        <div style="display: flex; gap: 14px; font-size: 12.5px; flex-wrap: wrap; color: #334155;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="docInsertStyle" value="green_link" checked onchange="window.toggleDocInsertStyle()">
+            <strong style="color: #0a5c36;"><i class="fa-solid fa-link"></i> Ýaşyl tekst linki (Fotografdaky ýaly / Içini görmek)</strong>
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="docInsertStyle" value="card" onchange="window.toggleDocInsertStyle()">
+            <span><i class="fa-solid fa-id-card"></i> Görnükli Ýükle Karty (Uly blok)</span>
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="docInsertStyle" value="image" onchange="window.toggleDocInsertStyle()">
+            <span><i class="fa-regular fa-image"></i> Surat hökmünde</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Green Link Customizer Box (Active by default) -->
+      <div id="greenLinkConfigArea" style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+          <label for="docCustomLinkText" style="font-size: 13px; font-weight: 700; color: #065f46; display: flex; align-items: center; gap: 6px; margin: 0;">
+            <i class="fa-solid fa-i-cursor"></i> Linkiň ýaşyl ýazgysy (Metin):
+          </label>
+          <span style="font-size: 11.5px; color: #047857; font-weight: 600;">
+            <i class="fa-solid fa-eye"></i> Basylanda faýly ilki açyp görkezer (derrew göçürip almaz)
+          </span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="docCustomLinkText" class="form-control-panel" value="Maksatnamany görmek" placeholder="Meselem: Maksatnamany görmek" style="background: #ffffff; color: #0a5c36; font-weight: 700; font-size: 15px; border-color: #34d399;" oninput="window.updateDocLinkPreview()">
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">Taýyn nusgalar:</span>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Maksatnamany görmek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Maksatnamany görmek</button>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Maksatnamany ýüklemek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Maksatnamany ýüklemek</button>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Resminamany görmek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Resminamany görmek</button>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Resminamany ýüklemek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Resminamany ýüklemek</button>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Faýly görmek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Faýly görmek</button>
+          <button type="button" class="btn-panel btn-panel-xs btn-panel-ghost" onclick="window.setCustomLinkText('Düzgünnamany görmek')" style="background: #ffffff; border: 1px solid #a7f3d0; font-weight: 600; color: #0a5c36;">Düzgünnamany görmek</button>
+        </div>
+        <div style="margin-top: 10px; padding: 6px 12px; background: #ffffff; border-radius: 6px; border: 1px dashed #6ee7b7; font-size: 12.5px; color: #475569; display: flex; align-items: center; gap: 8px;">
+          <span>Mazmunda şeýle görüner:</span>
+          <span style="font-weight: 700; color: #0a5c36; text-decoration: underline; font-size: 15px;" id="docLinkTextPreview"><u>Maksatnamany görmek</u></span>
+        </div>
+      </div>
+
+      <!-- Documents Container -->
+      <div id="docListContainer" style="flex: 1; min-height: 250px; max-height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff;">
+        <div style="text-align: center; padding: 40px; color: #64748b;">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i>
+          <p style="margin-top: 8px;">Resminamalar ýüklenýär...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: QUICK UPLOAD -->
+    <div id="tabContentUpload" style="display:none; padding: 20px; overflow-y: auto;">
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
+        <i class="fa-solid fa-lightbulb"></i> Bu ýerde faýly göni ýükläp bilersiňiz. Ol awtomatiki <strong>Resminamalar</strong> bölümine ýüklenip, derrew Mazmunyň içine ýükläp alyş kartasy hökmünde goşular!
+      </div>
+      <form id="docQuickUploadForm" onsubmit="window.submitQuickUpload(event)">
+        {% csrf_token %}
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="color:#0f172a; font-weight:600;">Resminamanyň ady (TM) <span class="required">*</span></label>
+          <input type="text" id="qu_title_tm" class="form-control-panel" required placeholder="Mysal: Düzgünnama we Görkezmeler" style="background:#ffffff; color:#1e293b;">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="color:#0f172a; font-weight:600;">Faýl saýlaň (PDF, Word, Excel, Surat, Video...) <span class="required">*</span></label>
+          <input type="file" id="qu_file" class="form-control-panel" required accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z,.mp4,.webm,.ogg,.mov,.avi,.mp3,.wav,.m4a,.jpg,.jpeg,.png,.webp,.gif,image/*,video/*,audio/*" style="background:#ffffff; color:#1e293b;">
+        </div>
+        <div class="form-row form-row-2" style="margin-bottom: 16px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label style="color:#0f172a; font-weight:600;">Ady (EN / Iňlisçe) <small class="text-muted">(hökman däl)</small></label>
+            <input type="text" id="qu_title_en" class="form-control-panel" placeholder="Document title in English" style="background:#ffffff; color:#1e293b;">
+          </div>
+          <div class="form-group">
+            <label style="color:#0f172a; font-weight:600;">Ady (RU / Rusça) <small class="text-muted">(hökman däl)</small></label>
+            <input type="text" id="qu_title_ru" class="form-control-panel" placeholder="Название на русском" style="background:#ffffff; color:#1e293b;">
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn-panel btn-panel-ghost" onclick="window.switchDocTab('list')">Ýatyr</button>
+          <button type="submit" class="btn-panel btn-panel-primary" id="qu_submit_btn">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Ýükle we Mazmuna Goş
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+      <div>
+        <i class="fa-solid fa-info-circle"></i> Mazmunyň içine goşmak üçin setirdäki <strong>"Mazmuna Goş"</strong> düwmesine basyň.
+      </div>
+      <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="window.closeDocPicker()">Ýap</button>
+    </div>
+
+  </div>
+</div>
+
 <script src="/static/tinymce/tinymce.min.js"></script>
 <script>
+  // Global Toast Notification Helper
+  window.showPanelToast = function(msg, type) {
+    type = type || 'info';
+    var container = document.getElementById('panelToastContainer');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.style.cssText = 'pointer-events:auto; min-width:280px; max-width:440px; padding:12px 18px; border-radius:10px; font-size:13.5px; font-weight:600; box-shadow:0 10px 25px rgba(0,0,0,0.25); display:flex; align-items:center; gap:10px; transition:all 0.3s ease; transform:translateX(50px); opacity:0;';
+    if (type === 'success') {
+      toast.style.background = '#065f46';
+      toast.style.color = '#ffffff';
+      toast.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:17px;color:#34d399;"></i> <span>' + msg + '</span>';
+    } else if (type === 'error') {
+      toast.style.background = '#991b1b';
+      toast.style.color = '#ffffff';
+      toast.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="font-size:17px;color:#f87171;"></i> <span>' + msg + '</span>';
+    } else {
+      toast.style.background = '#1e293b';
+      toast.style.color = '#ffffff';
+      toast.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:17px;color:#38bdf8;"></i> <span>' + msg + '</span>';
+    }
+    container.appendChild(toast);
+    requestAnimationFrame(function() {
+      toast.style.transform = 'translateX(0)';
+      toast.style.opacity = '1';
+    });
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(function() { toast.remove(); }, 350);
+    }, 3200);
+  };
+
+  // State
+  window.currentDocTargetEditorId = null;
+  window.cachedDocuments = [];
+
+  // Toggle Green Link configuration area
+  window.toggleDocInsertStyle = function() {
+    var style = 'green_link';
+    var radios = document.querySelectorAll('input[name="docInsertStyle"]');
+    radios.forEach(function(r) { if (r.checked) style = r.value; });
+    var area = document.getElementById('greenLinkConfigArea');
+    if (area) {
+      area.style.display = (style === 'green_link') ? 'block' : 'none';
+    }
+  };
+
+  // Set quick preset text
+  window.setCustomLinkText = function(text) {
+    var inp = document.getElementById('docCustomLinkText');
+    if (inp) {
+      inp.value = text;
+      window.updateDocLinkPreview();
+    }
+  };
+
+  // Real-time preview update
+  window.updateDocLinkPreview = function() {
+    var inp = document.getElementById('docCustomLinkText');
+    var prev = document.getElementById('docLinkTextPreview');
+    if (inp && prev) {
+      var val = inp.value.trim() || 'Maksatnamany görmek';
+      prev.innerHTML = '<u>' + escapeHtml(val) + '</u>';
+    }
+  };
+
+  // Open Document Picker Modal
+  window.openDocPicker = function(editorId) {
+    window.currentDocTargetEditorId = editorId || null;
+    var modal = document.getElementById('docPickerModal');
+    if (modal) {
+      modal.classList.add('active');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      window.switchDocTab('list');
+
+      // Check if text is currently highlighted in TinyMCE
+      var ed = null;
+      if (editorId && typeof tinymce !== 'undefined') {
+        ed = tinymce.get(editorId);
+      }
+      if (!ed && typeof tinymce !== 'undefined') {
+        ed = tinymce.activeEditor;
+      }
+      var linkInput = document.getElementById('docCustomLinkText');
+      if (linkInput) {
+        if (ed) {
+          var sel = ed.selection ? ed.selection.getContent({ format: 'text' }) : '';
+          if (sel && sel.trim()) {
+            linkInput.value = sel.trim();
+          } else if (!linkInput.value || linkInput.value.trim() === '') {
+            linkInput.value = 'Maksatnamany görmek';
+          }
+        } else if (!linkInput.value || linkInput.value.trim() === '') {
+          linkInput.value = 'Maksatnamany görmek';
+        }
+        window.updateDocLinkPreview();
+      }
+
+      window.loadDocumentsList();
+    }
+  };
+
+  // Close Document Picker Modal
+  window.closeDocPicker = function() {
+    var modal = document.getElementById('docPickerModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('opacity', '0', 'important');
+      modal.style.setProperty('visibility', 'hidden', 'important');
+    }
+  };
+
+  // Switch between List and Quick-Upload tabs
+  window.switchDocTab = function(tabName) {
+    var btnList = document.getElementById('tabBtnList');
+    var btnUpload = document.getElementById('tabBtnUpload');
+    var contentList = document.getElementById('tabContentList');
+    var contentUpload = document.getElementById('tabContentUpload');
+
+    if (tabName === 'upload') {
+      if (btnUpload) btnUpload.className = 'btn-panel btn-panel-primary btn-panel-sm';
+      if (btnList) btnList.className = 'btn-panel btn-panel-ghost btn-panel-sm';
+      if (contentUpload) contentUpload.style.display = 'block';
+      if (contentList) contentList.style.display = 'none';
+    } else {
+      if (btnList) btnList.className = 'btn-panel btn-panel-primary btn-panel-sm';
+      if (btnUpload) btnUpload.className = 'btn-panel btn-panel-ghost btn-panel-sm';
+      if (contentList) contentList.style.display = 'flex';
+      if (contentUpload) contentUpload.style.display = 'none';
+    }
+  };
+
+  // Fetch and display documents
+  window.loadDocumentsList = function() {
+    var container = document.getElementById('docListContainer');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:8px;">Resminamalar ýüklenýär...</p></div>';
+
+    var q = (document.getElementById('docSearchInput') ? document.getElementById('docSearchInput').value.trim() : '');
+    var url = '/panel/api/documents/?q=' + encodeURIComponent(q);
+
+    fetch(url)
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.status === 'ok') {
+          window.cachedDocuments = data.documents || [];
+          renderDocumentRows(window.cachedDocuments);
+        } else {
+          container.innerHTML = '<div style="padding:24px;text-align:center;color:#ef4444;">Ýalňyşlyk ýüze çykdy.</div>';
+        }
+      })
+      .catch(function(err) {
+        container.innerHTML = '<div style="padding:24px;text-align:center;color:#ef4444;">Faýllar ýüklenende ýalňyşlyk: ' + err + '</div>';
+      });
+  };
+
+  function renderCategoryOptions(categories) {
+    var select = document.getElementById('docCategoryFilter');
+    if (!select || select.children.length > 1) return;
+    categories.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.code;
+      opt.textContent = c.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function renderDocumentRows(docs) {
+    var container = document.getElementById('docListContainer');
+    if (!container) return;
+
+    if (!docs || docs.length === 0) {
+      container.innerHTML = '<div style="padding:32px;text-align:center;color:#64748b;"><i class="fa-solid fa-folder-open" style="font-size:32px;opacity:0.4;margin-bottom:8px;"></i><p>Resminama tapylmady. Ýokarky "+ Täze faýl ýükle" arkaly faýl goşup bilersiňiz.</p></div>';
+      return;
+    }
+
+    var html = '<table class="panel-table" style="font-size:12.5px;margin:0;width:100%;border-collapse:collapse;">';
+    html += '<thead style="background:#f8fafc;"><tr><th style="width:36px;padding:10px;">#</th><th style="padding:10px;">Resminama</th><th style="padding:10px;">Görnüş</th><th style="padding:10px;">Senesi</th><th style="text-align:right;padding:10px;">Hereket</th></tr></thead><tbody>';
+
+    docs.forEach(function(doc, idx) {
+      html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+      html += '<td style="padding:10px;color:#64748b;">' + (idx + 1) + '</td>';
+      html += '<td style="padding:10px;">';
+      html += '  <div style="font-weight:700;color:#0f172a;">' + escapeHtml(doc.title_tm) + '</div>';
+      if (doc.title_en || doc.title_ru) {
+        html += '  <div style="font-size:11px;color:#64748b;display:flex;gap:6px;margin-top:2px;">';
+        if (doc.title_en) html += '<span>EN: ' + escapeHtml(doc.title_en) + '</span>';
+        if (doc.title_ru) html += '<span>RU: ' + escapeHtml(doc.title_ru) + '</span>';
+        html += '  </div>';
+      }
+      html += '</td>';
+      html += '<td style="padding:10px;">';
+      html += '  <span style="display:inline-flex;align-items:center;gap:6px;color:' + (doc.color || '#0a5c36') + ';font-weight:600;">';
+      html += '    <i class="' + (doc.icon || 'fa-solid fa-file') + '"></i> ' + (doc.ext || 'faýl').toUpperCase();
+      if (doc.size) html += ' <small style="color:#64748b;font-weight:normal;">(' + doc.size + ')</small>';
+      html += '  </span>';
+      html += '</td>';
+      html += '<td style="padding:10px;"><span style="color:#64748b;">' + (doc.date || '') + '</span></td>';
+      html += '<td style="text-align:right;white-space:nowrap;padding:10px;display:flex;gap:6px;justify-content:flex-end;align-items:center;">';
+      html += '  <button type="button" class="btn-panel btn-panel-primary btn-panel-sm" onclick="window.insertDocById(' + doc.id + ')" title="Mazmuna ýaşyl link hökmünde goş">';
+      html += '    <i class="fa-solid fa-plus"></i> Mazmuna Goş';
+      html += '  </button>';
+      html += '  <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="window.copyGreenLinkDirect(\'' + escapeHtml(doc.file_url) + '\')" title="Ýaşyl link koduny göçür">';
+      html += '    <i class="fa-solid fa-code" style="color:#0a5c36;"></i> Ýaşyl linki göçür';
+      html += '  </button>';
+      html += '  <a href="' + escapeHtml(doc.file_url) + '" target="_blank" rel="noopener noreferrer" class="btn-panel btn-panel-ghost btn-panel-sm" title="Faýlyň içini gör (Brauzerde aç)">';
+      html += '    <i class="fa-solid fa-eye" style="color:#0a5c36;"></i>';
+      html += '  </a>';
+      html += '  <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="window.copyDocUrlDirect(\'' + escapeHtml(doc.file_url) + '\')" title="Faýlyň gönümel salgysyny göçür">';
+      html += '    <i class="fa-solid fa-link" style="color:#64748b;"></i>';
+      html += '  </button>';
+      html += '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  window.copyDocUrlDirect = function(url) {
+    navigator.clipboard.writeText(url).then(function() {
+      window.showPanelToast('Faýlyň salgysy göçürildi: ' + url, 'success');
+    });
+  };
+
+  window.copyGreenLinkDirect = function(url) {
+    var customInput = document.getElementById('docCustomLinkText');
+    var linkText = (customInput && customInput.value.trim()) ? customInput.value.trim() : 'Maksatnamany görmek';
+    // Green link, opens in new tab to view first (NO download attribute):
+    var html = '<p style="margin: 12px 0 16px 0;"><a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color: #0a5c36; font-weight: 700; font-size: 16px; text-decoration: underline; display: inline-block;"><u>' + escapeHtml(linkText) + '</u></a></p>';
+    navigator.clipboard.writeText(html).then(function() {
+      window.showPanelToast('Ýaşyl link kody göçürildi: "' + linkText + '"', 'success');
+    });
+  };
+
+  // Insert Document into TinyMCE Editor
+  window.insertDocById = function(docId) {
+    var doc = window.cachedDocuments.find(function(d) { return d.id === docId; });
+    if (!doc) return;
+
+    var style = 'green_link';
+    var styleRadios = document.querySelectorAll('input[name="docInsertStyle"]');
+    styleRadios.forEach(function(r) {
+      if (r.checked) style = r.value;
+    });
+
+    var targetId = window.currentDocTargetEditorId || '';
+    var title = doc.title_tm;
+    if (targetId.indexOf('en') !== -1 && doc.title_en) {
+      title = doc.title_en;
+    } else if (targetId.indexOf('ru') !== -1 && doc.title_ru) {
+      title = doc.title_ru;
+    }
+
+    var htmlToInsert = '';
+
+    if (style === 'green_link') {
+      var customInput = document.getElementById('docCustomLinkText');
+      var linkText = (customInput && customInput.value.trim()) ? customInput.value.trim() : 'Maksatnamany görmek';
+
+      var ed = null;
+      if (targetId && typeof tinymce !== 'undefined') ed = tinymce.get(targetId);
+      if (!ed && typeof tinymce !== 'undefined') ed = tinymce.activeEditor;
+      var hasSelection = ed && ed.selection && ed.selection.getContent({ format: 'text' }).trim().length > 0;
+
+      // Green, bold, underlined hyperlink that opens to view first (no forced download):
+      var anchorTag = '<a href="' + doc.file_url + '" target="_blank" rel="noopener noreferrer" style="color: #0a5c36; font-weight: 700; font-size: 16px; text-decoration: underline; display: inline-block;"><u>' + escapeHtml(linkText) + '</u></a>';
+
+      if (hasSelection) {
+        htmlToInsert = anchorTag;
+      } else {
+        htmlToInsert = '<p style="margin: 12px 0 16px 0;">' + anchorTag + '</p>';
+      }
+    } else if (style === 'image' && doc.cat_type === 'image') {
+      htmlToInsert = '<p><img src="' + doc.file_url + '" alt="' + escapeHtml(title) + '" style="max-width:100%;height:auto;border-radius:10px;margin:16px 0;display:block;box-shadow:0 4px 15px rgba(0,0,0,0.08);" /></p>';
+    } else {
+      // Default: Modern Download Card
+      var extBadge = (doc.ext || 'FAÝL').toUpperCase();
+      var sizeBadge = doc.size ? ' &bull; ' + doc.size : '';
+      htmlToInsert = '<p class="content-doc-download-wrapper" style="margin: 20px 0;">' +
+        '<a href="' + doc.file_url + '" class="content-doc-download-card" target="_blank" download style="display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04); font-family: inherit;">' +
+          '<span class="cdd-icon-box" style="width: 44px; height: 44px; border-radius: 10px; background: ' + (doc.bg_color || '#eff6ff') + '; color: ' + (doc.color || '#2563eb') + '; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">' +
+            '<i class="' + (doc.icon || 'fa-solid fa-file') + '"></i>' +
+          '</span>' +
+          '<span class="cdd-info" style="flex: 1; min-width: 0; display: inline-flex; flex-direction: column; gap: 3px;">' +
+            '<strong class="cdd-title" style="font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35;">' + escapeHtml(title) + '</strong>' +
+            '<span class="cdd-meta" style="font-size: 12px; color: #64748b; font-weight: 500;">' +
+              '<i class="fa-solid fa-download"></i> Faýly ýükläp al (' + extBadge + sizeBadge + ')' +
+            '</span>' +
+          '</span>' +
+          '<span class="cdd-badge" style="padding: 7px 14px; background: #0a5c36; color: #ffffff; border-radius: 8px; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">' +
+            'Ýükle <i class="fa-solid fa-arrow-down"></i>' +
+          '</span>' +
+        '</a>' +
+      '</p>';
+    }
+
+    insertHtmlIntoEditor(htmlToInsert);
+  };
+
+  function insertHtmlIntoEditor(html) {
+    var editor = null;
+    if (window.currentDocTargetEditorId && typeof tinymce !== 'undefined') {
+      editor = tinymce.get(window.currentDocTargetEditorId);
+      if (!editor) {
+        var el = document.getElementById(window.currentDocTargetEditorId) || document.querySelector('[name="' + window.currentDocTargetEditorId + '"]');
+        if (el && el.id) {
+          editor = tinymce.get(el.id);
+        }
+      }
+    }
+    if (!editor && typeof tinymce !== 'undefined') {
+      editor = tinymce.activeEditor;
+    }
+    if (!editor && typeof tinymce !== 'undefined' && tinymce.editors && tinymce.editors.length > 0) {
+      editor = tinymce.editors[0];
+    }
+
+    if (editor) {
+      editor.insertContent(html);
+      editor.save();
+      window.showPanelToast('Resminama Mazmuna üstünlikli goşuldy!', 'success');
+    } else {
+      var ta = (window.currentDocTargetEditorId ? document.getElementById(window.currentDocTargetEditorId) || document.querySelector('[name="' + window.currentDocTargetEditorId + '"]') : null) || document.querySelector('.wysiwyg-editor');
+      if (ta) {
+        ta.value += '\n' + html;
+        window.showPanelToast('Resminama Mazmuna üstünlikli goşuldy!', 'success');
+      } else {
+        navigator.clipboard.writeText(html);
+        window.showPanelToast('HTML kody göçürildi! Mazmuna goýup bilersiňiz.', 'info');
+      }
+    }
+    window.closeDocPicker();
+  }
+
+  // Quick upload submit
+  window.submitQuickUpload = function(event) {
+    event.preventDefault();
+    var btn = document.getElementById('qu_submit_btn');
+    var fileInput = document.getElementById('qu_file');
+    var titleTm = document.getElementById('qu_title_tm').value.trim();
+    var category = 'Resminama';
+    var titleEn = document.getElementById('qu_title_en').value.trim();
+    var titleRu = document.getElementById('qu_title_ru').value.trim();
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      window.showPanelToast('Faýl saýlaň!', 'error');
+      return;
+    }
+    if (!titleTm) {
+      window.showPanelToast('Resminamanyň adyny giriziň!', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title_tm', titleTm);
+    formData.append('category', category);
+    formData.append('title_en', titleEn);
+    formData.append('title_ru', titleRu);
+    formData.append('file', fileInput.files[0]);
+
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+    formData.append('csrfmiddlewaretoken', csrfToken);
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ýüklenýär...';
+
+    fetch('/panel/api/documents/quick-upload/', {
+      method: 'POST',
+      body: formData
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Ýükle we Mazmuna Goş';
+        if (data.status === 'ok') {
+          window.showPanelToast('Faýl üstünlikli ýüklendi!', 'success');
+          window.cachedDocuments.unshift(data.document);
+          window.insertDocById(data.document.id);
+          document.getElementById('docQuickUploadForm').reset();
+        } else {
+          window.showPanelToast(data.message || 'Ýalňyşlyk ýüze çykdy', 'error');
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Ýükle we Mazmuna Goş';
+        window.showPanelToast('Ýalňyşlyk: ' + err, 'error');
+      });
+  };
+
+  // Pre-assign IDs to all textareas so TinyMCE matches them exactly
+  document.querySelectorAll('textarea.wysiwyg-editor').forEach(function(textarea, idx) {
+    if (!textarea.id) {
+      textarea.id = textarea.name || ('editor_ta_' + idx);
+    }
+  });
+
+  // TinyMCE setup with Resminama Goş button
   tinymce.init({
     license_key: 'gpl',
     selector: '.wysiwyg-editor',
@@ -159,12 +764,27 @@
     toolbar: 'undo redo | blocks | ' +
       'bold italic forecolor backcolor | alignleft aligncenter ' +
       'alignright alignjustify | bullist numlist outdent indent | ' +
-      'removeformat | table link image | code fullscreen',
+      'removeformat | table link image resminama_btn | code fullscreen',
     skin: 'oxide-dark',
     content_css: 'dark',
     branding: false,
     promotion: false,
     setup: function (editor) {
+      editor.ui.registry.addButton('resminama_btn', {
+        text: '📁 Resminama Goş',
+        icon: 'browse',
+        tooltip: 'Resminamalardan faýl saýlaň we mazmuna goşuň',
+        onAction: function () {
+          window.openDocPicker(editor.id);
+        }
+      });
+      editor.ui.registry.addMenuItem('resminama_menu', {
+        text: '📁 Resminamalardan faýl goş...',
+        icon: 'browse',
+        onAction: function () {
+          window.openDocPicker(editor.id);
+        }
+      });
       editor.on('change', function () { editor.save(); });
       editor.on('keyup', function () { editor.save(); });
     }
@@ -175,6 +795,78 @@
       tinymce.triggerSave();
     }
   }, true);
+
+  // Initialize event listeners when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Backdrop click to close
+    var modal = document.getElementById('docPickerModal');
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          window.closeDocPicker();
+        }
+      });
+    }
+
+    // Escape key to close
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        window.closeDocPicker();
+      }
+    });
+
+    // Search input listener with debounce
+    var searchInput = document.getElementById('docSearchInput');
+    if (searchInput) {
+      var searchTimeout = null;
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+          window.loadDocumentsList();
+        }, 300);
+      });
+    }
+
+    // Category filter listener
+    var catSelect = document.getElementById('docCategoryFilter');
+    if (catSelect) {
+      catSelect.addEventListener('change', function() {
+        window.loadDocumentsList();
+      });
+    }
+
+    // Attach quick helper buttons next to all Mazmuny / WYSIWYG labels
+    document.querySelectorAll('textarea.wysiwyg-editor').forEach(function(textarea, idx) {
+      var targetId = textarea.id || textarea.name || ('wysiwyg_' + idx);
+      textarea.id = targetId;
+
+      var parentGroup = textarea.closest('.form-group') || textarea.parentElement;
+      if (parentGroup && !parentGroup.querySelector('.doc-picker-helper-btn')) {
+        var label = parentGroup.querySelector('label');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-panel btn-panel-sm doc-picker-helper-btn';
+        btn.style.cssText = 'font-size: 11.5px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; cursor: pointer; border-radius: 6px; font-weight: 600; text-decoration: none;';
+        btn.innerHTML = '<i class="fa-solid fa-folder-open" style="color: #16a34a;"></i> <span>Resminamalardan faýl goş</span>';
+        btn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.openDocPicker(targetId);
+        };
+
+        if (label) {
+          var headerWrap = document.createElement('div');
+          headerWrap.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; width: 100%;';
+          label.parentNode.insertBefore(headerWrap, label);
+          headerWrap.appendChild(label);
+          headerWrap.appendChild(btn);
+          label.style.marginBottom = '0';
+        } else {
+          textarea.parentNode.insertBefore(btn, textarea);
+        }
+      }
+    });
+  });
 </script>
 <script>
   // Automatically append unique timestamp to admin panel edit/action links to completely bypass any browser/ISP disk cache

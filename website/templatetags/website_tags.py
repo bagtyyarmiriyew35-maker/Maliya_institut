@@ -1,3 +1,4 @@
+import os
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -226,9 +227,9 @@ UI_VOCABULARY = {
         'rus': 'Электронные издания'
     },
     'publications_journals': {
-        'tm': 'Elektron neşirler we žurnallar',
-        'eng': 'Publications & Journals',
-        'rus': 'Электронные издания и журналы'
+        'tm': 'Elektron neşirler',
+        'eng': 'Publications',
+        'rus': 'Публикации'
     },
     'footer_desc': {
         'tm': 'Türkmenistanyň ykdysady we maliýe pudaklary üçin ýokary derejeli hünärmenleri taýýarlaýan öňdebaryjy ýokary okuw mekdebi.',
@@ -492,6 +493,129 @@ def is_visible_in(page, lang='tm'):
         return getattr(page, 'show_in_ru', True)
     else:
         return getattr(page, 'show_in_tm', True)
+
+
+@register.filter
+def file_ext(file_field_or_url):
+    """Returns lowercased extension without dot (e.g. 'mp4', 'pdf', 'xlsx')."""
+    if not file_field_or_url:
+        return ''
+    try:
+        url_or_name = getattr(file_field_or_url, 'name', '') or str(file_field_or_url)
+        url_or_name = url_or_name.split('?')[0]
+        ext = os.path.splitext(url_or_name)[1].lower().lstrip('.')
+        return ext
+    except Exception:
+        return ''
+
+
+@register.filter
+def file_category(file_field_or_url):
+    """
+    Returns file category: 'video', 'image', 'audio', 'pdf', 'word', 'excel', 'powerpoint', 'archive', 'text', 'other'
+    """
+    ext = file_ext(file_field_or_url)
+    if ext in ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'm4v', '3gp']:
+        return 'video'
+    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'jfif']:
+        return 'image'
+    if ext in ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma', 'opus', 'mid', 'midi']:
+        return 'audio'
+    if ext == 'pdf':
+        return 'pdf'
+    if ext in ['doc', 'docx', 'rtf', 'odt']:
+        return 'word'
+    if ext in ['xls', 'xlsx', 'csv', 'ods', 'xlsm']:
+        return 'excel'
+    if ext in ['ppt', 'pptx', 'odp', 'pps', 'ppsx']:
+        return 'powerpoint'
+    if ext in ['zip', 'rar', '7z', 'tar', 'gz', 'bz2']:
+        return 'archive'
+    if ext in ['txt', 'log', 'md']:
+        return 'text'
+    return 'other'
+
+
+@register.filter
+def file_icon(file_field_or_url):
+    """Returns FontAwesome icon class for the file."""
+    cat = file_category(file_field_or_url)
+    icons = {
+        'video': 'fa-solid fa-file-video',
+        'image': 'fa-solid fa-file-image',
+        'audio': 'fa-solid fa-file-audio',
+        'pdf': 'fa-solid fa-file-pdf',
+        'word': 'fa-solid fa-file-word',
+        'excel': 'fa-solid fa-file-excel',
+        'powerpoint': 'fa-solid fa-file-powerpoint',
+        'archive': 'fa-solid fa-file-zipper',
+        'text': 'fa-solid fa-file-lines',
+        'other': 'fa-solid fa-file',
+    }
+    return icons.get(cat, 'fa-solid fa-file')
+
+
+@register.filter
+def file_color(file_field_or_url):
+    """Returns accent hex color for the file category."""
+    cat = file_category(file_field_or_url)
+    colors = {
+        'video': '#8b5cf6',      # Violet / Modern video purple
+        'image': '#0284c7',      # Sky Blue
+        'audio': '#e11d48',      # Rose / Vibrant audio
+        'pdf': '#ef4444',        # Red
+        'word': '#2563eb',       # Blue
+        'excel': '#16a34a',      # Green
+        'powerpoint': '#ea580c', # Orange
+        'archive': '#9333ea',    # Purple
+        'text': '#64748b',       # Slate
+        'other': '#64748b',
+    }
+    return colors.get(cat, '#64748b')
+
+
+@register.filter
+def file_bg_color(file_field_or_url):
+    """Returns light background hex color for the file category icon box."""
+    cat = file_category(file_field_or_url)
+    bgs = {
+        'video': '#f3e8ff',
+        'image': '#e0f2fe',
+        'audio': '#ffe4e6',
+        'pdf': '#fef2f2',
+        'word': '#eff6ff',
+        'excel': '#f0fdf4',
+        'powerpoint': '#fff7ed',
+        'archive': '#faf5ff',
+        'text': '#f8fafc',
+        'other': '#f8fafc',
+    }
+    return bgs.get(cat, '#f8fafc')
+
+
+@register.simple_tag
+def file_category_label(file_field_or_url, lang='tm'):
+    """Returns localized category badge/name."""
+    cat = file_category(file_field_or_url)
+    ext = file_ext(file_field_or_url).upper()
+    l = str(lang or 'tm').lower()
+    is_en = ('eng' in l or l == 'en')
+    is_ru = ('rus' in l or l == 'ru')
+
+    labels = {
+        'video': ('Wideo faýl' if not is_en and not is_ru else ('Video File' if is_en else 'Видео файл')),
+        'image': ('Surat' if not is_en and not is_ru else ('Image / Photo' if is_en else 'Изображение / Фото')),
+        'audio': ('Aýdym / Ses' if not is_en and not is_ru else ('Audio File' if is_en else 'Аудиозапись')),
+        'pdf': ('PDF Resminama' if not is_en and not is_ru else ('PDF Document' if is_en else 'PDF документ')),
+        'word': ('Word Resminama' if not is_en and not is_ru else ('Word Document' if is_en else 'Документ Word')),
+        'excel': ('Excel Tablisa' if not is_en and not is_ru else ('Excel Spreadsheet' if is_en else 'Таблица Excel')),
+        'powerpoint': ('Prezentasiýa' if not is_en and not is_ru else ('Presentation' if is_en else 'Презентация')),
+        'archive': ('Arhiw (Zip/Rar)' if not is_en and not is_ru else ('Archive (Zip/Rar)' if is_en else 'Архив (Zip/Rar)')),
+        'text': ('Tekst faýl' if not is_en and not is_ru else ('Text file' if is_en else 'Текстовый файл')),
+        'other': (f'{ext} Faýly' if ext else ('Faýl' if not is_en and not is_ru else ('File' if is_en else 'Файл'))),
+    }
+    return labels.get(cat, 'Faýl')
+
 
 
 

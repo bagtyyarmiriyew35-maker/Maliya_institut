@@ -1,4 +1,5 @@
 {% extends 'panel/base.html' %}
+{% load website_tags %}
 {% block title %}Bilim.tm Täzelikleri{% endblock %}
 {% block breadcrumb %}Bilim.tm Täzelikleri{% endblock %}
 
@@ -74,8 +75,8 @@
             {% endif %}
             {% if item.pdf_file %}
             <div style="margin-top: 3px;">
-              <a href="{{ item.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #dc2626; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
-                <i class="fa-solid fa-file-pdf"></i> PDF resminama
+              <a href="{{ item.pdf_file.url }}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: {{ item.pdf_file|file_color }}; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                <i class="{{ item.pdf_file|file_icon }}"></i> {% file_category_label item.pdf_file 'tm' %}
               </a>
             </div>
             {% endif %}

@@ -38,6 +38,20 @@ ALLOWED_HOSTS = ['*', '216.250.10.252', '20.20.21.143']
 # Disable Cross-Origin-Opener-Policy on plain HTTP (IP address) to prevent browser console error
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://localhost:8000',
+    'http://127.0.0.1',
+    'http://127.0.0.1:8000',
+    'http://216.250.10.252',
+    'http://20.20.21.143',
+    'https://*.tm',
+    'http://*.tm',
+]
+extra_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if extra_csrf:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in extra_csrf.split(',') if origin.strip()])
+
 
 # Application definition
 

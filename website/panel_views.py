@@ -681,6 +681,8 @@ def panel_page_add(request):
             page.image_en = request.FILES['image_en']
         if 'image_ru' in request.FILES:
             page.image_ru = request.FILES['image_ru']
+        if 'banner_image' in request.FILES:
+            page.banner_image = request.FILES['banner_image']
         if 'pdf_file' in request.FILES:
             page.pdf_file = request.FILES['pdf_file']
         page.save()
@@ -757,6 +759,12 @@ def panel_page_edit(request, pk):
             page.image_ru = request.FILES['image_ru']
         elif request.POST.get('clear_image_ru') == '1':
             page.image_ru = None
+
+        # Banner Image
+        if 'banner_image' in request.FILES:
+            page.banner_image = request.FILES['banner_image']
+        elif request.POST.get('clear_banner_image') == '1':
+            page.banner_image = None
 
         if 'pdf_file' in request.FILES:
             page.pdf_file = request.FILES['pdf_file']
@@ -1378,6 +1386,12 @@ def panel_settings(request):
 
         if 'stats_bg_image' in request.FILES:
             site_settings.stats_bg_image = request.FILES['stats_bg_image']
+
+        if 'page_banner_image' in request.FILES:
+            site_settings.page_banner_image = request.FILES['page_banner_image']
+        elif request.POST.get('clear_page_banner_image') == '1':
+            site_settings.page_banner_image = None
+
         site_settings.save()
         messages.success(request, 'Sazlamalar üstünlikli ýatda saklanyldy!')
         return redirect('panel_settings')

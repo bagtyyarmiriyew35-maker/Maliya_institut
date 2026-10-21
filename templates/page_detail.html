@@ -2,7 +2,7 @@
 {% load website_tags %}
 
 {% block content %}
-<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/static/images/banner_academic.jpg'); background-color: #0a5c36;">
+<section class="page-banner" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('{% if page.banner_image %}{{ page.banner_image.url }}{% elif page.parent and page.parent.banner_image %}{{ page.parent.banner_image.url }}{% elif site_settings.page_banner_image %}{{ site_settings.page_banner_image.url }}{% else %}/static/images/banner_academic.jpg{% endif %}'); background-color: #0a5c36;">
     <div class="container">
         <h1 class="page-banner-title">{% render_lang page 'title' current_lang %}</h1>
         <div class="breadcrumbs">

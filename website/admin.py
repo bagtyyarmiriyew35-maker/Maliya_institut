@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook, BilimNews
+from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook, BilimNews, SiteSettings
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'phone', 'email')
 
 @admin.register(LibraryCategory)
 class LibraryCategoryAdmin(admin.ModelAdmin):
@@ -17,7 +21,7 @@ class LibraryBookAdmin(admin.ModelAdmin):
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
-    list_display = ('title_tm', 'source_name_tm', 'slug', 'parent', 'order', 'show_in_tm', 'show_in_en', 'show_in_ru', 'has_pdf')
+    list_display = ('title_tm', 'source_name_tm', 'slug', 'parent', 'order', 'show_in_tm', 'show_in_en', 'show_in_ru', 'has_pdf', 'has_banner')
     list_filter = ('parent', 'section', 'show_in_tm', 'show_in_en', 'show_in_ru')
     search_fields = ('title_tm', 'title_en', 'title_ru', 'pdf_title_tm', 'pdf_title_en', 'pdf_title_ru', 'source_name_tm', 'source_name_en', 'source_name_ru', 'source_name', 'source_url', 'content_tm', 'slug')
     prepopulated_fields = {'slug': ('title_tm',)}
@@ -26,6 +30,11 @@ class PageAdmin(admin.ModelAdmin):
         return bool(obj.pdf_file)
     has_pdf.boolean = True
     has_pdf.short_description = "PDF"
+
+    def has_banner(self, obj):
+        return bool(obj.banner_image)
+    has_banner.boolean = True
+    has_banner.short_description = "Banner"
 
 
 @admin.register(SliderImage)

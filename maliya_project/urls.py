@@ -21,9 +21,27 @@ def serve_media_files(request, path):
     response['X-Frame-Options'] = 'SAMEORIGIN'
     return response
 
+import os
+from django.http import FileResponse, HttpResponse
+
+def serve_favicon(request):
+    favicon_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'favicon.ico')
+    if os.path.exists(favicon_path):
+        return FileResponse(open(favicon_path, 'rb'), content_type='image/x-icon')
+    loga_path = os.path.join(settings.BASE_DIR, 'media', 'loga.png')
+    if os.path.exists(loga_path):
+        return FileResponse(open(loga_path, 'rb'), content_type='image/png')
+    return HttpResponse(status=404)
+
+def serve_robots_txt(request):
+    content = "User-agent: *\nAllow: /\nDisallow: /panel/\nDisallow: /admin/\n"
+    return HttpResponse(content, content_type='text/plain')
+
 from website.views import serve_pdf_engine_lib, serve_pdf_engine_worker
 
 urlpatterns = [
+    path('favicon.ico', serve_favicon, name='favicon'),
+    path('robots.txt', serve_robots_txt, name='robots_txt'),
     path('admin/', admin.site.urls),          # Django's built-in admin (kept)
     path('tinymce/', include('tinymce.urls')),  # TinyMCE JS serving
     path('panel/', include('website.panel_urls')),  # Custom Admin Panel

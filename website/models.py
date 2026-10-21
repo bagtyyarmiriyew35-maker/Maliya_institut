@@ -32,6 +32,7 @@ class Page(models.Model):
     image = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (TM / Esasy)")
     image_en = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (English)")
     image_ru = models.ImageField(upload_to='pages/', blank=True, null=True, verbose_name="Sahypa suraty (Russian)")
+    banner_image = models.ImageField(upload_to='pages/banners/', blank=True, null=True, verbose_name="Sahypa banner suraty (Banner Image)")
     pdf_file = models.FileField(upload_to='pages/pdf/', blank=True, null=True, verbose_name="PDF Resminama (PDF File)")
     pdf_title_tm = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (Turkmen)")
     pdf_title_en = models.CharField(max_length=255, blank=True, verbose_name="PDF ady (English)")
@@ -63,6 +64,13 @@ class Page(models.Model):
         if ('rus' in l or l == 'ru') and self.image_ru:
             return self.image_ru
         return self.image
+
+    def get_banner_image(self):
+        if self.banner_image:
+            return self.banner_image
+        if self.parent and getattr(self.parent, 'banner_image', None):
+            return self.parent.banner_image
+        return None
 
     def get_source_name(self, lang='tm'):
         l = str(lang or 'tm').lower()
@@ -543,6 +551,7 @@ class SiteSettings(models.Model):
     stat_students_icon = models.ImageField(upload_to='settings/stats/', blank=True, null=True, verbose_name="Students Stat Icon / Logo")
 
     stats_bg_image = models.ImageField(upload_to='settings/', blank=True, null=True, verbose_name="Statistika Arka Fon Suraty (Stats Background Image)")
+    page_banner_image = models.ImageField(upload_to='settings/banners/', blank=True, null=True, verbose_name="Sahypalaryň esasy banner suraty (Default Page Banner)")
 
     # Contact Info
     address_tm = models.CharField(max_length=500, blank=True, default="744027, Aşgabat ş., 1987 köç. (Hero Atamyrat Niyazow Ave.), 112.", verbose_name="Address (Turkmen)")

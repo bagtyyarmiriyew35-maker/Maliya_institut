@@ -103,6 +103,39 @@
       </div>
     </div>
 
+    <!-- Sahypalaryň Esasy Banner Suraty Section -->
+    <div class="settings-section-card" style="grid-column:span 2;">
+      <h3><i class="fa-solid fa-panorama"></i> Sahypalaryň Esasy Banner Suraty (Default Page Banner)</h3>
+      <p style="font-size:13px; color:var(--panel-text-muted); margin-bottom:18px;">
+        Aýratyn banner suraty ýüklenmedik ähli sahypalaryň (Institut, Habarlaşmak, Olimpiadalar we ş.m.) başlygynyň yzyndaky arka fon suratyny şu ýerden bir gezekde üýtgedip bilersiňiz.
+      </p>
+
+      <div style="background:var(--panel-surface-2, #f8fafc); padding:18px; border-radius:14px; border:1px solid var(--panel-border, #e2e8f0); max-width:800px;">
+        <label style="font-weight:700; font-size:13px; display:block; margin-bottom:10px;">
+          <i class="fa-regular fa-image" style="color:#048848;"></i> Esasy Banner Fon Suraty
+        </label>
+        
+        <div style="margin-bottom:12px;">
+          {% if site_settings.page_banner_image %}
+            <img src="{{ site_settings.page_banner_image.url }}" alt="Banner" id="pageBannerPreviewImg" style="width:100%; max-height:160px; object-fit:cover; border-radius:10px; border:1px solid #cbd5e1; display:block;">
+          {% else %}
+            <img src="/static/images/banner_academic.jpg" alt="Default Academic Banner" id="pageBannerPreviewImg" style="width:100%; max-height:160px; object-fit:cover; border-radius:10px; border:1px solid #cbd5e1; display:block;">
+          {% endif %}
+        </div>
+
+        {% if site_settings.page_banner_image %}
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px; color:var(--panel-danger, #ef4444); cursor:pointer;">
+            <input type="checkbox" name="clear_page_banner_image" value="1"> Häzirki esasy banneri aýyr (Asyl banner_academic.jpg ulanylsyn)
+          </label>
+        </div>
+        {% endif %}
+
+        <input type="file" name="page_banner_image" class="form-control-panel" accept="image/*" onchange="if(this.files && this.files[0]){document.getElementById('pageBannerPreviewImg').src=URL.createObjectURL(this.files[0]);}">
+        <small style="color:#64748b; font-size:12px; display:block; margin-top:6px;">Maslahat berilýän ölçeg: 1920x400 piksel ýa-da ýokary hilli giň formatly surat (JPG, PNG, WEBP).</small>
+      </div>
+    </div>
+
     <!-- Statistics Section -->
     <div class="settings-section-card" style="grid-column:span 2;">
       <h3><i class="fa-solid fa-chart-simple"></i> Statistika Sanlary, Logolary we Fon Suraty</h3>

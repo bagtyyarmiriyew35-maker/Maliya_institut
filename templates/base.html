@@ -6,7 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Türkmen Döwlet Maliýe Instituty</title>
+    <!-- Favicons & App Icons (Google Search & Browsers) -->
+    <link rel="shortcut icon" href="/static/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/images/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/images/favicon-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+    {% if site_settings.logo %}
+    <link rel="icon" href="{{ site_settings.logo.url }}">
+    {% else %}
     <link rel="icon" href="/media/loga.png" type="image/png">
+    {% endif %}
     
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="/static/css/fontawesome.min.css?v=20261020_4">

@@ -934,21 +934,31 @@ def panel_faculty_delete(request, pk):
 
 @panel_login_required
 def panel_departments(request):
+    faculties = Faculty.objects.all().order_by('name_tm')
+    faculty_id = request.GET.get('faculty', '').strip()
     departments = Department.objects.select_related('faculty').order_by('faculty__name_tm', 'name_tm')
-    faculties = Faculty.objects.all()
-    return render(request, 'panel/departments.html', {'departments': departments, 'faculties': faculties})
+    all_departments_count = departments.count()
+    if faculty_id:
+        departments = departments.filter(faculty_id=faculty_id)
+    return render(request, 'panel/departments.html', {
+        'departments': departments,
+        'faculties': faculties,
+        'selected_faculty_id': faculty_id,
+        'all_departments_count': all_departments_count,
+    })
 
 
 @panel_login_required
 def panel_department_add(request):
-    faculties = Faculty.objects.all()
+    faculties = Faculty.objects.all().order_by('name_tm')
+    selected_faculty_id = request.GET.get('faculty', '').strip()
     if request.method == 'POST':
         name_tm = request.POST.get('name_tm', '').strip()
         description_tm = request.POST.get('description_tm', '').strip()
         faculty_id = request.POST.get('faculty')
         if not name_tm or not description_tm or not faculty_id:
             messages.error(request, 'At, beýan we fakultet hökmanydyr!')
-            return render(request, 'panel/department_form.html', {'action': 'add', 'faculties': faculties, 'post': request.POST})
+            return render(request, 'panel/department_form.html', {'action': 'add', 'faculties': faculties, 'post': request.POST, 'selected_faculty_id': selected_faculty_id})
         faculty = get_object_or_404(Faculty, pk=faculty_id)
         dept = Department(
             faculty=faculty,
@@ -970,14 +980,17 @@ def panel_department_add(request):
             dept.image_ru = request.FILES['image_ru']
         dept.save()
         messages.success(request, 'Kafedra üstünlikli goşuldy!')
+        next_url = request.GET.get('next') or request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect('panel_departments')
-    return render(request, 'panel/department_form.html', {'action': 'add', 'faculties': faculties})
+    return render(request, 'panel/department_form.html', {'action': 'add', 'faculties': faculties, 'selected_faculty_id': selected_faculty_id})
 
 
 @panel_login_required
 def panel_department_edit(request, pk):
     dept = get_object_or_404(Department, pk=pk)
-    faculties = Faculty.objects.all()
+    faculties = Faculty.objects.all().order_by('name_tm')
     if request.method == 'POST':
         dept.name_tm = request.POST.get('name_tm', dept.name_tm).strip()
         dept.name_en = request.POST.get('name_en', '')
@@ -1009,6 +1022,9 @@ def panel_department_edit(request, pk):
 
         dept.save()
         messages.success(request, 'Kafedra üstünlikli üýtgedildi!')
+        next_url = request.GET.get('next') or request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect('panel_departments')
     return render(request, 'panel/department_form.html', {'action': 'edit', 'obj': dept, 'faculties': faculties})
 

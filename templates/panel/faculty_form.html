@@ -117,4 +117,69 @@
     </div>
   </div>
 </form>
+
+{% if action == 'edit' %}
+<div class="panel-form-card" style="margin-top: 24px;">
+  <div class="panel-form-section" style="padding-bottom: 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div class="panel-form-section-title" style="margin-bottom:4px;">
+          <i class="fa-solid fa-sitemap" style="color: #048848;"></i> Şu fakultetiň kafedralary we müdirleri ({{ obj.departments.count }})
+        </div>
+        <p style="font-size:12px; color:var(--panel-text-muted); margin:0;">
+          Bu fakultetdäki her bir kafedranyň müdirini aýratynlykda ady we suraty bilen şu ýerden üýtgedip ýa-da täze kafedra goşup bilersiňiz.
+        </p>
+      </div>
+      <a href="{% url 'panel_department_add' %}?faculty={{ obj.pk }}&next={% url 'panel_faculty_edit' obj.pk %}" class="btn-panel btn-panel-primary btn-panel-sm">
+        <i class="fa-solid fa-plus"></i> Täze kafedra goş
+      </a>
+    </div>
+
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">Müdiriň suraty</th>
+            <th>Kafedranyň ady</th>
+            <th>Kafedra müdiri</th>
+            <th style="text-align:right;">Hereket</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dept in obj.departments.all %}
+          <tr>
+            <td>
+              {% if dept.image %}
+              <img src="{{ dept.image.url }}" class="panel-table-thumb" alt="" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+              {% else %}
+              <div class="panel-table-thumb-placeholder" style="width:44px; height:44px; border-radius:50%;"><i class="fa-solid fa-user-tie"></i></div>
+              {% endif %}
+            </td>
+            <td>
+              <strong>{{ dept.name_tm }}</strong>
+              {% if dept.name_en %}<br><span class="text-muted" style="font-size:11px;">{{ dept.name_en }}</span>{% endif %}
+            </td>
+            <td>
+              <span style="font-weight:600; color:var(--panel-text-color);">{{ dept.head_name_tm|default:"— (Müdir bellenmedi)" }}</span>
+              {% if dept.head_name_en %}<br><span class="text-muted" style="font-size:11px;">{{ dept.head_name_en }}</span>{% endif %}
+            </td>
+            <td style="text-align:right;">
+              <a href="{% url 'panel_department_edit' dept.pk %}?next={% url 'panel_faculty_edit' obj.pk %}" class="btn-panel btn-panel-edit btn-panel-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-pen"></i> Müdiri / Kafedrany üýtget
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center; padding:28px; color:var(--panel-text-muted);">
+              Bu fakultetde häzirlikçe kafedra ýok. Ýokardaky «+ Täze kafedra goş» düwmesinden goşup bilersiňiz.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

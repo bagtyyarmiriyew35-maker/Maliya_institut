@@ -21,6 +21,19 @@
     <i class="fa-solid fa-handshake"></i> Hyzmatdaşlar
   </a>
 </div>
+
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+  <span style="font-weight:600; font-size:13px; color:var(--panel-text-muted);"><i class="fa-solid fa-filter"></i> Fakultet saýlaň:</span>
+  <a href="{% url 'panel_departments' %}" class="btn-panel btn-panel-sm {% if not selected_faculty_id %}btn-panel-primary{% else %}btn-panel-ghost{% endif %}">
+    Ähli kafedralar ({{ all_departments_count }})
+  </a>
+  {% for fac in faculties %}
+  <a href="{% url 'panel_departments' %}?faculty={{ fac.pk }}" class="btn-panel btn-panel-sm {% if selected_faculty_id == fac.pk|stringformat:'s' %}btn-panel-primary{% else %}btn-panel-ghost{% endif %}">
+    {{ fac.name_tm }} ({{ fac.departments.count }})
+  </a>
+  {% endfor %}
+</div>
+
 <div class="panel-card">
   <div class="panel-table-wrap">
     <table class="panel-table">

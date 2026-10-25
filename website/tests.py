@@ -308,24 +308,32 @@ class MultilingualContentTestCase(TestCase):
         self.assertEqual(render_multilingual_image(d_item, 'rus'), 'recent/ru.jpg')
 
 
-class InvalidUrlRedirectTestCase(TestCase):
-    def test_invalid_path_redirects_to_home_with_warning(self):
-        """Typing an unknown URL like /dsd must redirect to home with invalid_url parameter."""
-        response = self.client.get('/dsd', follow=False)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/?invalid_url=1', response.url)
+class InvalidUrlTestCase(TestCase):
+    def test_invalid_path_renders_custom_404_page(self):
+        """Typing an unknown URL like /dsd must render custom 404 template matching design."""
+        response = self.client.get('/dsd')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+        content = response.content.decode('utf-8')
+        self.assertIn('404', content)
+        self.assertIn('Gözleýän sahypaňyz tapylmady', content)
+        self.assertIn('Baş sahypa dolan', content)
 
     def test_invalid_path_with_lang_preserves_language(self):
-        """Typing an unknown URL with lang=ru must redirect preserving the language."""
-        response = self.client.get('/random-page/?lang=ru', follow=False)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('lang=rus', response.url)
-        self.assertIn('invalid_url=1', response.url)
-
-    def test_missing_static_or_media_asset_returns_404_no_redirect(self):
-        """Missing static asset or media file must return 404 and not redirect."""
-        response = self.client.get('/static/css/nonexistent_file_xyz.css', follow=False)
+        """Typing an unknown URL with lang=ru must render Russian 404 page."""
+        response = self.client.get('/random-page/?lang=ru')
         self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+        content = response.content.decode('utf-8')
+        self.assertIn('Запрашиваемая страница не найдена', content)
+        self.assertIn('Вернуться на главную', content)
+
+    def test_missing_static_or_media_asset_returns_404_no_template(self):
+        """Missing static asset or media file must return 404 plain text."""
+        response = self.client.get('/static/css/nonexistent_file_xyz.css')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response['Content-Type'], 'text/plain; charset=utf-8')
+
 
 
 

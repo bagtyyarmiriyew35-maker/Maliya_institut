@@ -432,11 +432,11 @@ def catch_all_not_found(request, path=None):
     """
     Catch-all view for non-existent routes across the site.
     Prevents leaking internal routing, debug tracebacks, and admin URLs.
-    Shows a friendly 'Invalid page address' notice and safely redirects to home.
+    Directly renders the clean, centered 404 error screen matching TDMAI design.
     """
     req_path = request.path_info or request.path or ''
 
-    # Filter out missing static assets, media files, or technical resources so they don't redirect
+    # Filter out missing static assets, media files, or technical resources so they return plain 404
     asset_extensions = ('.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
                         '.woff', '.woff2', '.ttf', '.eot', '.map', '.txt', '.xml')
     if req_path.startswith(('/static/', '/media/', '/tinymce/')) or req_path.lower().endswith(asset_extensions):
@@ -451,30 +451,23 @@ def catch_all_not_found(request, path=None):
         return redirect('panel_dashboard')
 
     lang = get_user_lang(request)
-    if lang == 'eng':
-        msg = "Invalid page address entered! The requested page was not found. You have been redirected to the home page."
-    elif lang == 'rus':
-        msg = "Введён неверный адрес страницы! Запрашиваемая страница не найдена. Вы перенаправлены на главную страницу."
-    else:
-        msg = "Salgyny ýalňyş girizdiňiz! Gözleýän sahypaňyz tapylmady. Baş sahypa gönükdirildiňiz."
-
-    try:
-        messages.warning(request, msg)
-    except Exception:
-        pass
-
-    target_url = f"/?invalid_url=1&lang={lang}" if lang != 'tm' else "/?invalid_url=1"
-    return redirect(target_url)
+    context = {
+        'current_lang': lang,
+        'req_path': req_path,
+    }
+    return render(request, '404.html', context, status=404)
 
 
 def custom_404_view(request, exception=None):
-    """Custom 404 handler that safely redirects to home page with warning."""
+    """Custom 404 handler that renders 404 error page."""
     return catch_all_not_found(request)
 
 
 def custom_500_view(request):
     """Custom 500 handler for unexpected server errors."""
-    return render(request, '500.html', status=500)
+    lang = get_user_lang(request)
+    return render(request, '500.html', {'current_lang': lang}, status=500)
+
 
 
 

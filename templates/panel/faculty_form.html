@@ -64,17 +64,19 @@
     </div>
     <div class="panel-form-section">
       <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label>Ady <span class="required">*</span></label>
-        <input type="text" name="name_tm" class="form-control-panel" value="{{ obj.name_tm|default:'' }}" required>
-      </div>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label>Beýany <span class="required">*</span></label>
-        <textarea name="description_tm" class="form-control-panel wysiwyg-editor" required>{{ obj.description_tm|default:'' }}</textarea>
+      <div class="form-row form-row-2" style="margin-bottom:12px;">
+        <div class="form-group">
+          <label>Fakultetiň ady <span class="required">*</span></label>
+          <input type="text" name="name_tm" class="form-control-panel" value="{{ obj.name_tm|default:'' }}" required>
+        </div>
+        <div class="form-group">
+          <label style="color:var(--primary-color, #048848); font-weight:700;"><i class="fa-solid fa-user-tie"></i> Dekanyň ady</label>
+          <input type="text" name="dean_name_tm" class="form-control-panel" value="{{ obj.dean_name_tm|default:'' }}" placeholder="Mysal: D. Durdyýew">
+        </div>
       </div>
       <div class="form-group">
-        <label>Dekanyň ady</label>
-        <input type="text" name="dean_name_tm" class="form-control-panel" value="{{ obj.dean_name_tm|default:'' }}">
+        <label>Fakultetiň beýany <span class="required">*</span></label>
+        <textarea name="description_tm" class="form-control-panel wysiwyg-editor" required>{{ obj.description_tm|default:'' }}</textarea>
       </div>
     </div>
     <div class="panel-form-section">

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Page(models.Model):
     SECTION_CHOICES = [
@@ -738,4 +739,65 @@ class LibraryBook(models.Model):
 
     def __str__(self):
         return f"{self.title_tm} ({self.category.name_tm})"
+
+
+class VisitorLog(models.Model):
+    path = models.CharField(max_length=500, verbose_name="Sahypa ýoly (URL)")
+    page_title = models.CharField(max_length=255, blank=True, verbose_name="Sahypanyň ady")
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="IP salgysy")
+    user_agent = models.TextField(blank=True, verbose_name="User Agent")
+    device = models.CharField(max_length=100, blank=True, verbose_name="Enjam / Brauzer")
+    referer = models.CharField(max_length=500, blank=True, verbose_name="Gelen ýeri (Referer)")
+    lang = models.CharField(max_length=10, blank=True, default="tm", verbose_name="Dil")
+    is_authenticated = models.BooleanField(default=False, verbose_name="Ulgama girenmi")
+    user_name = models.CharField(max_length=150, blank=True, verbose_name="Ulanyjy")
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Wagty")
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Myhman logy"
+        verbose_name_plural = "Myhman loglary"
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['path']),
+        ]
+
+    def __str__(self):
+        return f"{self.ip_address} -> {self.path} ({self.timestamp.strftime('%Y-%m-%d %H:%M')})"
+
+
+class AdminAuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('LOGIN', 'Ulgama girdi'),
+        ('LOGOUT', 'Ulgamdan çykdy'),
+        ('CREATE', 'Goşdy'),
+        ('UPDATE', 'Üýtgetdi'),
+        ('DELETE', 'Öçürdi'),
+        ('VIEW', 'Gördi'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Administrator")
+    user_name = models.CharField(max_length=150, verbose_name="Ulanyjy ady")
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES, default='UPDATE', verbose_name="Hereket görnüşi")
+    module = models.CharField(max_length=100, verbose_name="Bölüm")
+    object_id = models.CharField(max_length=100, blank=True, verbose_name="Obyekt ID")
+    object_repr = models.CharField(max_length=255, blank=True, verbose_name="Obyektiň ady")
+    details = models.TextField(blank=True, verbose_name="Düşündiriş")
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="IP salgysy")
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Wagty")
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Admin hereket logy"
+        verbose_name_plural = "Admin hereket loglary"
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['action']),
+            models.Index(fields=['module']),
+        ]
+
+    def __str__(self):
+        return f"{self.user_name} | {self.get_action_display()} | {self.module}: {self.object_repr} ({self.timestamp.strftime('%Y-%m-%d %H:%M')})"
+
 

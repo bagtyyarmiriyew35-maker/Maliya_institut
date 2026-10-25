@@ -79,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'website.middleware.DynamicHtmlNoCacheMiddleware',
+    'website.middleware.VisitorTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'maliya_project.urls'

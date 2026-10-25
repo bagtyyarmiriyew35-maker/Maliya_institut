@@ -58,6 +58,9 @@
       <a href="{% url 'panel_pages_by_section' 'sorag_jogap' %}"><i class="fa-solid fa-circle-question"></i> Sorag-jogap</a>
 
       <div class="sidebar-section-title">Dolandyryş</div>
+      <a href="{% url 'panel_logs' %}">
+        <i class="fa-solid fa-clock-rotate-left"></i> Giriş & Hereket loglary
+      </a>
       <a href="{% url 'panel_messages' %}">
         <i class="fa-solid fa-envelope"></i> Hatlar
         {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}

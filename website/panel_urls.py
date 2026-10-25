@@ -75,6 +75,10 @@ urlpatterns = [
     # Settings
     path('settings/', panel_views.panel_settings, name='panel_settings'),
 
+    # Logs & Activity Audit
+    path('logs/', panel_views.panel_logs, name='panel_logs'),
+    path('logs/clear/', panel_views.panel_logs_clear, name='panel_logs_clear'),
+
     # Library / Journals (Elektron Žurnallar)
     path('library/categories/', panel_views.panel_library_categories, name='panel_library_categories'),
     path('library/categories/add/', panel_views.panel_library_category_add, name='panel_library_category_add'),

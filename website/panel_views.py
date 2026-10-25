@@ -23,9 +23,10 @@ from .templatetags.website_tags import (
 from .models import (
     Page, SliderImage, News, Faculty, Department,
     Olympiad, Partner, Document, ContactMessage, SiteSettings,
-    LibraryCategory, LibraryBook, BilimNews
+    LibraryCategory, LibraryBook, BilimNews, VisitorLog, AdminAuditLog
 )
 from .bilim_scraper import sync_bilim_news
+from .audit import log_admin_action
 
 
 
@@ -93,6 +94,7 @@ def panel_login(request):
         user = authenticate(request, username=username, password=password)
         if user and user.is_staff:
             login(request, user)
+            log_admin_action(request, 'LOGIN', 'Ulgam', object_repr=user.username, details="Admin ulgama girdi")
             return redirect('panel_dashboard')
         else:
             error = 'Ulanyjy ady ýa-da açar sözi nädogry!'
@@ -101,6 +103,8 @@ def panel_login(request):
 
 
 def panel_logout(request):
+    if request.user.is_authenticated:
+        log_admin_action(request, 'LOGOUT', 'Ulgam', object_repr=request.user.username, details="Admin ulgamdan çykdy")
     logout(request)
     return redirect('panel_login')
 
@@ -303,6 +307,7 @@ def panel_news_add(request):
         if 'pdf_file' in request.FILES:
             news.pdf_file = request.FILES['pdf_file']
         news.save()
+        log_admin_action(request, 'CREATE', 'Täzelikler', object_repr=news.title_tm, object_id=news.pk, details=f"Täze habar goşuldy: {news.title_tm}")
         messages.success(request, 'Täzelik üstünlikli goşuldy!')
         return redirect('panel_news')
     return render(request, 'panel/news_form.html', {'action': 'add', 'now': timezone.now()})
@@ -357,6 +362,7 @@ def panel_news_edit(request, pk):
             news.pdf_file = None
 
         news.save()
+        log_admin_action(request, 'UPDATE', 'Täzelikler', object_repr=news.title_tm, object_id=news.pk, details=f"Habar üýtgedildi: {news.title_tm}")
         messages.success(request, 'Täzelik üstünlikli üýtgedildi!')
         return redirect('panel_news')
     return render(request, 'panel/news_form.html', {'action': 'edit', 'obj': news, 'now': timezone.now()})
@@ -366,7 +372,9 @@ def panel_news_edit(request, pk):
 def panel_news_delete(request, pk):
     news = get_object_or_404(News, pk=pk)
     if request.method == 'POST':
+        title = news.title_tm
         news.delete()
+        log_admin_action(request, 'DELETE', 'Täzelikler', object_repr=title, object_id=pk, details=f"Habar öçürildi: {title}")
         messages.success(request, 'Täzelik öçürildi.')
     return redirect('panel_news')
 
@@ -724,6 +732,7 @@ def panel_page_add(request):
         if 'pdf_file' in request.FILES:
             page.pdf_file = request.FILES['pdf_file']
         page.save()
+        log_admin_action(request, 'CREATE', 'Sahypalar', object_repr=page.title_tm, object_id=page.pk, details=f"Täze sahypa goşuldy: {page.title_tm} ({page.section})")
         messages.success(request, 'Sahypa üstünlikli goşuldy!')
         if parent:
             is_root = (parent.slug == section and parent.parent is None)
@@ -814,6 +823,7 @@ def panel_page_edit(request, pk):
             page.pdf_file = None
 
         page.save()
+        log_admin_action(request, 'UPDATE', 'Sahypalar', object_repr=page.title_tm, object_id=page.pk, details=f"Sahypa üýtgedildi: {page.title_tm} ({page.section})")
         messages.success(request, 'Sahypa üstünlikli üýtgedildi!')
         if page.parent:
             is_root = (page.parent.slug == page.section and page.parent.parent is None)
@@ -834,7 +844,9 @@ def panel_page_delete(request, pk):
     section = page.section
     parent = page.parent
     if request.method == 'POST':
+        title = page.title_tm
         page.delete()
+        log_admin_action(request, 'DELETE', 'Sahypalar', object_repr=title, object_id=pk, details=f"Sahypa öçürildi: {title}")
         messages.success(request, 'Sahypa öçürildi.')
     if parent:
         is_root = (parent.slug == section and parent.parent is None)
@@ -879,6 +891,7 @@ def panel_faculty_add(request):
         if 'image_ru' in request.FILES:
             faculty.image_ru = request.FILES['image_ru']
         faculty.save()
+        log_admin_action(request, 'CREATE', 'Fakultetler', object_repr=faculty.name_tm, object_id=faculty.pk, details=f"Täze fakultet goşuldy: {faculty.name_tm}, Dekan: {faculty.dean_name_tm}")
         messages.success(request, 'Fakultet üstünlikli goşuldy!')
         return redirect('panel_faculties')
     return render(request, 'panel/faculty_form.html', {'action': 'add'})
@@ -914,6 +927,7 @@ def panel_faculty_edit(request, pk):
             faculty.image_ru = None
 
         faculty.save()
+        log_admin_action(request, 'UPDATE', 'Fakultetler', object_repr=faculty.name_tm, object_id=faculty.pk, details=f"Fakultet üýtgedildi: {faculty.name_tm}, Dekan: {faculty.dean_name_tm}")
         messages.success(request, 'Fakultet üstünlikli üýtgedildi!')
         return redirect('panel_faculties')
     return render(request, 'panel/faculty_form.html', {'action': 'edit', 'obj': faculty})
@@ -923,7 +937,9 @@ def panel_faculty_edit(request, pk):
 def panel_faculty_delete(request, pk):
     faculty = get_object_or_404(Faculty, pk=pk)
     if request.method == 'POST':
+        name = faculty.name_tm
         faculty.delete()
+        log_admin_action(request, 'DELETE', 'Fakultetler', object_repr=name, object_id=pk, details=f"Fakultet öçürildi: {name}")
         messages.success(request, 'Fakultet öçürildi.')
     return redirect('panel_faculties')
 
@@ -979,6 +995,7 @@ def panel_department_add(request):
         if 'image_ru' in request.FILES:
             dept.image_ru = request.FILES['image_ru']
         dept.save()
+        log_admin_action(request, 'CREATE', 'Kafedralar', object_repr=dept.name_tm, object_id=dept.pk, details=f"Täze kafedra goşuldy: {dept.name_tm} ({dept.faculty.name_tm}), Müdir: {dept.head_name_tm}")
         messages.success(request, 'Kafedra üstünlikli goşuldy!')
         next_url = request.GET.get('next') or request.POST.get('next')
         if next_url:
@@ -1021,6 +1038,7 @@ def panel_department_edit(request, pk):
             dept.image_ru = None
 
         dept.save()
+        log_admin_action(request, 'UPDATE', 'Kafedralar', object_repr=dept.name_tm, object_id=dept.pk, details=f"Kafedra üýtgedildi: {dept.name_tm} ({dept.faculty.name_tm}), Müdir: {dept.head_name_tm}")
         messages.success(request, 'Kafedra üstünlikli üýtgedildi!')
         next_url = request.GET.get('next') or request.POST.get('next')
         if next_url:
@@ -1033,7 +1051,9 @@ def panel_department_edit(request, pk):
 def panel_department_delete(request, pk):
     dept = get_object_or_404(Department, pk=pk)
     if request.method == 'POST':
+        name = dept.name_tm
         dept.delete()
+        log_admin_action(request, 'DELETE', 'Kafedralar', object_repr=name, object_id=pk, details=f"Kafedra öçürildi: {name}")
         messages.success(request, 'Kafedra öçürildi.')
     return redirect('panel_departments')
 
@@ -1699,4 +1719,103 @@ def panel_library_book_delete(request, pk):
         book.delete()
         messages.success(request, 'Neşir sany öçürildi.')
     return redirect('panel_library_books')
+
+
+# ─────────────────────────────────────────────
+# LOGS & ANALYTICS (GIRIŞ WE HEREKET LOGLARY)
+# ─────────────────────────────────────────────
+
+from django.core.paginator import Paginator
+
+
+@panel_login_required
+def panel_logs(request):
+    tab = request.GET.get('tab', 'audit')  # 'audit', 'visitors', 'top'
+    q = request.GET.get('q', '').strip()
+    action_filter = request.GET.get('action', '').strip()
+    module_filter = request.GET.get('module', '').strip()
+
+    # Time-based stats
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    total_visits = VisitorLog.objects.count()
+    today_visits = VisitorLog.objects.filter(timestamp__gte=today_start).count()
+    today_unique_ips = VisitorLog.objects.filter(timestamp__gte=today_start).values('ip_address').distinct().count()
+    total_actions = AdminAuditLog.objects.count()
+
+    # Top visited pages
+    top_pages = VisitorLog.objects.values('path', 'page_title').annotate(
+        views_count=Count('id'),
+        unique_ips=Count('ip_address', distinct=True)
+    ).order_by('-views_count')[:25]
+
+    # Audit Logs Query
+    audit_qs = AdminAuditLog.objects.all().order_by('-timestamp')
+    if q and tab == 'audit':
+        audit_qs = audit_qs.filter(
+            Q(user_name__icontains=q) |
+            Q(object_repr__icontains=q) |
+            Q(details__icontains=q) |
+            Q(ip_address__icontains=q)
+        )
+    if action_filter:
+        audit_qs = audit_qs.filter(action=action_filter)
+    if module_filter:
+        audit_qs = audit_qs.filter(module=module_filter)
+
+    audit_paginator = Paginator(audit_qs, 40)
+    audit_page_num = request.GET.get('page', 1)
+    audit_page = audit_paginator.get_page(audit_page_num)
+
+    # Visitor Logs Query
+    visitor_qs = VisitorLog.objects.all().order_by('-timestamp')
+    if q and tab == 'visitors':
+        visitor_qs = visitor_qs.filter(
+            Q(path__icontains=q) |
+            Q(page_title__icontains=q) |
+            Q(ip_address__icontains=q) |
+            Q(device__icontains=q) |
+            Q(user_name__icontains=q)
+        )
+
+    visitor_paginator = Paginator(visitor_qs, 40)
+    visitor_page_num = request.GET.get('vpage', 1)
+    visitor_page = visitor_paginator.get_page(visitor_page_num)
+
+    available_modules = AdminAuditLog.objects.values_list('module', flat=True).distinct()
+
+    return render(request, 'panel/logs.html', {
+        'tab': tab,
+        'q': q,
+        'action_filter': action_filter,
+        'module_filter': module_filter,
+        'audit_logs': audit_page,
+        'visitor_logs': visitor_page,
+        'top_pages': top_pages,
+        'total_visits': total_visits,
+        'today_visits': today_visits,
+        'today_unique_ips': today_unique_ips,
+        'total_actions': total_actions,
+        'available_modules': available_modules,
+        'now': now,
+    })
+
+
+@panel_login_required
+def panel_logs_clear(request):
+    if request.method == 'POST':
+        clear_type = request.POST.get('clear_type')
+        if clear_type == 'visitors':
+            VisitorLog.objects.all().delete()
+            log_admin_action(request, 'DELETE', 'Loglar', details="Ähli myhman loglary arassalandy")
+            messages.success(request, 'Myhman loglary üstünlikli arassalandy.')
+            return redirect(f"{reverse('panel_logs')}?tab=visitors")
+        elif clear_type == 'audit':
+            AdminAuditLog.objects.all().delete()
+            log_admin_action(request, 'DELETE', 'Loglar', details="Admin hereket loglary arassalandy")
+            messages.success(request, 'Admin hereket loglary üstünlikli arassalandy.')
+            return redirect(f"{reverse('panel_logs')}?tab=audit")
+    return redirect('panel_logs')
+
 

@@ -1,0 +1,381 @@
+{% extends 'panel/base.html' %}
+{% block title %}Giriş & Hereket loglary{% endblock %}
+{% block breadcrumb %}Dolandyryş / Giriş & Hereket loglary{% endblock %}
+
+{% block content %}
+<div class="panel-page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+  <div>
+    <h1 style="margin:0; display:flex; align-items:center; gap:10px;">
+      <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary-color, #048848);"></i> Giriş & Hereket loglary
+    </h1>
+    <p style="font-size:13px; color:var(--panel-text-muted); margin:4px 0 0 0;">
+      Saýta gelen myhmanlar, girilen sahypalar we adminleriň ýerine ýetiren ähli üýtgeşmeleri.
+    </p>
+  </div>
+  <div style="display:flex; gap:8px;">
+    {% if tab == 'visitors' %}
+    <form method="POST" action="{% url 'panel_logs_clear' %}" onsubmit="return confirm('Ähli myhman loglaryny arassalamak isleýärsiňizmi?');">
+      {% csrf_token %}
+      <input type="hidden" name="clear_type" value="visitors">
+      <button type="submit" class="btn-panel btn-panel-ghost btn-panel-sm" style="color:var(--panel-danger, #ef4444); border-color:#fca5a5;">
+        <i class="fa-solid fa-trash-can"></i> Myhman loglaryny arassala
+      </button>
+    </form>
+    {% elif tab == 'audit' %}
+    <form method="POST" action="{% url 'panel_logs_clear' %}" onsubmit="return confirm('Ähli admin hereket loglaryny arassalamak isleýärsiňizmi?');">
+      {% csrf_token %}
+      <input type="hidden" name="clear_type" value="audit">
+      <button type="submit" class="btn-panel btn-panel-ghost btn-panel-sm" style="color:var(--panel-danger, #ef4444); border-color:#fca5a5;">
+        <i class="fa-solid fa-trash-can"></i> Hereket loglaryny arassala
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="panel-stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-eye"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Jemi görülen sahypalar</div>
+      <div style="font-size:24px; font-weight:700; color:var(--panel-text-color);">{{ total_visits|default:"0" }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#eefdf5; color:#048848; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Şugünki unikal myhman</div>
+      <div style="font-size:24px; font-weight:700; color:#048848;">{{ today_unique_ips|default:"0" }} <span style="font-size:12px; font-weight:normal; color:#64748b;">(Jemi: {{ today_visits }})</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-user-shield"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Admin hereketleri</div>
+      <div style="font-size:24px; font-weight:700; color:var(--panel-text-color);">{{ total_actions|default:"0" }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#f3e8ff; color:#9333ea; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-ranking-star"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Top sahypa</div>
+      <div style="font-size:14px; font-weight:700; color:var(--panel-text-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px;">
+        {% if top_pages %}{{ top_pages.0.page_title|default:top_pages.0.path }}{% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs Navigation -->
+<div class="panel-section-nav" style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+  <a href="{% url 'panel_logs' %}?tab=audit" class="btn-panel {% if tab == 'audit' %}btn-panel-primary{% else %}btn-panel-ghost{% endif %} btn-panel-sm" style="display:inline-flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-user-shield"></i> Admin hereketleri (Audit log)
+  </a>
+  <a href="{% url 'panel_logs' %}?tab=visitors" class="btn-panel {% if tab == 'visitors' %}btn-panel-primary{% else %}btn-panel-ghost{% endif %} btn-panel-sm" style="display:inline-flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-users"></i> Sahypa girişleri (Myhmanlar)
+  </a>
+  <a href="{% url 'panel_logs' %}?tab=top" class="btn-panel {% if tab == 'top' %}btn-panel-primary{% else %}btn-panel-ghost{% endif %} btn-panel-sm" style="display:inline-flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-fire"></i> Iň köp görülen sahypalar
+  </a>
+</div>
+
+{% if tab == 'audit' %}
+<!-- ── TAB 1: ADMIN AUDIT LOGS ─────────────────────────────────── -->
+<div class="panel-card" style="padding:16px 20px 20px 20px;">
+  <!-- Filter & Search Bar -->
+  <form method="GET" action="{% url 'panel_logs' %}" style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+    <input type="hidden" name="tab" value="audit">
+    
+    <div style="position:relative; flex:1; min-width:220px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:13px;"></i>
+      <input type="text" name="q" value="{{ q }}" placeholder="Gözleg (Ulanyjy, Obyekt, Düşündiriş, IP)..." class="form-control-panel" style="padding-left:34px;">
+    </div>
+
+    <select name="action" class="form-control-panel" style="width:auto; min-width:140px;">
+      <option value="">— Ähli hereketler —</option>
+      <option value="CREATE" {% if action_filter == 'CREATE' %}selected{% endif %}>Goşdy (CREATE)</option>
+      <option value="UPDATE" {% if action_filter == 'UPDATE' %}selected{% endif %}>Üýtgetdi (UPDATE)</option>
+      <option value="DELETE" {% if action_filter == 'DELETE' %}selected{% endif %}>Öçürdi (DELETE)</option>
+      <option value="LOGIN" {% if action_filter == 'LOGIN' %}selected{% endif %}>Girdi (LOGIN)</option>
+      <option value="LOGOUT" {% if action_filter == 'LOGOUT' %}selected{% endif %}>Çykdy (LOGOUT)</option>
+    </select>
+
+    <select name="module" class="form-control-panel" style="width:auto; min-width:140px;">
+      <option value="">— Ähli bölümler —</option>
+      {% for m in available_modules %}
+      <option value="{{ m }}" {% if module_filter == m %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn-panel btn-panel-primary btn-panel-sm" style="height:38px;">
+      <i class="fa-solid fa-filter"></i> Süzgüç
+    </button>
+    {% if q or action_filter or module_filter %}
+    <a href="{% url 'panel_logs' %}?tab=audit" class="btn-panel btn-panel-ghost btn-panel-sm" style="height:38px; display:inline-flex; align-items:center;">
+      <i class="fa-solid fa-rotate-left"></i> Arassala
+    </a>
+    {% endif %}
+  </form>
+
+  <!-- Table -->
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>Wagty</th>
+          <th>Administrator</th>
+          <th>Hereket</th>
+          <th>Bölüm</th>
+          <th>Obyekt & Düşündiriş</th>
+          <th>IP Salgysy</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in audit_logs %}
+        <tr>
+          <td style="white-space:nowrap; font-size:12px; color:var(--panel-text-muted);">
+            <i class="fa-regular fa-clock" style="margin-right:4px;"></i> {{ log.timestamp|date:"d.m.Y, H:i:s" }}
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#334155; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px;">
+                {{ log.user_name|first|upper }}
+              </div>
+              <strong style="color:var(--panel-text-color);">{{ log.user_name }}</strong>
+            </div>
+          </td>
+          <td>
+            {% if log.action == 'CREATE' %}
+            <span class="badge-panel badge-success" style="font-size:11px;"><i class="fa-solid fa-plus"></i> Goşdy</span>
+            {% elif log.action == 'UPDATE' %}
+            <span class="badge-panel badge-info" style="font-size:11px;"><i class="fa-solid fa-pen"></i> Üýtgetdi</span>
+            {% elif log.action == 'DELETE' %}
+            <span class="badge-panel badge-danger" style="font-size:11px;"><i class="fa-solid fa-trash"></i> Öçürdi</span>
+            {% elif log.action == 'LOGIN' %}
+            <span class="badge-panel" style="background:#fef3c7; color:#92400e; font-size:11px;"><i class="fa-solid fa-right-to-bracket"></i> Girdi</span>
+            {% elif log.action == 'LOGOUT' %}
+            <span class="badge-panel" style="background:#f1f5f9; color:#475569; font-size:11px;"><i class="fa-solid fa-right-from-bracket"></i> Çykdy</span>
+            {% else %}
+            <span class="badge-panel badge-info">{{ log.action }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-weight:600; color:#048848;">{{ log.module }}</span>
+          </td>
+          <td>
+            {% if log.object_repr %}
+            <strong style="color:var(--panel-text-color);">{{ log.object_repr }}</strong>
+            {% endif %}
+            {% if log.details %}
+            <div style="font-size:12px; color:var(--panel-text-muted); margin-top:2px;">{{ log.details }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <code style="font-size:11px; padding:2px 6px; background:#f1f5f9; border-radius:4px; color:#475569;">{{ log.ip_address|default:"127.0.0.1" }}</code>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:36px; color:var(--panel-text-muted);">
+            Hereket logy tapylmady.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if audit_logs.has_other_pages %}
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid var(--panel-border, #e2e8f0); font-size:13px;">
+    <div style="color:var(--panel-text-muted);">
+      Sahypa {{ audit_logs.number }} / {{ audit_logs.paginator.num_pages }} (Jemi: {{ audit_logs.paginator.count }})
+    </div>
+    <div style="display:flex; gap:6px;">
+      {% if audit_logs.has_previous %}
+      <a href="?tab=audit&page={{ audit_logs.previous_page_number }}&q={{ q }}&action={{ action_filter }}&module={{ module_filter }}" class="btn-panel btn-panel-ghost btn-panel-sm">
+        <i class="fa-solid fa-chevron-left"></i> Öňki
+      </a>
+      {% endif %}
+      {% if audit_logs.has_next %}
+      <a href="?tab=audit&page={{ audit_logs.next_page_number }}&q={{ q }}&action={{ action_filter }}&module={{ module_filter }}" class="btn-panel btn-panel-ghost btn-panel-sm">
+        Indiki <i class="fa-solid fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% elif tab == 'visitors' %}
+<!-- ── TAB 2: VISITOR TRAFFIC LOGS ─────────────────────────────── -->
+<div class="panel-card" style="padding:16px 20px 20px 20px;">
+  <!-- Search Bar -->
+  <form method="GET" action="{% url 'panel_logs' %}" style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+    <input type="hidden" name="tab" value="visitors">
+    
+    <div style="position:relative; flex:1; min-width:240px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:13px;"></i>
+      <input type="text" name="q" value="{{ q }}" placeholder="Gözleg (Sahypa, IP salgysy, Enjam)..." class="form-control-panel" style="padding-left:34px;">
+    </div>
+
+    <button type="submit" class="btn-panel btn-panel-primary btn-panel-sm" style="height:38px;">
+      <i class="fa-solid fa-magnifying-glass"></i> Gözle
+    </button>
+    {% if q %}
+    <a href="{% url 'panel_logs' %}?tab=visitors" class="btn-panel btn-panel-ghost btn-panel-sm" style="height:38px; display:inline-flex; align-items:center;">
+      <i class="fa-solid fa-rotate-left"></i> Arassala
+    </a>
+    {% endif %}
+  </form>
+
+  <!-- Table -->
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>Wagty</th>
+          <th>Sahypa (URL)</th>
+          <th>IP Salgysy</th>
+          <th>Enjam & Brauzer</th>
+          <th>Dil</th>
+          <th>Gelen ýeri (Referer)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in visitor_logs %}
+        <tr>
+          <td style="white-space:nowrap; font-size:12px; color:var(--panel-text-muted);">
+            <i class="fa-regular fa-clock" style="margin-right:4px;"></i> {{ v.timestamp|date:"d.m.Y, H:i:s" }}
+          </td>
+          <td>
+            <div style="font-weight:600; color:var(--panel-text-color);">
+              {{ v.page_title|default:v.path }}
+            </div>
+            <code style="font-size:11px; color:#64748b;">{{ v.path }}</code>
+          </td>
+          <td>
+            <code style="font-size:11px; padding:2px 6px; background:#f1f5f9; border-radius:4px; color:#0369a1; font-weight:600;">
+              {{ v.ip_address|default:"127.0.0.1" }}
+            </code>
+            {% if v.is_authenticated %}
+            <br><span class="badge-panel badge-info" style="font-size:10px; margin-top:2px;">Admin: {{ v.user_name }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-size:12px; color:var(--panel-text-color);">{{ v.device|default:"Nämälim" }}</span>
+          </td>
+          <td>
+            <span class="badge-panel {% if v.lang == 'tm' %}badge-success{% elif v.lang == 'eng' %}badge-info{% else %}badge-danger{% endif %}" style="font-size:10px;">
+              {{ v.lang|upper }}
+            </span>
+          </td>
+          <td style="font-size:12px; color:var(--panel-text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            {{ v.referer|default:"Göni giriş" }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:36px; color:var(--panel-text-muted);">
+            Myhman logy tapylmady.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if visitor_logs.has_other_pages %}
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid var(--panel-border, #e2e8f0); font-size:13px;">
+    <div style="color:var(--panel-text-muted);">
+      Sahypa {{ visitor_logs.number }} / {{ visitor_logs.paginator.num_pages }} (Jemi: {{ visitor_logs.paginator.count }})
+    </div>
+    <div style="display:flex; gap:6px;">
+      {% if visitor_logs.has_previous %}
+      <a href="?tab=visitors&vpage={{ visitor_logs.previous_page_number }}&q={{ q }}" class="btn-panel btn-panel-ghost btn-panel-sm">
+        <i class="fa-solid fa-chevron-left"></i> Öňki
+      </a>
+      {% endif %}
+      {% if visitor_logs.has_next %}
+      <a href="?tab=visitors&vpage={{ visitor_logs.next_page_number }}&q={{ q }}" class="btn-panel btn-panel-ghost btn-panel-sm">
+        Indiki <i class="fa-solid fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% elif tab == 'top' %}
+<!-- ── TAB 3: TOP VISITED PAGES ────────────────────────────────── -->
+<div class="panel-card" style="padding:16px 20px 20px 20px;">
+  <div style="margin-bottom:16px;">
+    <h3 style="margin:0 0 4px 0; font-size:16px; color:var(--panel-text-color);">
+      <i class="fa-solid fa-fire" style="color:#f59e0b;"></i> Iň köp görülen 25 sahypa
+    </h3>
+    <p style="font-size:12px; color:var(--panel-text-muted); margin:0;">
+      Ulanyjylaryň saýtda iň köp giren sahypalarynyň we unikal myhmanlarynyň sanawy.
+    </p>
+  </div>
+
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th>Sahypanyň ady</th>
+          <th>URL Salgysy</th>
+          <th style="text-align:center;">Unikal myhman</th>
+          <th style="text-align:right;">Jemi görülen sany</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in top_pages %}
+        <tr>
+          <td style="font-weight:700; color:var(--panel-text-muted);">{{ forloop.counter }}</td>
+          <td>
+            <strong style="color:var(--panel-text-color); font-size:13px;">{{ p.page_title|default:p.path }}</strong>
+          </td>
+          <td>
+            <a href="{{ p.path }}" target="_blank" style="color:#0284c7; font-size:12px; display:inline-flex; align-items:center; gap:4px;">
+              {{ p.path }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
+            </a>
+          </td>
+          <td style="text-align:center;">
+            <span class="badge-panel badge-info" style="font-size:11px;">
+              <i class="fa-solid fa-user"></i> {{ p.unique_ips }}
+            </span>
+          </td>
+          <td style="text-align:right;">
+            <span class="badge-panel badge-success" style="font-size:13px; font-weight:700; padding:4px 10px;">
+              {{ p.views_count }} gezek
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center; padding:36px; color:var(--panel-text-muted);">
+            Häzirlikçe sahypa giriş statistikalary ýok.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

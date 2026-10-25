@@ -21,7 +21,6 @@ def get_recent_contents(lang='tm', limit=10):
         lang_filter = {'show_in_tm': True}
 
     pages = list(Page.objects.filter(**lang_filter).select_related('parent').exclude(section='sorag_jogap').order_by('-created_at', '-id')[:limit])
-    docs = list(Document.objects.all().order_by('-uploaded_at', '-id')[:limit])
 
     section_icon_map = {
         'institut': 'fa-solid fa-building-columns',
@@ -40,13 +39,6 @@ def get_recent_contents(lang='tm', limit=10):
         'halkara': {'tm': 'Halkara hyzmatdaşlyk', 'en': 'International', 'ru': 'Международное'},
         'dalasgar': {'tm': 'Dalaşgär', 'en': 'Applicant', 'ru': 'Абитуриент'},
         'sorag_jogap': {'tm': 'Sorag-jogap', 'en': 'FAQ', 'ru': 'Вопросы и ответы'},
-    }
-
-    doc_cat_names = {
-        'Kitaphana': {'tm': 'Kitaphana', 'en': 'Library', 'ru': 'Библиотека'},
-        'Sanly Bilim': {'tm': 'Sanly Bilim', 'en': 'Digital Education', 'ru': 'Цифровое образование'},
-        'Hasabat': {'tm': 'Hepdelik Hasabat', 'en': 'Weekly Report', 'ru': 'Еженедельный отчет'},
-        'Maksatnama': {'tm': 'Maksatnamalar', 'en': 'Programs', 'ru': 'Программы'},
     }
 
     items = []
@@ -84,31 +76,6 @@ def get_recent_contents(lang='tm', limit=10):
             'icon': icon,
             'date': getattr(p, 'created_at', None),
             'sort_date': getattr(p, 'created_at', None),
-        })
-
-    for d in docs:
-        c_dict = doc_cat_names.get(d.category, {})
-        d_badge_tm = c_dict.get('tm', d.get_category_display() or 'Resminama')
-        d_badge_en = c_dict.get('en', 'Document')
-        d_badge_ru = c_dict.get('ru', 'Документ')
-
-        items.append({
-            'type': 'document',
-            'title_tm': d.title_tm,
-            'title_en': d.title_en or d.title_tm,
-            'title_ru': d.title_ru or d.title_tm,
-            'badge': d_badge_tm,
-            'badge_tm': d_badge_tm,
-            'badge_en': d_badge_en,
-            'badge_ru': d_badge_ru,
-            'url': f'/document/{d.pk}/',
-            'image': d.image,
-            'image_tm': d.image,
-            'image_en': d.image_en or d.image,
-            'image_ru': d.image_ru or d.image,
-            'icon': 'fa-solid fa-file-pdf',
-            'date': d.uploaded_at,
-            'sort_date': d.uploaded_at,
         })
 
     items.sort(key=lambda x: (x['sort_date'] is not None, x['sort_date']), reverse=True)

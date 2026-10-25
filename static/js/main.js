@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dots = document.querySelectorAll('.dot');
     const prevBtn = document.getElementById('sliderPrev');
     const nextBtn = document.getElementById('sliderNext');
+    const heroSliderSection = document.querySelector('.hero-slider-section');
     let currentSlide = 0;
     let slideTimer = null;
 
@@ -131,6 +132,43 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Touch swipe support for mobile
+        if (heroSliderSection) {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let isSwiping = false;
+
+            heroSliderSection.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isSwiping = true;
+                }
+            }, { passive: true });
+
+            heroSliderSection.addEventListener('touchmove', (e) => {
+                if (!isSwiping || e.touches.length !== 1) return;
+                const diffX = e.touches[0].clientX - touchStartX;
+                const diffY = e.touches[0].clientY - touchStartY;
+                if (Math.abs(diffY) > Math.abs(diffX)) {
+                    isSwiping = false; // vertical scroll, don't block
+                }
+            }, { passive: true });
+
+            heroSliderSection.addEventListener('touchend', (e) => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                const diffX = e.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(diffX) > 40) {
+                    if (diffX < 0) {
+                        nextSlide();
+                    } else {
+                        prevSlide();
+                    }
+                }
+            }, { passive: true });
+        }
+
         // Initialize first slide playback
         handleSlidePlayback(slides[currentSlide]);
     }
@@ -198,43 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 6. News Card Video Autoplay (Muted & Loop) ---
-    const cardVideos = document.querySelectorAll('.news-card-video');
-    if (cardVideos.length > 0) {
-        cardVideos.forEach(vid => {
-            vid.muted = true;
-            vid.setAttribute('playsinline', '');
-            vid.setAttribute('muted', '');
-            const tryPlay = () => {
-                vid.muted = true;
-                const p = vid.play();
-                if (p !== undefined) p.catch(() => {});
-            };
-            tryPlay();
-            const card = vid.closest('.news-card');
-            if (card) {
-                card.addEventListener('mouseenter', tryPlay);
-                card.addEventListener('touchstart', tryPlay, { passive: true });
-            }
-        });
-
-        if ('IntersectionObserver' in window) {
-            const vidObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const v = entry.target;
-                    if (entry.isIntersecting) {
-                        v.muted = true;
-                        const p = v.play();
-                        if (p !== undefined) p.catch(() => {});
-                    } else {
-                        v.pause();
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            cardVideos.forEach(v => vidObserver.observe(v));
-        }
-    }
 
     // --- 7. Language Selector Instant Switch ---
     const langButtons = document.querySelectorAll('.lang-btn');

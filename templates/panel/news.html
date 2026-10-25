@@ -9,6 +9,79 @@
     <i class="fa-solid fa-plus"></i> Täze habar goş
   </a>
 </div>
+
+<!-- Sahypanyň Düşündiriş Ýazgysy (Subtitle) Card -->
+<div class="panel-card" style="margin-bottom: 20px; padding: 18px 22px; border-left: 4px solid var(--panel-primary, #0a5c36); background: var(--panel-surface, #fff);">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+    <div style="flex: 1; min-width: 280px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--panel-primary, #0a5c36); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-paragraph"></i> Täzelikler Sahypasynyň Düşündiriş Ýazgysy (Subtitle)
+      </div>
+      <div style="font-size: 15px; font-weight: 700; color: var(--panel-text, #1e293b); line-height: 1.4;">
+        «{{ site_settings.news_subtitle_tm|default:"Maliýe institutynyň durmuşyndaky iň täze habarlar we waka-däpler" }}»
+      </div>
+      <div style="font-size: 12px; color: var(--panel-text-muted); margin-top: 6px; display: flex; gap: 16px; flex-wrap: wrap;">
+        <span><img src="/static/images/flag_en.png" style="width: 14px; vertical-align: middle;"> EN: {{ site_settings.news_subtitle_en|default:'—' }}</span>
+        <span><img src="/static/images/flag_ru.png" style="width: 14px; vertical-align: middle;"> RU: {{ site_settings.news_subtitle_ru|default:'—' }}</span>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="btn-panel btn-panel-edit" onclick="document.getElementById('editSubtitleModal').style.display='flex';" style="font-size: 13px; padding: 9px 16px;">
+        <i class="fa-solid fa-pen-to-square"></i> Ýazgyny üýtget
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for editing subtitle -->
+<div id="editSubtitleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:99999; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--panel-surface, #fff); border-radius:14px; max-width:560px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); overflow:hidden; border:1px solid var(--panel-border, #e2e8f0);">
+    <div style="padding:16px 20px; border-bottom:1px solid var(--panel-border, #e2e8f0); display:flex; align-items:center; justify-content:space-between; background:var(--panel-surface-2, #f8fafc);">
+      <h3 style="margin:0; font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-paragraph" style="color:#0a5c36;"></i> Täzelikler Düşündiriş Ýazgysyny Üýtget
+      </h3>
+      <button type="button" onclick="document.getElementById('editSubtitleModal').style.display='none';" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--panel-text-muted); line-height:1;">&times;</button>
+    </div>
+    <form method="POST" style="padding:20px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_subtitle">
+      
+      <p style="font-size:12.5px; color:var(--panel-text-muted); margin-bottom:16px;">
+        Täzelikler sahypasynda («/news/») başlygyň aşagynda çykýan düşündiriş ýazgysyny şu ýerden üýtgedip bilersiňiz:
+      </p>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label style="font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span><img src="/static/images/flag_tm.png" style="width:16px; vertical-align:middle;"> Türkmen dilinde (TM) <span class="required">*</span></span>
+          <span class="badge-panel badge-success" style="font-size:10px;">TM</span>
+        </label>
+        <textarea name="news_subtitle_tm" class="form-control-panel" rows="2" required style="resize:vertical;">{{ site_settings.news_subtitle_tm }}</textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label style="font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span><img src="/static/images/flag_en.png" style="width:16px; vertical-align:middle;"> Iňlis dilinde (English)</span>
+          <span class="badge-panel badge-info" style="font-size:10px;">EN</span>
+        </label>
+        <textarea name="news_subtitle_en" class="form-control-panel" rows="2" style="resize:vertical;">{{ site_settings.news_subtitle_en }}</textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span><img src="/static/images/flag_ru.png" style="width:16px; vertical-align:middle;"> Rus dilinde (Русский)</span>
+          <span class="badge-panel badge-danger" style="font-size:10px;">RU</span>
+        </label>
+        <textarea name="news_subtitle_ru" class="form-control-panel" rows="2" style="resize:vertical;">{{ site_settings.news_subtitle_ru }}</textarea>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn-panel btn-panel-ghost" onclick="document.getElementById('editSubtitleModal').style.display='none';">Ýatyr</button>
+        <button type="submit" class="btn-panel btn-panel-primary"><i class="fa-solid fa-floppy-disk"></i> Ýatda sakla</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="panel-card">
   <div class="panel-table-wrap">
     <table class="panel-table">

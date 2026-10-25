@@ -235,7 +235,7 @@ ul {
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: 15px 0;
+    padding: 8px 0;
 }
 
 .header-container {
@@ -3537,5 +3537,571 @@ textarea.form-control {
     .content-doc-download-card .cdd-badge {
         width: 100% !important;
         justify-content: center !important;
+    }
+}
+
+/* ==========================================================================
+   Comprehensive Mobile Responsiveness Engine (TDMai Phone Optimization)
+   Supports 320px - 768px viewport widths (iOS Safari & Android Chrome)
+   ========================================================================== */
+
+/* 1. Global Viewport & Media Fluidity */
+html,
+body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.article-body,
+.department-body,
+.faculty-body,
+.page-detail-section,
+.detail-container {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.article-body img,
+.detail-container img,
+.department-body img,
+.faculty-body img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.article-body iframe,
+.detail-container iframe,
+.article-body video,
+.detail-container video {
+    max-width: 100% !important;
+}
+
+/* Responsive Table Container for WYSIWYG Content */
+.article-body table,
+.detail-container table,
+.department-body table,
+.faculty-body table {
+    display: block !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-collapse: collapse;
+}
+
+/* 2. Container & Section Scaling on Mobile */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .section {
+        padding: 46px 0;
+    }
+
+    .section-header {
+        margin-bottom: 28px;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        padding-bottom: 10px;
+    }
+
+    .section-tagline {
+        font-size: 0.76rem;
+        letter-spacing: 1.5px;
+    }
+
+    .section-divider {
+        width: 48px;
+        height: 2.5px;
+        margin: 12px auto 0 auto;
+    }
+
+    /* Hero Slider Mobile (Bilim.gov.tm Style Proportions) */
+    .hero-slider-section {
+        width: 100% !important;
+        height: clamp(190px, 48vw, 260px) !important;
+        min-height: unset !important;
+        max-height: 270px !important;
+    }
+
+    .hero-slider-section + .news-section {
+        padding-top: 25px !important;
+    }
+
+    .slide-content {
+        max-width: 90% !important;
+        padding: 0 16px !important;
+    }
+
+    .slider-arrow {
+        display: none !important;
+    }
+
+    .slider-dots {
+        bottom: 8px !important;
+        gap: 6px !important;
+    }
+
+    .slider-dots .dot {
+        width: 7px !important;
+        height: 7px !important;
+    }
+
+    .slide-title {
+        font-size: clamp(1.05rem, 4.2vw, 1.3rem) !important;
+        line-height: 1.18 !important;
+        margin-bottom: 4px !important;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85) !important;
+    }
+
+    .slide-subtitle {
+        font-size: clamp(0.72rem, 2.7vw, 0.84rem) !important;
+        line-height: 1.25 !important;
+        margin-bottom: 8px !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .slide-content .btn {
+        padding: 4px 14px !important;
+        font-size: 0.74rem !important;
+        border-radius: 6px !important;
+    }
+
+    /* Page Banner Mobile */
+    .page-banner {
+        padding: 40px 0 30px !important;
+        min-height: auto !important;
+    }
+
+    .page-banner-title {
+        font-size: 1.55rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .breadcrumbs {
+        font-size: 0.82rem !important;
+        line-height: 1.45 !important;
+        flex-wrap: wrap !important;
+    }
+
+    .page-header {
+        padding: 30px 0 24px !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.4rem !important;
+    }
+
+    /* Partners Carousel Mobile */
+    .partners-carousel {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px !important;
+    }
+
+    .partner-card {
+        padding: 20px 14px !important;
+    }
+
+    .partner-logo-wrapper {
+        height: 58px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .partner-name {
+        font-size: 0.88rem !important;
+    }
+
+    /* Reports List Mobile */
+    .reports-list {
+        gap: 12px;
+    }
+
+    .report-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+        padding: 16px 14px !important;
+    }
+
+    .report-row > div:first-child {
+        width: 100% !important;
+    }
+
+    .report-icon {
+        font-size: 1.8rem !important;
+        margin-right: 14px !important;
+    }
+
+    .report-title {
+        font-size: 0.98rem !important;
+    }
+
+    .report-actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .report-actions .btn {
+        flex: 1 1 auto !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+
+    /* Detail Page Typography & Footer */
+    .article-title {
+        font-size: 1.45rem !important;
+        line-height: 1.35 !important;
+    }
+
+    .article-meta {
+        font-size: 0.82rem !important;
+        gap: 10px !important;
+    }
+
+    .article-body {
+        font-size: 0.95rem !important;
+        line-height: 1.7 !important;
+    }
+
+    .article-source-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 12px 14px !important;
+    }
+
+    .article-source-bar > div:last-child {
+        width: 100% !important;
+    }
+
+    .article-source-bar a {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .article-footer {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+    }
+
+    .article-footer .btn {
+        width: 100% !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+
+    #file-preview-container {
+        height: 480px !important;
+    }
+
+    #file-preview-container iframe {
+        height: 480px !important;
+    }
+
+    /* Footer Mobile */
+    .site-footer {
+        padding: 48px 0 0 0 !important;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 28px !important;
+        padding-bottom: 35px !important;
+    }
+
+    .footer-title {
+        font-size: 1.45rem !important;
+        margin-bottom: 14px !important;
+    }
+
+    .footer-description {
+        margin-bottom: 18px !important;
+        font-size: 0.88rem !important;
+    }
+
+    .footer-section-title {
+        font-size: 1.05rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    .footer-bottom {
+        padding: 20px 0 !important;
+        font-size: 0.82rem !important;
+    }
+}
+
+/* 3. Phone Screens (<= 640px) */
+@media (max-width: 640px) {
+    /* News Grid 1-column */
+    .news-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .news-card-img-wrapper {
+        height: 195px !important;
+    }
+
+    .news-card-content {
+        padding: 16px !important;
+    }
+
+    .news-card-title {
+        font-size: 1.05rem !important;
+    }
+
+    .news-card-excerpt {
+        font-size: 0.86rem !important;
+    }
+
+    /* Stats Section 2x2 Clean Dashboard */
+    .stats-section {
+        background-attachment: scroll !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .stat-card {
+        padding: 18px 10px !important;
+        border-radius: 12px !important;
+    }
+
+    .stat-icon-wrapper {
+        font-size: 1.75rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .stat-number {
+        font-size: 1.75rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .stat-label {
+        font-size: 0.78rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .stat-custom-logo {
+        max-height: 36px !important;
+    }
+
+    /* Departments Grid */
+    .departments-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .dept-card {
+        padding: 16px !important;
+    }
+
+    .dept-card-title {
+        font-size: 1.02rem !important;
+    }
+
+    /* Olympiads List */
+    .olympiad-item {
+        padding: 16px 14px !important;
+        gap: 12px !important;
+    }
+
+    .oly-title {
+        font-size: 1.05rem !important;
+    }
+
+    .oly-actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+    }
+
+    .oly-actions .btn {
+        flex: 1 !important;
+        justify-content: center !important;
+    }
+
+    /* Contact Page */
+    .contact-container {
+        padding-top: 25px !important;
+        padding-bottom: 40px !important;
+        gap: 28px !important;
+    }
+
+    .contact-panel-title {
+        font-size: 1.35rem !important;
+    }
+
+    .contact-details-list {
+        gap: 16px !important;
+    }
+
+    .contact-detail-item {
+        gap: 12px !important;
+    }
+
+    .contact-detail-item .icon-box {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.05rem !important;
+    }
+
+    .contact-form-panel {
+        padding: 20px 16px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        gap: 4px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .pagination .page-link {
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 8px !important;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
+    }
+
+    /* PDF Modal on Phone */
+    .pdf-modal-overlay {
+        padding: 6px !important;
+    }
+
+    .pdf-modal-container {
+        height: 96vh !important;
+        border-radius: 10px !important;
+    }
+
+    .pdf-modal-header {
+        padding: 10px 14px !important;
+    }
+
+    .pdf-modal-title {
+        font-size: 13px !important;
+        max-width: 55% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    .pdf-modal-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* 4. Small Phones (<= 480px and <= 380px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px !important;
+    }
+
+    .section {
+        padding: 34px 0 !important;
+    }
+
+    .section-title {
+        font-size: 1.35rem !important;
+    }
+
+    .section-tagline {
+        font-size: 0.70rem !important;
+    }
+
+    .hero-slider-section {
+        width: 100% !important;
+        height: clamp(165px, 48vw, 205px) !important;
+        min-height: unset !important;
+        max-height: 210px !important;
+    }
+
+    .slide-content {
+        max-width: 95% !important;
+        padding: 0 10px !important;
+    }
+
+    .slide-title {
+        font-size: clamp(0.95rem, 4vw, 1.12rem) !important;
+        line-height: 1.15 !important;
+        margin-bottom: 3px !important;
+    }
+
+    .slide-subtitle {
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .slide-content .btn {
+        padding: 3px 11px !important;
+        font-size: 0.68rem !important;
+        border-radius: 5px !important;
+    }
+
+    .slider-dots {
+        bottom: 5px !important;
+        gap: 5px !important;
+    }
+
+    .slider-dots .dot {
+        width: 6px !important;
+        height: 6px !important;
+    }
+
+    .partners-carousel {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .partner-card {
+        padding: 16px !important;
+    }
+
+    .journal-card-item {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .journal-card-cover-box {
+        height: 280px !important;
+    }
+
+    .btn {
+        padding: 10px 18px !important;
+        font-size: 0.86rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .stats-grid {
+        gap: 8px !important;
+    }
+
+    .stat-number {
+        font-size: 1.45rem !important;
+    }
+
+    .stat-card {
+        padding: 12px 6px !important;
+    }
+
+    .stat-label {
+        font-size: 0.72rem !important;
     }
 }

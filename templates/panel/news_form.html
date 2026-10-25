@@ -152,6 +152,66 @@
       </div>
     </div>
 
+    <!-- Habaryň Çap Senesi (Sene Tertibi) -->
+    <div class="panel-form-section" style="background: linear-gradient(180deg, rgba(10, 92, 54, 0.03) 0%, rgba(255, 255, 255, 0) 100%);">
+      <div class="panel-form-section-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <span><i class="fa-solid fa-calendar-days" style="color: #0a5c36;"></i> Habaryň Çap Senesi (Sene Tertibi)</span>
+        <span class="badge-panel badge-success" style="font-size: 11px; font-weight: 600;">
+          <i class="fa-solid fa-arrow-down-wide-short"></i> Senä görä tertiplenýär
+        </span>
+      </div>
+      <p style="font-size: 13px; color: var(--panel-text-muted); margin-bottom: 14px; line-height: 1.5;">
+        Täzeligiň sahypadaky senesini we tertibini şu ýerden belläp bilersiňiz. 
+        Habarlar sahypada <strong>senesine görä</strong> tertiplenýär (iň täze seneli habarlar başda, köne seneliler aşakda/arasynda çykar).
+        Mysal üçin, <strong>3 gün öňki senäni</strong> saýlasaňyz, täzelik öňki goşulan habarlaryň aşagynda/arasynda ornaşar.
+      </p>
+
+      <div style="background: var(--panel-surface, #fff); border: 1px solid var(--panel-border, #e2e8f0); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="id_published_date" style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-regular fa-calendar-days" style="color: #0a5c36;"></i>
+            <span>Sene (Ýyl-Aý-Gün):</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <input type="date" id="id_published_date" name="published_date" class="form-control-panel"
+                   value="{% if obj %}{{ obj.published_date|date:'Y-m-d' }}{% elif post.published_date %}{{ post.published_date }}{% else %}{{ now|date:'Y-m-d' }}{% endif %}"
+                   style="max-width: 220px; font-weight: 600; font-size: 14px; padding: 9px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+            
+            <span id="dateStatusBadge" class="badge-panel badge-info" style="font-size: 11px; padding: 6px 12px; border-radius: 20px;">
+              <i class="fa-solid fa-check"></i> Şu gün
+            </span>
+          </div>
+        </div>
+
+        <!-- Çalt saýlamak üçin düwmeler (Quick Presets) -->
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--panel-border, #e2e8f0);">
+          <div style="font-size: 12px; font-weight: 700; color: var(--panel-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Çalt saýlama (Bir basyşda senäni üýtget):
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(0, 'Şu gün')" style="font-size: 12px;">
+              <i class="fa-solid fa-rotate-right" style="color: #0a5c36;"></i> Şu gün
+            </button>
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(-1, 'Düýn (-1 gün)')" style="font-size: 12px;">
+              <i class="fa-solid fa-calendar-minus" style="color: #64748b;"></i> Düýn (-1 gün)
+            </button>
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(-3, '3 gün öň (-3 gün)')" style="font-size: 12px; font-weight: 700; border-color: #0a5c36; color: #0a5c36; background: rgba(10, 92, 54, 0.05);">
+              <i class="fa-solid fa-calendar-day" style="color: #0a5c36;"></i> 3 gün öň
+            </button>
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(-7, '1 hepde öň (-7 gün)')" style="font-size: 12px;">
+              <i class="fa-solid fa-calendar-week" style="color: #64748b;"></i> 1 hepde öň
+            </button>
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(-30, '1 aý öň (-30 gün)')" style="font-size: 12px;">
+              <i class="fa-solid fa-calendar-xmark" style="color: #64748b;"></i> 1 aý öň
+            </button>
+            <button type="button" class="btn-panel btn-panel-ghost btn-panel-sm" onclick="setNewsDatePreset(1, 'Ertir (+1 gün)')" style="font-size: 12px;">
+              <i class="fa-solid fa-calendar-plus" style="color: #2563eb;"></i> Ertir (+1 gün)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- TM -->
     <div class="panel-form-section">
       <div class="panel-form-section-title"><i class="fa-solid fa-language"></i> Türkmençe <span class="badge-panel badge-success">TM</span></div>
@@ -283,4 +343,67 @@
     </div>
   </div>
 </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setNewsDatePreset(offsetDays, label) {
+  var d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+  var yyyy = d.getFullYear();
+  var mm = pad(d.getMonth() + 1);
+  var dd = pad(d.getDate());
+  var str = yyyy + '-' + mm + '-' + dd;
+  
+  var input = document.getElementById('id_published_date');
+  if (input) {
+    input.value = str;
+    input.dispatchEvent(new Event('change'));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('id_published_date');
+  var badge = document.getElementById('dateStatusBadge');
+  if (!input || !badge) return;
+
+  function updateBadge() {
+    if (!input.value) return;
+    try {
+      var parts = input.value.split('-');
+      if (parts.length !== 3) return;
+      var yyyy = parseInt(parts[0], 10);
+      var mm = parseInt(parts[1], 10);
+      var dd = parseInt(parts[2], 10);
+      var valDate = new Date(yyyy, mm - 1, dd);
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      valDate.setHours(0, 0, 0, 0);
+      
+      var diffMs = valDate.getTime() - today.getTime();
+      var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      
+      var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+      var dateStr = pad(dd) + '.' + pad(mm) + '.' + yyyy;
+
+      if (diffDays === 0) {
+        badge.innerHTML = '<i class="fa-solid fa-check"></i> Şu gün (' + dateStr + ')';
+        badge.className = 'badge-panel badge-success';
+      } else if (diffDays < 0) {
+        var daysAgo = Math.abs(diffDays);
+        badge.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> ' + daysAgo + ' gün öňki sene (' + dateStr + ') — öňki habarlaryň aşagynda/arasynda çykar';
+        badge.className = 'badge-panel badge-warning';
+      } else {
+        badge.innerHTML = '<i class="fa-solid fa-forward"></i> ' + diffDays + ' gün soňky sene (' + dateStr + ') — iň başda çykar';
+        badge.className = 'badge-panel badge-info';
+      }
+    } catch(e) {}
+  }
+
+  input.addEventListener('change', updateBadge);
+  input.addEventListener('input', updateBadge);
+  updateBadge();
+});
+</script>
 {% endblock %}

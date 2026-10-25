@@ -4,12 +4,16 @@ All views require staff login. Django's /admin/ remains untouched.
 """
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils.text import slugify
 from django.http import JsonResponse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime, parse_date
+from datetime import datetime
 import os
 
 from .templatetags.website_tags import (
@@ -223,10 +227,39 @@ def panel_slider_delete(request, pk):
 # NEWS
 # ─────────────────────────────────────────────
 
+def _parse_published_date(date_str, default=None):
+    if not date_str or not str(date_str).strip():
+        return default or timezone.now()
+    date_str = str(date_str).strip()
+    dt = parse_datetime(date_str)
+    if dt is None:
+        d = parse_date(date_str)
+        if d:
+            if default and hasattr(default, 'time'):
+                base_time = default.time()
+            else:
+                base_time = timezone.localtime().time()
+            dt = datetime.combine(d, base_time)
+    if dt is not None:
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone.get_current_timezone())
+        return dt
+    return default or timezone.now()
+
+
 @panel_login_required
 def panel_news(request):
-    all_news = News.objects.order_by('-published_date')
-    return render(request, 'panel/news.html', {'all_news': all_news})
+    site_settings = SiteSettings.get_settings()
+    if request.method == 'POST' and request.POST.get('action') == 'update_subtitle':
+        site_settings.news_subtitle_tm = request.POST.get('news_subtitle_tm', site_settings.news_subtitle_tm).strip()
+        site_settings.news_subtitle_en = request.POST.get('news_subtitle_en', site_settings.news_subtitle_en).strip()
+        site_settings.news_subtitle_ru = request.POST.get('news_subtitle_ru', site_settings.news_subtitle_ru).strip()
+        site_settings.save()
+        messages.success(request, 'Täzelikler sahypasynyň düşündiriş ýazgysy üstünlikli üýtgedildi!')
+        return redirect('panel_news')
+
+    all_news = News.objects.order_by('-published_date', '-id')
+    return render(request, 'panel/news.html', {'all_news': all_news, 'site_settings': site_settings})
 
 
 @panel_login_required
@@ -236,10 +269,11 @@ def panel_news_add(request):
         content_tm = request.POST.get('content_tm', '').strip()
         if not title_tm or not content_tm:
             messages.error(request, 'Türkmençe at we mazmun hökmanydyr!')
-            return render(request, 'panel/news_form.html', {'action': 'add', 'post': request.POST})
+            return render(request, 'panel/news_form.html', {'action': 'add', 'post': request.POST, 'now': timezone.now()})
         source_name_tm = request.POST.get('source_name_tm', '').strip() or request.POST.get('source_name', '').strip()
         source_name_en = request.POST.get('source_name_en', '').strip()
         source_name_ru = request.POST.get('source_name_ru', '').strip()
+        pub_date = _parse_published_date(request.POST.get('published_date'))
         news = News(
             title_tm=title_tm,
             title_en=request.POST.get('title_en', ''),
@@ -256,6 +290,7 @@ def panel_news_add(request):
             pdf_title_tm=request.POST.get('pdf_title_tm', '').strip(),
             pdf_title_en=request.POST.get('pdf_title_en', '').strip(),
             pdf_title_ru=request.POST.get('pdf_title_ru', '').strip(),
+            published_date=pub_date,
         )
         if 'image' in request.FILES:
             news.image = request.FILES['image']
@@ -270,7 +305,7 @@ def panel_news_add(request):
         news.save()
         messages.success(request, 'Täzelik üstünlikli goşuldy!')
         return redirect('panel_news')
-    return render(request, 'panel/news_form.html', {'action': 'add'})
+    return render(request, 'panel/news_form.html', {'action': 'add', 'now': timezone.now()})
 
 
 @panel_login_required
@@ -293,6 +328,9 @@ def panel_news_edit(request, pk):
         news.pdf_title_en = request.POST.get('pdf_title_en', '').strip()
         news.pdf_title_ru = request.POST.get('pdf_title_ru', '').strip()
         
+        if 'published_date' in request.POST:
+            news.published_date = _parse_published_date(request.POST.get('published_date'), default=news.published_date)
+
         if 'image' in request.FILES:
             news.image = request.FILES['image']
         elif 'clear_image' in request.POST or request.POST.get('clear_image') == '1':
@@ -321,7 +359,7 @@ def panel_news_edit(request, pk):
         news.save()
         messages.success(request, 'Täzelik üstünlikli üýtgedildi!')
         return redirect('panel_news')
-    return render(request, 'panel/news_form.html', {'action': 'edit', 'obj': news})
+    return render(request, 'panel/news_form.html', {'action': 'edit', 'obj': news, 'now': timezone.now()})
 
 
 @panel_login_required
@@ -687,6 +725,10 @@ def panel_page_add(request):
             page.pdf_file = request.FILES['pdf_file']
         page.save()
         messages.success(request, 'Sahypa üstünlikli goşuldy!')
+        if parent:
+            is_root = (parent.slug == section and parent.parent is None)
+            if not is_root:
+                return redirect(f"{reverse('panel_pages_by_section', kwargs={'section': section})}?parent={parent.pk}")
         return redirect('panel_pages_by_section', section=section)
     return render(request, 'panel/page_form.html', {
         'action': 'add',
@@ -773,8 +815,10 @@ def panel_page_edit(request, pk):
 
         page.save()
         messages.success(request, 'Sahypa üstünlikli üýtgedildi!')
-        if page.parent and page.parent.parent is not None:
-            return redirect(f"{reverse('panel_pages_by_section', kwargs={'section': page.section})}?parent={page.parent.pk}")
+        if page.parent:
+            is_root = (page.parent.slug == page.section and page.parent.parent is None)
+            if not is_root:
+                return redirect(f"{reverse('panel_pages_by_section', kwargs={'section': page.section})}?parent={page.parent.pk}")
         return redirect('panel_pages_by_section', section=page.section)
     return render(request, 'panel/page_form.html', {
         'action': 'edit',
@@ -788,9 +832,14 @@ def panel_page_edit(request, pk):
 def panel_page_delete(request, pk):
     page = get_object_or_404(Page, pk=pk)
     section = page.section
+    parent = page.parent
     if request.method == 'POST':
         page.delete()
         messages.success(request, 'Sahypa öçürildi.')
+    if parent:
+        is_root = (parent.slug == section and parent.parent is None)
+        if not is_root:
+            return redirect(f"{reverse('panel_pages_by_section', kwargs={'section': section})}?parent={parent.pk}")
     return redirect('panel_pages_by_section', section=section)
 
 
@@ -1391,6 +1440,14 @@ def panel_settings(request):
             site_settings.page_banner_image = request.FILES['page_banner_image']
         elif request.POST.get('clear_page_banner_image') == '1':
             site_settings.page_banner_image = None
+
+        # News Page Header & Subtitle
+        site_settings.news_title_tm = request.POST.get('news_title_tm', site_settings.news_title_tm).strip()
+        site_settings.news_title_en = request.POST.get('news_title_en', site_settings.news_title_en).strip()
+        site_settings.news_title_ru = request.POST.get('news_title_ru', site_settings.news_title_ru).strip()
+        site_settings.news_subtitle_tm = request.POST.get('news_subtitle_tm', site_settings.news_subtitle_tm).strip()
+        site_settings.news_subtitle_en = request.POST.get('news_subtitle_en', site_settings.news_subtitle_en).strip()
+        site_settings.news_subtitle_ru = request.POST.get('news_subtitle_ru', site_settings.news_subtitle_ru).strip()
 
         site_settings.save()
         messages.success(request, 'Sazlamalar üstünlikli ýatda saklanyldy!')

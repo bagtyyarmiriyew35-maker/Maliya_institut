@@ -259,7 +259,7 @@ class News(models.Model):
         return self.title_tm or str(self)
 
     class Meta:
-        ordering = ['-published_date']
+        ordering = ['-published_date', '-id']
         verbose_name = "News"
         verbose_name_plural = "News List"
 
@@ -617,6 +617,43 @@ class SiteSettings(models.Model):
     copyright_text_tm = models.CharField(max_length=500, blank=True, default="© Hemme hukuklary goralan - 2026. Türkmen Döwlet Maliýe Instituty.", verbose_name="Copyright (TM)")
     copyright_text_en = models.CharField(max_length=500, blank=True, default="© All rights reserved - 2026. Turkmen State Finance Institute.", verbose_name="Copyright (EN)")
     copyright_text_ru = models.CharField(max_length=500, blank=True, default="© Все права защищены - 2026. Туркменский государственный финансовый институт.", verbose_name="Copyright (RU)")
+
+    # News Section Header & Subtitle
+    news_title_tm = models.CharField(max_length=255, blank=True, default="Täzelikler", verbose_name="Täzelikler Başlygy (TM)")
+    news_title_en = models.CharField(max_length=255, blank=True, default="News", verbose_name="News Title (EN)")
+    news_title_ru = models.CharField(max_length=255, blank=True, default="Новости", verbose_name="News Title (RU)")
+
+    news_subtitle_tm = models.CharField(
+        max_length=500, blank=True,
+        default="Maliýe institutynyň durmuşyndaky iň täze habarlar we waka-däpler",
+        verbose_name="Täzelikler Düşündiriş Ýazgysy / Subtitle (TM)"
+    )
+    news_subtitle_en = models.CharField(
+        max_length=500, blank=True,
+        default="The latest news and events in the life of the Finance Institute",
+        verbose_name="News Subtitle (EN)"
+    )
+    news_subtitle_ru = models.CharField(
+        max_length=500, blank=True,
+        default="Последние новости и события из жизни Финансового института",
+        verbose_name="News Subtitle (RU)"
+    )
+
+    def get_news_subtitle(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.news_subtitle_en:
+            return self.news_subtitle_en
+        if ('rus' in l or l == 'ru') and self.news_subtitle_ru:
+            return self.news_subtitle_ru
+        return self.news_subtitle_tm or "Maliýe institutynyň durmuşyndaky iň täze habarlar we waka-däpler"
+
+    def get_news_title(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.news_title_en:
+            return self.news_title_en
+        if ('rus' in l or l == 'ru') and self.news_title_ru:
+            return self.news_title_ru
+        return self.news_title_tm or "Täzelikler"
 
     class Meta:
         verbose_name = "Site Settings"

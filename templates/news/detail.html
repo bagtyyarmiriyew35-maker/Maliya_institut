@@ -121,22 +121,23 @@
                     {% render_multilingual_image item current_lang as item_img %}
                     <a href="{% url 'news_detail' item.pk %}" class="news-card">
                         <div class="news-card-img-wrapper">
-                            {% if item.video %}
-                            <video class="news-card-video" autoplay loop muted playsinline preload="metadata" {% if item_img %}poster="{{ item_img.url }}"{% endif %}>
+                            {% if item_img %}
+                            <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
+                            {% elif item.video %}
+                            <video class="news-card-img" preload="metadata" muted playsinline style="pointer-events: none; width: 100%; height: 100%; object-fit: cover;">
                                 <source src="{{ item.video.url }}" type="video/mp4">
                                 <source src="{{ item.video.url }}" type="video/webm">
                             </video>
-                            <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
-                            {% elif item_img %}
-                            <img src="{{ item_img.url }}" alt="{% render_lang item 'title' current_lang %}" class="news-card-img">
-                            {% if item.video_url %}
-                            <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
-                            {% endif %}
                             {% elif item.video_url %}
                             <div class="news-card-img-placeholder" style="background: #0f172a; color: #58a6ff;"><i class="fa-solid fa-file-video"></i></div>
-                            <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                             {% else %}
                             <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
+                            {% endif %}
+
+                            {% if item.video %}
+                            <span class="news-video-indicator"><i class="fa-solid fa-video"></i> Wideo</span>
+                            {% elif item.video_url %}
+                            <span class="news-video-indicator"><i class="fa-solid fa-play"></i></span>
                             {% endif %}
                             <span class="news-card-date">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 13px; height: 13px; fill: currentColor; display: inline-block; vertical-align: middle; margin-right: 4px;">

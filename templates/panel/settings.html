@@ -103,6 +103,64 @@
       </div>
     </div>
 
+    <!-- Täzelikler Sahypasy (Başlyk we Düşündiriş Ýazgysy / Subtitle) -->
+    <div class="settings-section-card" style="grid-column:span 2;">
+      <h3><i class="fa-solid fa-newspaper" style="color: #0a5c36;"></i> Täzelikler Sahypasynyň Başlygy we Düşündiriş Ýazgysy (Subtitle)</h3>
+      <p style="font-size:13px; color:var(--panel-text-muted); margin-bottom:18px;">
+        Täzelikler sahypasyndaky («/news/») esasy başlygy we onuň aşagyndaky düşündiriş setirini (subtitle) 3 dilde şu ýerden dolandyryp bilersiňiz.
+      </p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+        <!-- TM -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <div style="font-weight:700; font-size:13px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+            <span><img src="/static/images/flag_tm.png" style="width:16px; vertical-align:middle;"> Türkmen dilinde (TM)</span>
+            <span class="badge-panel badge-success" style="font-size:10px;">TM</span>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:600;">Sahypa Başlygy</label>
+            <input type="text" name="news_title_tm" class="form-control-panel" value="{{ site_settings.news_title_tm }}" placeholder="Täzelikler">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size:12px; font-weight:600;">Düşündiriş ýazgysy (Subtitle)</label>
+            <textarea name="news_subtitle_tm" class="form-control-panel" rows="3" style="resize:vertical;" placeholder="Maliýe institutynyň durmuşyndaky iň täze habarlar we waka-däpler">{{ site_settings.news_subtitle_tm }}</textarea>
+          </div>
+        </div>
+
+        <!-- EN -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <div style="font-weight:700; font-size:13px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+            <span><img src="/static/images/flag_en.png" style="width:16px; vertical-align:middle;"> Iňlis dilinde (English)</span>
+            <span class="badge-panel badge-info" style="font-size:10px;">EN</span>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:600;">Page Title</label>
+            <input type="text" name="news_title_en" class="form-control-panel" value="{{ site_settings.news_title_en }}" placeholder="News">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size:12px; font-weight:600;">Subtitle</label>
+            <textarea name="news_subtitle_en" class="form-control-panel" rows="3" style="resize:vertical;" placeholder="The latest news and events in the life of the Finance Institute">{{ site_settings.news_subtitle_en }}</textarea>
+          </div>
+        </div>
+
+        <!-- RU -->
+        <div style="background:var(--panel-surface-2, #f8fafc); padding:16px; border-radius:12px; border:1px solid var(--panel-border, #e2e8f0);">
+          <div style="font-weight:700; font-size:13px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+            <span><img src="/static/images/flag_ru.png" style="width:16px; vertical-align:middle;"> Rus dilinde (Русский)</span>
+            <span class="badge-panel badge-danger" style="font-size:10px;">RU</span>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:600;">Заголовок страницы</label>
+            <input type="text" name="news_title_ru" class="form-control-panel" value="{{ site_settings.news_title_ru }}" placeholder="Новости">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size:12px; font-weight:600;">Подзаголовок (Subtitle)</label>
+            <textarea name="news_subtitle_ru" class="form-control-panel" rows="3" style="resize:vertical;" placeholder="Последние новости и события из жизни Финансового института">{{ site_settings.news_subtitle_ru }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Sahypalaryň Esasy Banner Suraty Section -->
     <div class="settings-section-card" style="grid-column:span 2;">
       <h3><i class="fa-solid fa-panorama"></i> Sahypalaryň Esasy Banner Suraty (Default Page Banner)</h3>

@@ -79,7 +79,7 @@
                     {% if weekly_reports %}
                     <div class="reports-list" style="margin-top:24px;">
                         {% for doc in weekly_reports %}
-                        <div class="report-row" style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--bg-light,#f8f9fa);border-radius:10px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);">
+                        <div class="report-row report-row-custom" style="padding:16px;background:var(--bg-light,#f8f9fa);border-radius:10px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);">
                             <div style="display:flex;align-items:center;gap:14px;">
                                 <div class="report-icon" style="font-size:24px;color:var(--primary-color,#0a5c36);"><i class="fa-solid fa-file-pdf"></i></div>
                                 <div class="report-info">
@@ -111,6 +111,24 @@
                         display: grid;
                         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
                         gap: 22px;
+                    }
+                    @media (max-width: 640px) {
+                        .subpages-grid {
+                            grid-template-columns: 1fr !important;
+                            gap: 14px !important;
+                        }
+                        .report-row-custom {
+                            flex-direction: column !important;
+                            align-items: flex-start !important;
+                            gap: 12px !important;
+                        }
+                        .report-row-custom .report-actions {
+                            width: 100% !important;
+                        }
+                        .report-row-custom .report-actions .btn {
+                            flex: 1 !important;
+                            justify-content: center !important;
+                        }
                     }
                     .subpage-card-item {
                         text-decoration: none !important;

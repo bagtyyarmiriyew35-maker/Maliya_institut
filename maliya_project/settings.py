@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-ayh^v^11v5#+11knf3g8t+$=e5!8ga^wn#se&oz9h@5iw3q5s-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', '216.250.10.252', '20.20.21.143']
+ALLOWED_HOSTS = ['*', '216.250.9.135', '216.250.10.252', '20.20.21.143', 'tdmai.edu.tm', 'www.tdmai.edu.tm']
 
 # Disable Cross-Origin-Opener-Policy on plain HTTP (IP address) to prevent browser console error
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
@@ -43,8 +43,12 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1',
     'http://127.0.0.1:8000',
+    'http://216.250.9.135',
+    'https://216.250.9.135',
     'http://216.250.10.252',
-    'http://20.20.21.143',
+    'https://216.250.10.252',
+    'https://tdmai.edu.tm',
+    'http://tdmai.edu.tm',
     'https://*.tm',
     'http://*.tm',
 ]
@@ -108,7 +112,7 @@ DATABASES = {
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'b33200629'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('DB_PORT', '33296'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
         'CONN_MAX_AGE': 600,
         'CONN_HEALTH_CHECKS': True,
     }

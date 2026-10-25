@@ -105,8 +105,10 @@ class WebsiteViewsTestCase(TestCase):
         cat = LibraryCategory.objects.create(name_tm="Bilim žurnaly")
         LibraryBook.objects.create(category=cat, title_tm="Bilim žurnaly 1 sany 2026")
         response = self.client.get(reverse('library_detail', args=[cat.pk]))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'library/detail.html')
+        self.assertEqual(response.status_code, 302)
+        response_followed = self.client.get(reverse('library_detail', args=[cat.pk]), follow=True)
+        self.assertEqual(response_followed.status_code, 200)
+        self.assertTemplateUsed(response_followed, 'library/detail.html')
 
     def test_library_book_detail_page_status_code(self):
         from website.models import LibraryCategory, LibraryBook

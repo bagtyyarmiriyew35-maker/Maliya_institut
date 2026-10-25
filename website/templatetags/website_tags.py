@@ -296,6 +296,27 @@ def ui_label(key, lang):
         target_lang = 'rus'
     else:
         target_lang = 'tm'
+
+    if key == 'news_subtitle':
+        try:
+            from website.models import SiteSettings
+            s = SiteSettings.get_settings()
+            sub = s.get_news_subtitle(target_lang)
+            if sub:
+                return sub
+        except Exception:
+            pass
+
+    if key == 'news':
+        try:
+            from website.models import SiteSettings
+            s = SiteSettings.get_settings()
+            title = s.get_news_title(target_lang)
+            if title:
+                return title
+        except Exception:
+            pass
+
     label_dict = UI_VOCABULARY.get(key, {})
     return label_dict.get(target_lang, label_dict.get('tm', key))
 

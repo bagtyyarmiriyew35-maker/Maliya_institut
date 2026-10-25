@@ -37,11 +37,15 @@ def serve_robots_txt(request):
     content = "User-agent: *\nAllow: /\nDisallow: /panel/\nDisallow: /admin/\n"
     return HttpResponse(content, content_type='text/plain')
 
+def serve_google_verify(request):
+    return HttpResponse("google-site-verification: google7a5ea8fcd6d11ea9.html\n", content_type='text/html')
+
 from website.views import serve_pdf_engine_lib, serve_pdf_engine_worker
 
 urlpatterns = [
     path('favicon.ico', serve_favicon, name='favicon'),
     path('robots.txt', serve_robots_txt, name='robots_txt'),
+    path('google7a5ea8fcd6d11ea9.html', serve_google_verify, name='google_verify'),
     path('admin/', admin.site.urls),          # Django's built-in admin (kept)
     path('tinymce/', include('tinymce.urls')),  # TinyMCE JS serving
     path('panel/', include('website.panel_urls')),  # Custom Admin Panel

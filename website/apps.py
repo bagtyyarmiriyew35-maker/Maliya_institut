@@ -11,8 +11,18 @@ class WebsiteConfig(AppConfig):
     def ready(self):
         import website.signals
         
-        # Arka plandaky thread diňe aýratyn buýruk bilen işletmek üçin (Gunicorn işgärlerini dondurmazlygy üçin)
-        if os.environ.get('ENABLE_BACKGROUND_SCRAPER') != 'True':
+        # Migrasiýa ýa-da başga dolandyryş buýruklarynda arka planda thread açmazlyk üçin
+        commands_to_skip = {'makemigrations', 'migrate', 'collectstatic', 'check', 'test', 'shell'}
+        if any(cmd in sys.argv for cmd in commands_to_skip):
+            return
+
+        # Runserver wagtynda diňe esasy prosesde (RUN_MAIN == 'true') işleýär
+        is_runserver = 'runserver' in sys.argv
+        if is_runserver and os.environ.get('RUN_MAIN') != 'true':
+            return
+
+        # Eger ýörite ýapylmadyk bolsa (DISABLE_BACKGROUND_SCRAPER == 'True'), ähli ýerde awtomatiki işleýär
+        if os.environ.get('DISABLE_BACKGROUND_SCRAPER') == 'True':
             return
 
         def run_hourly_sync():

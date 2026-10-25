@@ -417,4 +417,65 @@ def serve_pdf_engine_worker(request):
     raise Http404("PDF.js worker not found")
 
 
+def get_user_lang(request):
+    """Detects active language for notification messages."""
+    raw_lang = request.GET.get('lang') or request.session.get('lang') or request.COOKIES.get('site_lang') or 'tm'
+    raw_lang = str(raw_lang).strip().lower()
+    if raw_lang in ['eng', 'en']:
+        return 'eng'
+    elif raw_lang in ['rus', 'ru']:
+        return 'rus'
+    return 'tm'
+
+
+def catch_all_not_found(request, path=None):
+    """
+    Catch-all view for non-existent routes across the site.
+    Prevents leaking internal routing, debug tracebacks, and admin URLs.
+    Shows a friendly 'Invalid page address' notice and safely redirects to home.
+    """
+    req_path = request.path_info or request.path or ''
+
+    # Filter out missing static assets, media files, or technical resources so they don't redirect
+    asset_extensions = ('.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+                        '.woff', '.woff2', '.ttf', '.eot', '.map', '.txt', '.xml')
+    if req_path.startswith(('/static/', '/media/', '/tinymce/')) or req_path.lower().endswith(asset_extensions):
+        return HttpResponse("Resource not found", status=404, content_type="text/plain; charset=utf-8")
+
+    # If an authenticated staff user entered an invalid URL inside /panel/, redirect to panel dashboard
+    if req_path.startswith('/panel/') and request.user.is_authenticated and request.user.is_staff:
+        try:
+            messages.warning(request, "Salgyny ýalňyş girizdiňiz! Panel baş sahypasyna gönükdirildiňiz.")
+        except Exception:
+            pass
+        return redirect('panel_dashboard')
+
+    lang = get_user_lang(request)
+    if lang == 'eng':
+        msg = "Invalid page address entered! The requested page was not found. You have been redirected to the home page."
+    elif lang == 'rus':
+        msg = "Введён неверный адрес страницы! Запрашиваемая страница не найдена. Вы перенаправлены на главную страницу."
+    else:
+        msg = "Salgyny ýalňyş girizdiňiz! Gözleýän sahypaňyz tapylmady. Baş sahypa gönükdirildiňiz."
+
+    try:
+        messages.warning(request, msg)
+    except Exception:
+        pass
+
+    target_url = f"/?invalid_url=1&lang={lang}" if lang != 'tm' else "/?invalid_url=1"
+    return redirect(target_url)
+
+
+def custom_404_view(request, exception=None):
+    """Custom 404 handler that safely redirects to home page with warning."""
+    return catch_all_not_found(request)
+
+
+def custom_500_view(request):
+    """Custom 500 handler for unexpected server errors."""
+    return render(request, '500.html', status=500)
+
+
+
 

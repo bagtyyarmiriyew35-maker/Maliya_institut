@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if current_lang == 'eng' %}Page Not Found - 404{% elif current_lang == 'rus' %}Страница не найдена - 404{% else %}Sahypa tapylmady - 404{% endif %}{% endblock %}
+
+{% block content %}
+<div class="error-page-wrapper" style="min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 60px 20px;">
+    <div class="error-page-card" style="max-width: 580px; width: 100%; text-align: center; background: #ffffff; border-radius: 20px; padding: 48px 36px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: 1px solid #eef2f6;">
+        <div class="error-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 84px; height: 84px; border-radius: 50%; background: #fef3c7; color: #d97706; font-size: 38px; margin-bottom: 24px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div style="font-size: 64px; font-weight: 900; line-height: 1; color: var(--primary-color, #0a5c36); margin-bottom: 12px; letter-spacing: -2px;">
+            404
+        </div>
+        <h1 style="font-size: 24px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0;">
+            {% if current_lang == 'eng' %}Invalid Page Address!
+            {% elif current_lang == 'rus' %}Неверный адрес страницы!
+            {% else %}Salgyny ýalňyş girizdiňiz!{% endif %}
+        </h1>
+        <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 28px 0;">
+            {% if current_lang == 'eng' %}The page you are trying to visit does not exist. You are being redirected to the home page in <span id="countdown" style="font-weight:700; color:#d97706;">3</span> seconds...
+            {% elif current_lang == 'rus' %}Запрашиваемая страница не существует. Вы будете перенаправлены на главную страницу через <span id="countdown" style="font-weight:700; color:#d97706;">3</span> сек...
+            {% else %}Gözleýän sahypaňyz tapylmady ýa-da salgysy ýalňyş girizildi. <span id="countdown" style="font-weight:700; color:#d97706;">3</span> sekuntdan baş sahypa ugrukdyrylarsyňyz...{% endif %}
+        </p>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <a href="/{% if current_lang != 'tm' %}?lang={{ current_lang }}{% endif %}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; background: var(--primary-color, #0a5c36); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; transition: transform 0.2s ease;">
+                <i class="fa-solid fa-house"></i>
+                {% if current_lang == 'eng' %}Go to Homepage
+                {% elif current_lang == 'rus' %}На главную страницу
+                {% else %}Baş sahypa dolanmak{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var count = 3;
+    var el = document.getElementById('countdown');
+    var timer = setInterval(function() {
+        count--;
+        if (el) el.textContent = count;
+        if (count <= 0) {
+            clearInterval(timer);
+            window.location.href = '/{% if current_lang != 'tm' %}?lang={{ current_lang }}{% endif %}';
+        }
+    }, 1000);
+})();
+</script>
+{% endblock %}

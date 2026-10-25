@@ -481,18 +481,55 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main>
+    <!-- Global Floating Alerts / URL error notification -->
+    <div class="site-floating-alert-container" id="siteFloatingAlerts">
         {% if messages %}
-        <div class="container messages-container">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
+            <div class="site-floating-alert" style="{% if 'error' in message.tags or 'danger' in message.tags %}border-left-color:#ef4444;{% elif 'success' in message.tags %}border-left-color:#10b981;{% else %}border-left-color:#d97706;{% endif %}">
+                <div class="site-alert-icon" style="{% if 'error' in message.tags or 'danger' in message.tags %}color:#ef4444;{% elif 'success' in message.tags %}color:#10b981;{% else %}color:#d97706;{% endif %}">
+                    {% if 'success' in message.tags %}
+                        <i class="fa-solid fa-circle-check"></i>
+                    {% elif 'error' in message.tags or 'danger' in message.tags %}
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    {% else %}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    {% endif %}
+                </div>
+                <div class="site-alert-body">
+                    <strong>
+                        {% if current_lang == 'eng' %}Notice
+                        {% elif current_lang == 'rus' %}Внимание
+                        {% else %}Duýduryş{% endif %}
+                    </strong>
+                    <p>{{ message }}</p>
+                </div>
+                <button type="button" class="site-alert-close" onclick="this.closest('.site-floating-alert').remove();" aria-label="Close">&times;</button>
             </div>
             {% endfor %}
-        </div>
+        {% elif request.GET.invalid_url %}
+            <div class="site-floating-alert">
+                <div class="site-alert-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="site-alert-body">
+                    <strong>
+                        {% if current_lang == 'eng' %}Invalid Page Address!
+                        {% elif current_lang == 'rus' %}Неверный адрес страницы!
+                        {% else %}Ýalňyş sahypa salgysy!{% endif %}
+                    </strong>
+                    <p>
+                        {% if current_lang == 'eng' %}The page you are looking for does not exist. You have been redirected to the home page.
+                        {% elif current_lang == 'rus' %}Запрашиваемая страница не существует. Вы перенаправлены на главную страницу.
+                        {% else %}Gözleýän sahypaňyz tapylmady. Baş sahypa gönükdirildiňiz.{% endif %}
+                    </p>
+                </div>
+                <button type="button" class="site-alert-close" onclick="this.closest('.site-floating-alert').remove();" aria-label="Close">&times;</button>
+            </div>
         {% endif %}
-        
+    </div>
+
+    <!-- Main Content -->
+    <main>
         {% block content %}{% endblock %}
     </main>
 
@@ -731,6 +768,25 @@
                         a.setAttribute('href', parts[0] + sep + 'lang=' + encodeURIComponent(activeLang) + (parts[1] ? '#' + parts[1] : ''));
                     }
                 });
+        // Auto-dismiss floating alerts after 6 seconds and cleanly remove ?invalid_url=1 from history
+        document.addEventListener('DOMContentLoaded', function() {
+            var alerts = document.querySelectorAll('.site-floating-alert');
+            if (alerts.length > 0) {
+                setTimeout(function() {
+                    alerts.forEach(function(el) {
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateY(-15px)';
+                        setTimeout(function() { el.remove(); }, 350);
+                    });
+                }, 6000);
+            }
+            if (window.location.search.indexOf('invalid_url=') !== -1) {
+                var cleanSearch = window.location.search
+                    .replace(/([?&])invalid_url=[^&]*(&|$)/, '$1')
+                    .replace(/&$/, '')
+                    .replace(/\?$/, '');
+                var cleanUrl = window.location.pathname + cleanSearch + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
             }
         });
     })();

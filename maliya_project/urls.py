@@ -40,7 +40,7 @@ def serve_robots_txt(request):
 def serve_google_verify(request):
     return HttpResponse("google-site-verification: google7a5ea8fcd6d11ea9.html\n", content_type='text/html')
 
-from website.views import serve_pdf_engine_lib, serve_pdf_engine_worker
+from website.views import serve_pdf_engine_lib, serve_pdf_engine_worker, catch_all_not_found, custom_404_view, custom_500_view
 
 urlpatterns = [
     path('favicon.ico', serve_favicon, name='favicon'),
@@ -52,8 +52,11 @@ urlpatterns = [
     path('pdfengine/lib.js', serve_pdf_engine_lib, name='serve_pdf_lib'),
     path('pdfengine/worker.js', serve_pdf_engine_worker, name='serve_pdf_worker'),
     re_path(r'^media/(?P<path>.*)$', serve_media_files),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': str(settings.STATICFILES_DIRS[0])}),
     path('', include('website.urls')),
+    re_path(r'^.*$', catch_all_not_found, name='catch_all_not_found'),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+handler404 = 'website.views.custom_404_view'
+handler500 = 'website.views.custom_500_view'
+

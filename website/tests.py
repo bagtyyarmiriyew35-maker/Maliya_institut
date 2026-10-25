@@ -308,5 +308,26 @@ class MultilingualContentTestCase(TestCase):
         self.assertEqual(render_multilingual_image(d_item, 'rus'), 'recent/ru.jpg')
 
 
+class InvalidUrlRedirectTestCase(TestCase):
+    def test_invalid_path_redirects_to_home_with_warning(self):
+        """Typing an unknown URL like /dsd must redirect to home with invalid_url parameter."""
+        response = self.client.get('/dsd', follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/?invalid_url=1', response.url)
+
+    def test_invalid_path_with_lang_preserves_language(self):
+        """Typing an unknown URL with lang=ru must redirect preserving the language."""
+        response = self.client.get('/random-page/?lang=ru', follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('lang=rus', response.url)
+        self.assertIn('invalid_url=1', response.url)
+
+    def test_missing_static_or_media_asset_returns_404_no_redirect(self):
+        """Missing static asset or media file must return 404 and not redirect."""
+        response = self.client.get('/static/css/nonexistent_file_xyz.css', follow=False)
+        self.assertEqual(response.status_code, 404)
+
+
+
 
 

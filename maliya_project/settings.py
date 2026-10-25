@@ -31,7 +31,7 @@ except ImportError:
 SECRET_KEY = 'django-insecure-ayh^v^11v5#+11knf3g8t+$=e5!8ga^wn#se&oz9h@5iw3q5s-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', os.environ.get('DEBUG', 'False')).lower() in ('true', '1')
 
 ALLOWED_HOSTS = ['*', '216.250.9.135', '216.250.10.252', '20.20.21.143', 'tdmai.edu.tm', 'www.tdmai.edu.tm']
 

@@ -44,7 +44,14 @@
                 <div class="section-divider left mb-3"></div>
                 
                 <div class="head-avatar-wrapper">
-                    <div class="head-img-placeholder"><i class="fa-solid fa-user-gear"></i></div>
+                    {% render_multilingual_image department current_lang as dept_img %}
+                    {% if dept_img %}
+                    <img src="{{ dept_img.url }}" alt="Head" class="head-img">
+                    {% elif department.image %}
+                    <img src="{{ department.image.url }}" alt="Head" class="head-img">
+                    {% else %}
+                    <div class="head-img-placeholder"><i class="fa-solid fa-user-tie"></i></div>
+                    {% endif %}
                 </div>
                 
                 <h4 class="head-name">{% render_lang department 'head_name' current_lang %}</h4>

@@ -25,12 +25,19 @@
   <div class="panel-table-wrap">
     <table class="panel-table">
       <thead>
-        <tr><th>#</th><th>Ady</th><th>Fakülteti</th><th>Müdiri</th><th>Hereketler</th></tr>
+        <tr><th>#</th><th>Surat</th><th>Ady</th><th>Fakülteti</th><th>Müdiri</th><th>Hereketler</th></tr>
       </thead>
       <tbody>
         {% for dept in departments %}
         <tr>
           <td>{{ forloop.counter }}</td>
+          <td>
+            {% if dept.image %}
+            <img src="{{ dept.image.url }}" class="panel-table-thumb" alt="">
+            {% else %}
+            <div class="panel-table-thumb-placeholder"><i class="fa-solid fa-sitemap"></i></div>
+            {% endif %}
+          </td>
           <td><strong>{{ dept.name_tm }}</strong>{% if dept.name_en %}<br><span class="text-muted">{{ dept.name_en }}</span>{% endif %}</td>
           <td><span class="badge-panel badge-success">{{ dept.faculty.name_tm }}</span></td>
           <td><span class="text-muted">{{ dept.head_name_tm|default:"—" }}</span></td>

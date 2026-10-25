@@ -421,6 +421,18 @@ class Department(models.Model):
     head_name_en = models.CharField(max_length=255, blank=True, verbose_name="Head Name (English)")
     head_name_ru = models.CharField(max_length=255, blank=True, verbose_name="Head Name (Russian)")
 
+    image = models.ImageField(upload_to='departments/', blank=True, null=True, verbose_name="Surat (TM / Esasy)")
+    image_en = models.ImageField(upload_to='departments/', blank=True, null=True, verbose_name="Surat (EN)")
+    image_ru = models.ImageField(upload_to='departments/', blank=True, null=True, verbose_name="Surat (RU)")
+
+    def get_image(self, lang='tm'):
+        l = str(lang or 'tm').lower()
+        if ('eng' in l or l == 'en') and self.image_en:
+            return self.image_en
+        if ('rus' in l or l == 'ru') and self.image_ru:
+            return self.image_ru
+        return self.image
+
     class Meta:
         verbose_name = "Department"
         verbose_name_plural = "Departments"

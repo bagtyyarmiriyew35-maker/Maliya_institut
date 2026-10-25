@@ -962,6 +962,12 @@ def panel_department_add(request):
             head_name_en=request.POST.get('head_name_en', ''),
             head_name_ru=request.POST.get('head_name_ru', ''),
         )
+        if 'image' in request.FILES:
+            dept.image = request.FILES['image']
+        if 'image_en' in request.FILES:
+            dept.image_en = request.FILES['image_en']
+        if 'image_ru' in request.FILES:
+            dept.image_ru = request.FILES['image_ru']
         dept.save()
         messages.success(request, 'Kafedra üstünlikli goşuldy!')
         return redirect('panel_departments')
@@ -985,6 +991,22 @@ def panel_department_edit(request, pk):
         faculty_id = request.POST.get('faculty')
         if faculty_id:
             dept.faculty = get_object_or_404(Faculty, pk=faculty_id)
+
+        if 'image' in request.FILES:
+            dept.image = request.FILES['image']
+        elif request.POST.get('clear_image') == '1':
+            dept.image = None
+
+        if 'image_en' in request.FILES:
+            dept.image_en = request.FILES['image_en']
+        elif request.POST.get('clear_image_en') == '1':
+            dept.image_en = None
+
+        if 'image_ru' in request.FILES:
+            dept.image_ru = request.FILES['image_ru']
+        elif request.POST.get('clear_image_ru') == '1':
+            dept.image_ru = None
+
         dept.save()
         messages.success(request, 'Kafedra üstünlikli üýtgedildi!')
         return redirect('panel_departments')

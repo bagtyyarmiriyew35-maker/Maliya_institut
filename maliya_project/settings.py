@@ -193,3 +193,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Frame options for PDF iframe embedding
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Upload Limits (allows large PDF uploads, high-res photos, and base64 rich-text content)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

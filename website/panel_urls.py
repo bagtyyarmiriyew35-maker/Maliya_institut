@@ -98,5 +98,10 @@ urlpatterns = [
     path('library/books/add/', panel_views.panel_library_book_add, name='panel_library_book_add'),
     path('library/books/<int:pk>/edit/', panel_views.panel_library_book_edit, name='panel_library_book_edit'),
     path('library/books/<int:pk>/delete/', panel_views.panel_library_book_delete, name='panel_library_book_delete'),
+
+    # Backup & Export (Ätiýaçlyk & Arhiw)
+    path('backup/', panel_views.panel_backup, name='panel_backup'),
+    path('backup/download/<str:backup_type>/', panel_views.panel_backup_download, name='panel_backup_download'),
 ]
+
 

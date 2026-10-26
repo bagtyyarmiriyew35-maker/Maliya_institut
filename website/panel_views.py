@@ -10,11 +10,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils.text import slugify
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
+from django.conf import settings
+from django.core.management import call_command
 from datetime import datetime
 import os
+import io
+import json
+import zipfile
+import tempfile
 
 from .templatetags.website_tags import (
     file_category, file_icon, file_color, file_bg_color, file_category_label
@@ -2033,6 +2039,208 @@ def panel_allowed_ip_delete(request, pk):
         log_admin_action(request, 'DELETE', 'Howpsuzlyk', object_repr=addr, details=f"IP sanawdan öçürildi: {addr}")
         messages.success(request, f'IP salgysy ("{addr}") üstünlikli pozuldy.')
     return redirect('panel_allowed_ips')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ätiýaçlyk Göçürme & Arhiw (Backup & Export)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class DeletingFileResponse(FileResponse):
+    """FileResponse that safely deletes its backing temporary file upon completion."""
+    def __init__(self, temp_path, *args, **kwargs):
+        self.temp_path = temp_path
+        super().__init__(open(temp_path, 'rb'), *args, **kwargs)
+
+    def close(self):
+        super().close()
+        if os.path.exists(self.temp_path):
+            try:
+                os.remove(self.temp_path)
+            except OSError:
+                pass
+
+
+@panel_login_required
+def panel_backup(request):
+    """
+    Renders the Backup & Export dashboard with live statistics:
+    record counts, media folder size, and one-click download buttons.
+    """
+    counts = {
+        'Sahypalar (Pages)': Page.objects.count(),
+        'Täzelikler (News)': News.objects.count(),
+        'Bilim.tm Habarlar': BilimNews.objects.count(),
+        'Resminamalar (Documents)': Document.objects.count(),
+        'Elektron Žurnallar / Kitaplar': LibraryBook.objects.count(),
+        'Žurnal Kategoriýalary': LibraryCategory.objects.count(),
+        'Fakultetler': Faculty.objects.count(),
+        'Kafedralar': Department.objects.count(),
+        'Olimpiadalar': Olympiad.objects.count(),
+        'Hyzmatdaşlar': Partner.objects.count(),
+        'Slaýderler': SliderImage.objects.count(),
+        'Gelen Hatlar': ContactMessage.objects.count(),
+        'IP Rugsatlary': AllowedIP.objects.count(),
+    }
+    total_records = sum(counts.values())
+
+    media_root = str(settings.MEDIA_ROOT)
+    media_file_count = 0
+    media_total_bytes = 0
+    if os.path.exists(media_root):
+        for root, dirs, files in os.walk(media_root):
+            for f in files:
+                full_p = os.path.join(root, f)
+                try:
+                    media_total_bytes += os.path.getsize(full_p)
+                    media_file_count += 1
+                except OSError:
+                    pass
+
+    media_size_mb = round(media_total_bytes / (1024 * 1024), 2)
+    db_engine = settings.DATABASES['default'].get('ENGINE', '').split('.')[-1].upper()
+
+    context = {
+        'counts': counts,
+        'total_records': total_records,
+        'media_file_count': media_file_count,
+        'media_size_mb': media_size_mb,
+        'db_engine': db_engine,
+        'now': timezone.now(),
+    }
+    return render(request, 'panel/backup.html', context)
+
+
+@panel_login_required
+def panel_backup_download(request, backup_type):
+    """
+    Generates and downloads:
+    - 'full': ZIP file containing database_backup.json + entire media/ folder + manifest & instructions
+    - 'json': JSON dumpdata file of the entire website app
+    - 'media': ZIP file of only the media/ folder
+    """
+    now_str = timezone.now().strftime('%Y-%m-%d_%H%M%S')
+    backup_type = (backup_type or '').lower().strip()
+
+    if backup_type not in ['full', 'json', 'media']:
+        messages.error(request, 'Nädogry ätiýaçlyk görnüşi saýlandy!')
+        return redirect('panel_backup')
+
+    # 1. JSON Maglumatlar binýady
+    if backup_type == 'json':
+        buf = io.StringIO()
+        call_command(
+            'dumpdata', 'website',
+            stdout=buf,
+            indent=2,
+            use_natural_foreign_keys=True,
+            use_natural_primary_keys=True
+        )
+        json_bytes = buf.getvalue().encode('utf-8')
+        filename = f"tdmai_maglumatlar_{now_str}.json"
+
+        log_admin_action(
+            request, 'EXPORT', 'Ätiýaçlyk',
+            details=f"Maglumatlar binýady (JSON) göçürip alyndy ({len(json_bytes) / 1024:.1f} KB)"
+        )
+        response = HttpResponse(json_bytes, content_type='application/json; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Length'] = len(json_bytes)
+        return response
+
+    # 2. Doly Ätiýaçlyk (ZIP) ýa-da Diňe Media (ZIP)
+    media_root = str(settings.MEDIA_ROOT)
+    temp_zip = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
+    temp_zip.close()
+
+    try:
+        with zipfile.ZipFile(temp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zf:
+            if backup_type == 'full':
+                # Database dump JSON
+                buf = io.StringIO()
+                call_command(
+                    'dumpdata', 'website',
+                    stdout=buf,
+                    indent=2,
+                    use_natural_foreign_keys=True,
+                    use_natural_primary_keys=True
+                )
+                zf.writestr('database_backup.json', buf.getvalue().encode('utf-8'))
+
+                # Restore Instructions
+                readme_text = f"""================================================================================
+TÜRKMEN DÖWLET MALIÝE INSTITUTY — RESMI SAÝT ÄTIÝAÇLYK NUSGASY (BACKUP)
+Döredilen senesi: {now_str}
+================================================================================
+
+ARHIWIŇ DÜZÜMI:
+1. database_backup.json:
+   Saytyň ähli tekst maglumatlary: Sahypalar, Täzelikler, Bilim habarlary,
+   Fakultetler, Kafedralar, Resminamalar, Žurnallar, IP rugsatlary we sazlamalar.
+
+2. media/:
+   Saýta ýüklenen ähli suratlar, PDF resminamalar, elektron žurnallar we logotipler.
+
+================================================================================
+DIKELTMEK (RESTORE / IMPORT) BOÝUNÇA GOLLANMA:
+================================================================================
+
+1. Media faýllary dikeltmek:
+   Arhiwdäki 'media/' bukjanyň içindäkileri serwerdäki
+   /var/www/tdmai_maliya/media/ bukjasyna göçüriň.
+
+2. Maglumatlar binýadyny (JSON) dikeltmek:
+   Serwer terminalynda (venv işjeň wagty) şu buýrugy işlediň:
+   python manage.py loaddata database_backup.json
+
+3. Serweri gaýtadan işletmek:
+   sudo systemctl restart maliya
+   python manage.py collectstatic --noinput
+
+================================================================================
+"""
+                zf.writestr('README_DIKELTMEK.txt', readme_text.encode('utf-8'))
+
+                manifest = {
+                    'project': 'Türkmen Döwlet Maliýe Instituty (tdmai.edu.tm)',
+                    'export_date': now_str,
+                    'backup_type': 'full',
+                    'models_exported': [
+                        'Page', 'News', 'BilimNews', 'Faculty', 'Department',
+                        'Document', 'LibraryBook', 'LibraryCategory', 'Olympiad',
+                        'Partner', 'SliderImage', 'ContactMessage', 'AllowedIP', 'SiteSettings'
+                    ],
+                }
+                zf.writestr('manifest.json', json.dumps(manifest, ensure_ascii=False, indent=2).encode('utf-8'))
+
+            # Media files
+            if os.path.exists(media_root):
+                for root, dirs, files in os.walk(media_root):
+                    for f in files:
+                        full_p = os.path.join(root, f)
+                        rel_p = os.path.relpath(full_p, media_root)
+                        zip_entry = os.path.join('media', rel_p).replace('\\', '/')
+                        try:
+                            zf.write(full_p, zip_entry)
+                        except (OSError, FileNotFoundError):
+                            pass
+
+        filename = f"tdmai_{'doly_atiyaclyk' if backup_type == 'full' else 'media'}_{now_str}.zip"
+        log_admin_action(
+            request, 'EXPORT', 'Ätiýaçlyk',
+            details=f"{'Doly ätiýaçlyk (JSON + Media)' if backup_type == 'full' else 'Diňe media'} arhiwi ýüklendi: {filename}"
+        )
+
+        return DeletingFileResponse(temp_zip.name, as_attachment=True, filename=filename, content_type='application/zip')
+
+    except Exception as e:
+        if os.path.exists(temp_zip.name):
+            try:
+                os.remove(temp_zip.name)
+            except OSError:
+                pass
+        messages.error(request, f"Ätiýaçlyk arhiwi döredilende näsazlyk ýüze çykdy: {str(e)}")
+        return redirect('panel_backup')
+
 
 
 

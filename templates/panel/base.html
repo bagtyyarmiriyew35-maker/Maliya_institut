@@ -69,6 +69,9 @@
         {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}
       </a>
       <a href="{% url 'panel_settings' %}"><i class="fa-solid fa-gear"></i> Sazlamalar</a>
+      <a href="{% url 'panel_backup' %}" class="{% if request.resolver_match.url_name == 'panel_backup' %}active{% endif %}">
+        <i class="fa-solid fa-cloud-arrow-down"></i> Ätiýaçlyk & Arhiw
+      </a>
 
       <div class="sidebar-section-title">Baglantylar</div>
       <a href="/" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Sahypany gör</a>

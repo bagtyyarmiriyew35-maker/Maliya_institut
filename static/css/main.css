@@ -298,8 +298,12 @@ ul {
 }
 
 @media (max-width: 480px) {
+    .logo-title {
+        font-size: 0.65rem;
+    }
     .logo-subtitle {
-        display: none;
+        display: block;
+        font-size: 0.58rem;
     }
 }
 

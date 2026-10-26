@@ -304,19 +304,31 @@
             .logo-text {
                 min-width: 0 !important;
                 overflow: hidden !important;
-            }
-            .logo-subtitle {
-                display: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
             }
             .logo-title {
-                font-size: clamp(0.60rem, 2.7vw, 0.74rem) !important;
+                display: block !important;
+                font-size: clamp(0.56rem, 2.4vw, 0.70rem) !important;
+                font-weight: 800 !important;
                 line-height: 1.15 !important;
-                white-space: normal !important;
-                display: -webkit-box !important;
-                -webkit-line-clamp: 2 !important;
-                -webkit-box-orient: vertical !important;
+                letter-spacing: -0.2px !important;
+                color: var(--primary-dark, #0a5c36) !important;
+                white-space: nowrap !important;
                 overflow: hidden !important;
-                word-break: break-word !important;
+                text-overflow: ellipsis !important;
+            }
+            .logo-subtitle {
+                display: block !important;
+                font-size: clamp(0.50rem, 2.1vw, 0.62rem) !important;
+                font-weight: 700 !important;
+                line-height: 1.15 !important;
+                letter-spacing: -0.2px !important;
+                color: var(--primary, #059669) !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
             }
             .header-lang-selector {
                 margin-left: auto !important;
@@ -343,17 +355,26 @@
 
         @media (max-width: 380px) {
             .header-container {
-                padding: 0 6px !important;
+                padding: 0 5px !important;
             }
             .logo {
-                max-width: calc(100% - 130px) !important;
+                max-width: calc(100% - 120px) !important;
+                gap: 4px !important;
+            }
+            .logo-img {
+                height: 30px !important;
+                width: 30px !important;
             }
             .logo-title {
-                font-size: 0.60rem !important;
+                font-size: 0.52rem !important;
+            }
+            .logo-subtitle {
+                display: block !important;
+                font-size: 0.46rem !important;
             }
             .header-lang-selector .lang-btn {
                 padding: 2px 3px !important;
-                font-size: 0.60rem !important;
+                font-size: 0.58rem !important;
             }
         }
     </style>

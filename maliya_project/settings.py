@@ -60,7 +60,8 @@ if extra_csrf:
 ADMIN_ALWAYS_ALLOWED_IPS = [
     '127.0.0.1',
     '::1',
-    '20.20.21.143',    # Siziň häzirki kompýuteriňiz / Administrator IP
+    '95.85.108.94',    # Siziň hakyky daşky IP salgyňyz (Public IP)
+    '20.20.21.143',    # Siziň içerki tor IP salgyňyz (LAN IP)
     '216.250.9.135',   # Institut Serweri / Public IP 1
     '216.250.10.252',  # Institut Serweri / Public IP 2
 ]

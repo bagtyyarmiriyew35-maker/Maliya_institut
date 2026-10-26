@@ -1855,7 +1855,8 @@ def panel_allowed_ips(request):
 
     # Ensure hardcoded safe admin IPs exist in database
     default_ips = [
-        ('20.20.21.143', 'Esasy Administrator (Siziň Kompýuteriňiz)'),
+        ('95.85.108.94', 'Esasy Administrator (Hakyky Daşky IP)'),
+        ('20.20.21.143', 'Esasy Administrator (Içerki Tor IP)'),
         ('127.0.0.1', 'Lokal Serwer (Localhost)'),
         ('216.250.9.135', 'Institut Serweri (Public IP 1)'),
         ('216.250.10.252', 'Institut Serweri (Public IP 2)'),

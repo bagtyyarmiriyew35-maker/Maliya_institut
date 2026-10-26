@@ -58,6 +58,9 @@
       <a href="{% url 'panel_pages_by_section' 'sorag_jogap' %}"><i class="fa-solid fa-circle-question"></i> Sorag-jogap</a>
 
       <div class="sidebar-section-title">Dolandyryş</div>
+      <a href="{% url 'panel_allowed_ips' %}">
+        <i class="fa-solid fa-shield-halved"></i> IP Rugsatlary
+      </a>
       <a href="{% url 'panel_logs' %}">
         <i class="fa-solid fa-clock-rotate-left"></i> Giriş & Hereket loglary
       </a>
@@ -762,44 +765,46 @@
   });
 
   // TinyMCE setup with Resminama Goş button
-  tinymce.init({
-    license_key: 'gpl',
-    selector: '.wysiwyg-editor',
-    height: 380,
-    menubar: 'file edit view insert format tools table',
-    plugins: [
-      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
-      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-      'insertdatetime', 'media', 'table', 'help', 'wordcount'
-    ],
-    toolbar: 'undo redo | blocks | ' +
-      'bold italic forecolor backcolor | alignleft aligncenter ' +
-      'alignright alignjustify | bullist numlist outdent indent | ' +
-      'removeformat | table link image resminama_btn | code fullscreen',
-    skin: 'oxide-dark',
-    content_css: 'dark',
-    branding: false,
-    promotion: false,
-    setup: function (editor) {
-      editor.ui.registry.addButton('resminama_btn', {
-        text: '📁 Resminama Goş',
-        icon: 'browse',
-        tooltip: 'Resminamalardan faýl saýlaň we mazmuna goşuň',
-        onAction: function () {
-          window.openDocPicker(editor.id);
-        }
-      });
-      editor.ui.registry.addMenuItem('resminama_menu', {
-        text: '📁 Resminamalardan faýl goş...',
-        icon: 'browse',
-        onAction: function () {
-          window.openDocPicker(editor.id);
-        }
-      });
-      editor.on('change', function () { editor.save(); });
-      editor.on('keyup', function () { editor.save(); });
-    }
-  });
+  if (typeof tinymce !== 'undefined') {
+    tinymce.init({
+      license_key: 'gpl',
+      selector: '.wysiwyg-editor',
+      height: 380,
+      menubar: 'file edit view insert format tools table',
+      plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+      ],
+      toolbar: 'undo redo | blocks | ' +
+        'bold italic forecolor backcolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | table link image resminama_btn | code fullscreen',
+      skin: 'oxide-dark',
+      content_css: 'dark',
+      branding: false,
+      promotion: false,
+      setup: function (editor) {
+        editor.ui.registry.addButton('resminama_btn', {
+          text: '📁 Resminama Goş',
+          icon: 'browse',
+          tooltip: 'Resminamalardan faýl saýlaň we mazmuna goşuň',
+          onAction: function () {
+            window.openDocPicker(editor.id);
+          }
+        });
+        editor.ui.registry.addMenuItem('resminama_menu', {
+          text: '📁 Resminamalardan faýl goş...',
+          icon: 'browse',
+          onAction: function () {
+            window.openDocPicker(editor.id);
+          }
+        });
+        editor.on('change', function () { editor.save(); });
+        editor.on('keyup', function () { editor.save(); });
+      }
+    });
+  }
 
   document.addEventListener('submit', function () {
     if (typeof tinymce !== 'undefined') {

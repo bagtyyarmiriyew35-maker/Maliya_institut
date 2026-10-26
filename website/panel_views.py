@@ -23,10 +23,13 @@ from .templatetags.website_tags import (
 from .models import (
     Page, SliderImage, News, Faculty, Department,
     Olympiad, Partner, Document, ContactMessage, SiteSettings,
-    LibraryCategory, LibraryBook, BilimNews, VisitorLog, AdminAuditLog
+    LibraryCategory, LibraryBook, BilimNews, VisitorLog, AdminAuditLog,
+    AllowedIP
 )
 from .bilim_scraper import sync_bilim_news
-from .audit import log_admin_action
+from .audit import log_admin_action, get_client_ip
+import ipaddress
+
 
 
 
@@ -1507,6 +1510,15 @@ def panel_settings(request):
         site_settings.news_subtitle_en = request.POST.get('news_subtitle_en', site_settings.news_subtitle_en).strip()
         site_settings.news_subtitle_ru = request.POST.get('news_subtitle_ru', site_settings.news_subtitle_ru).strip()
 
+        # IP Restriction
+        new_ip_restriction = request.POST.get('ip_restriction_enabled') == '1'
+        if new_ip_restriction and not site_settings.ip_restriction_enabled:
+            current_ip = get_client_ip(request)
+            if not AllowedIP.objects.filter(is_active=True).exists():
+                AllowedIP.objects.create(ip_address=current_ip, label="Administrator (Awtomatiki goşuldy)", is_active=True)
+                messages.info(request, f'Ulgamdan çykyp galmazlygyňyz üçin häzirki IP salgyňyz ("{current_ip}") awtomatiki goşuldy.')
+        site_settings.ip_restriction_enabled = new_ip_restriction
+
         site_settings.save()
         messages.success(request, 'Sazlamalar üstünlikli ýatda saklanyldy!')
         return redirect('panel_settings')
@@ -1817,5 +1829,209 @@ def panel_logs_clear(request):
             messages.success(request, 'Admin hereket loglary üstünlikli arassalandy.')
             return redirect(f"{reverse('panel_logs')}?tab=audit")
     return redirect('panel_logs')
+
+
+# ─────────────────────────────────────────────
+# SECURITY & IP RESTRICTION (IP RUGSATLARY)
+# ─────────────────────────────────────────────
+
+def validate_ip_or_cidr(ip_str):
+    """Returns True if string is a valid IPv4/IPv6 or CIDR notation."""
+    ip_str = (ip_str or '').strip()
+    try:
+        if '/' in ip_str:
+            ipaddress.ip_network(ip_str, strict=False)
+        else:
+            ipaddress.ip_address(ip_str)
+        return True
+    except ValueError:
+        return False
+
+
+@panel_login_required
+def panel_allowed_ips(request):
+    site_settings = SiteSettings.get_settings()
+    current_ip = get_client_ip(request)
+
+    # Ensure hardcoded safe admin IPs exist in database
+    default_ips = [
+        ('20.20.21.143', 'Esasy Administrator (Siziň Kompýuteriňiz)'),
+        ('127.0.0.1', 'Lokal Serwer (Localhost)'),
+        ('216.250.9.135', 'Institut Serweri (Public IP 1)'),
+        ('216.250.10.252', 'Institut Serweri (Public IP 2)'),
+    ]
+    for def_ip, def_lbl in default_ips:
+        if not AllowedIP.objects.filter(ip_address=def_ip).exists():
+            AllowedIP.objects.create(ip_address=def_ip, label=def_lbl, is_active=True)
+
+    if request.method == 'POST' and request.POST.get('action') == 'delete_selected':
+        selected_ids = request.POST.getlist('selected_items')
+        if selected_ids:
+            count = AllowedIP.objects.filter(id__in=selected_ids).delete()[0]
+            log_admin_action(request, 'DELETE', 'Howpsuzlyk', details=f"{count} sany IP sanawdan öçürildi")
+            messages.success(request, f"{count} sany IP üstünlikli pozuldy.")
+        return redirect('panel_allowed_ips')
+
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    ips_qs = AllowedIP.objects.all().order_by('-created_at')
+    if q:
+        ips_qs = ips_qs.filter(Q(ip_address__icontains=q) | Q(label__icontains=q))
+    if status_filter == 'active':
+        ips_qs = ips_qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        ips_qs = ips_qs.filter(is_active=False)
+
+    total_count = AllowedIP.objects.count()
+    active_count = AllowedIP.objects.filter(is_active=True).count()
+
+    from .middleware import AdminIPRestrictionMiddleware
+    current_ip_whitelisted = AdminIPRestrictionMiddleware.is_ip_allowed(current_ip)
+
+    return render(request, 'panel/allowed_ips.html', {
+        'allowed_ips': ips_qs,
+        'site_settings': site_settings,
+        'current_ip': current_ip,
+        'current_ip_whitelisted': current_ip_whitelisted,
+        'total_count': total_count,
+        'active_count': active_count,
+        'q': q,
+        'status_filter': status_filter,
+    })
+
+
+@panel_login_required
+def panel_allowed_ip_add(request):
+    if request.method == 'POST':
+        raw_ip = request.POST.get('ip_address', '').strip()
+        label = request.POST.get('label', '').strip()
+        is_active = request.POST.get('is_active') == '1'
+
+        if not raw_ip:
+            messages.error(request, 'IP salgysyny girizmek hökmanydyr!')
+            return redirect('panel_allowed_ips')
+
+        if not validate_ip_or_cidr(raw_ip):
+            messages.error(request, f'Nädogry IP salgysy: "{raw_ip}". Dogry IPv4, IPv6 ýa-da CIDR formatyny ulanyň (mysal: 192.168.1.50 ýa-da 192.168.1.0/24).')
+            return redirect('panel_allowed_ips')
+
+        if AllowedIP.objects.filter(ip_address=raw_ip).exists():
+            messages.error(request, f'Bu IP salgysy ("{raw_ip}") eýýäm sanawda bar!')
+            return redirect('panel_allowed_ips')
+
+        AllowedIP.objects.create(
+            ip_address=raw_ip,
+            label=label,
+            is_active=is_active
+        )
+        log_admin_action(request, 'CREATE', 'Howpsuzlyk', object_repr=raw_ip, details=f"Täze IP rugsatlara goşuldy: {raw_ip} ({label or 'Bellik ýok'})")
+        messages.success(request, f'IP salgysy ("{raw_ip}") üstünlikli goşuldy!')
+    return redirect('panel_allowed_ips')
+
+
+@panel_login_required
+def panel_allowed_ip_add_current(request):
+    if request.method == 'POST':
+        current_ip = get_client_ip(request)
+        if AllowedIP.objects.filter(ip_address=current_ip).exists():
+            obj = AllowedIP.objects.get(ip_address=current_ip)
+            if not obj.is_active:
+                obj.is_active = True
+                obj.save()
+                messages.success(request, f'Häzirki IP salgyňyz ("{current_ip}") işjeňleşdirildi!')
+            else:
+                messages.info(request, f'Häzirki IP salgyňyz ("{current_ip}") eýýäm rugsat berlenler sanawynda bar.')
+        else:
+            AllowedIP.objects.create(
+                ip_address=current_ip,
+                label="Häzirki enjamym (Administrator)",
+                is_active=True
+            )
+            log_admin_action(request, 'CREATE', 'Howpsuzlyk', object_repr=current_ip, details="Häzirki IP salgysy rugsatlara goşuldy")
+            messages.success(request, f'Häzirki IP salgyňyz ("{current_ip}") üstünlikli sanawa goşuldy!')
+    return redirect('panel_allowed_ips')
+
+
+@panel_login_required
+def panel_allowed_ips_toggle_global(request):
+    if request.method == 'POST':
+        site_settings = SiteSettings.get_settings()
+        new_state = not site_settings.ip_restriction_enabled
+
+        # Safety check: if enabling, make sure there is at least one active IP, or auto-add current IP
+        if new_state:
+            active_count = AllowedIP.objects.filter(is_active=True).count()
+            if active_count == 0:
+                current_ip = get_client_ip(request)
+                AllowedIP.objects.create(
+                    ip_address=current_ip,
+                    label="Administrator (Awtomatiki goşuldy)",
+                    is_active=True
+                )
+                messages.info(request, f'Ulgamdan çykyp galmazlygyňyz üçin häzirki IP salgyňyz ("{current_ip}") awtomatiki sanawa goşuldy.')
+
+        site_settings.ip_restriction_enabled = new_state
+        site_settings.save()
+
+        status_text = "Işledildi (Diňe rugsat berlen IP-ler girip biler)" if new_state else "Öçürildi (Ähli IP-ler girip biler)"
+        log_admin_action(request, 'UPDATE', 'Howpsuzlyk', details=f"IP çäklendirmesi {status_text}")
+        messages.success(request, f"IP çäklendirmesi üstünlikli {status_text}!")
+    return redirect('panel_allowed_ips')
+
+
+@panel_login_required
+def panel_allowed_ip_toggle(request, pk):
+    ip_obj = get_object_or_404(AllowedIP, pk=pk)
+    if request.method == 'POST':
+        ip_obj.is_active = not ip_obj.is_active
+        ip_obj.save()
+        st = "işjeňleşdirildi" if ip_obj.is_active else "öçürildi"
+        log_admin_action(request, 'UPDATE', 'Howpsuzlyk', object_repr=ip_obj.ip_address, details=f"IP {ip_obj.ip_address} {st}")
+        messages.success(request, f"{ip_obj.ip_address} ýagdaýy {st}.")
+    return redirect('panel_allowed_ips')
+
+
+@panel_login_required
+def panel_allowed_ip_edit(request, pk):
+    ip_obj = get_object_or_404(AllowedIP, pk=pk)
+    if request.method == 'POST':
+        raw_ip = request.POST.get('ip_address', '').strip()
+        label = request.POST.get('label', '').strip()
+        is_active = request.POST.get('is_active') == '1'
+
+        if not raw_ip:
+            messages.error(request, 'IP salgysy hökmanydyr!')
+            return redirect('panel_allowed_ips')
+
+        if not validate_ip_or_cidr(raw_ip):
+            messages.error(request, f'Nädogry IP salgysy: "{raw_ip}".')
+            return redirect('panel_allowed_ips')
+
+        existing = AllowedIP.objects.filter(ip_address=raw_ip).exclude(pk=pk)
+        if existing.exists():
+            messages.error(request, f'Bu IP salgysy ("{raw_ip}") başga bir ýazgyda eýýäm bar!')
+            return redirect('panel_allowed_ips')
+
+        ip_obj.ip_address = raw_ip
+        ip_obj.label = label
+        ip_obj.is_active = is_active
+        ip_obj.save()
+
+        log_admin_action(request, 'UPDATE', 'Howpsuzlyk', object_repr=raw_ip, details=f"IP maglumaty üýtgedildi: {raw_ip}")
+        messages.success(request, f'IP salgysy ("{raw_ip}") üstünlikli üýtgedildi!')
+    return redirect('panel_allowed_ips')
+
+
+@panel_login_required
+def panel_allowed_ip_delete(request, pk):
+    ip_obj = get_object_or_404(AllowedIP, pk=pk)
+    if request.method == 'POST':
+        addr = ip_obj.ip_address
+        ip_obj.delete()
+        log_admin_action(request, 'DELETE', 'Howpsuzlyk', object_repr=addr, details=f"IP sanawdan öçürildi: {addr}")
+        messages.success(request, f'IP salgysy ("{addr}") üstünlikli pozuldy.')
+    return redirect('panel_allowed_ips')
+
 
 

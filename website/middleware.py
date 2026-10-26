@@ -1,5 +1,8 @@
-from .models import VisitorLog
-from .audit import get_client_ip, parse_user_agent
+import ipaddress
+from django.conf import settings
+from django.shortcuts import render
+from .models import VisitorLog, SiteSettings, AllowedIP
+from .audit import get_client_ip, parse_user_agent, log_admin_action
 
 
 class DynamicHtmlNoCacheMiddleware:
@@ -110,3 +113,97 @@ class VisitorTrackingMiddleware:
             )
         except Exception:
             pass
+
+
+class AdminIPRestrictionMiddleware:
+    """
+    Restricts access to administrative endpoints (/panel/ and /admin/)
+    to explicitly allowed IP addresses configured by the administrator.
+    If IP restriction is disabled, all IPs are permitted.
+    If enabled but no active allowed IPs are in the database, allows requests
+    as a safety fallback to prevent accidental admin lockout.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        path = request.path
+
+        # Only intercept administrative paths
+        if path.startswith('/panel/') or path.startswith('/admin/'):
+            try:
+                settings_obj = SiteSettings.get_settings()
+                if settings_obj and getattr(settings_obj, 'ip_restriction_enabled', False):
+                    client_ip = get_client_ip(request)
+                    if not self.is_ip_allowed(client_ip):
+                        # Safely record unauthorized intrusion attempt in audit log
+                        log_admin_action(
+                            request,
+                            'VIEW',
+                            'Howpsuzlyk',
+                            object_repr=client_ip,
+                            details=f"Rugsat berilmedik IP-den admin paneline giriş synanyşygy petiklendi: {client_ip} ({path})"
+                        )
+                        # Return 403 Access Denied template
+                        return render(
+                            request,
+                            'panel/403_ip_blocked.html',
+                            {
+                                'client_ip': client_ip,
+                                'blocked_path': path,
+                            },
+                            status=403
+                        )
+            except Exception:
+                # Never crash the application on middleware inspection errors
+                pass
+
+        return self.get_response(request)
+
+    @staticmethod
+    def is_ip_allowed(client_ip):
+        """
+        Validates client_ip against hardcoded safe IPs (ADMIN_ALWAYS_ALLOWED_IPS in settings.py)
+        and active AllowedIP records in the database.
+        Supports single IPv4/IPv6, CIDR notation (e.g. 192.168.1.0/24), and exact strings.
+        """
+        client_ip = (client_ip or '').strip()
+        if not client_ip:
+            return False
+
+        # 1. Check hardcoded safe IPs directly from settings.py (Guaranteed access in code)
+        hardcoded_safe_ips = list(getattr(settings, 'ADMIN_ALWAYS_ALLOWED_IPS', [
+            '127.0.0.1', '::1', '20.20.21.143', '216.250.9.135', '216.250.10.252'
+        ]))
+        if client_ip in hardcoded_safe_ips:
+            return True
+
+        # 2. Database AllowedIP active records
+        active_ips = list(AllowedIP.objects.filter(is_active=True).values_list('ip_address', flat=True))
+        all_whitelist = hardcoded_safe_ips + active_ips
+
+        # Parse client IP
+        try:
+            client_addr = ipaddress.ip_address(client_ip)
+        except ValueError:
+            return client_ip in all_whitelist
+
+        for raw in all_whitelist:
+            raw = (raw or '').strip()
+            if not raw:
+                continue
+            try:
+                if '/' in raw:
+                    net = ipaddress.ip_network(raw, strict=False)
+                    if client_addr in net:
+                        return True
+                else:
+                    addr = ipaddress.ip_address(raw)
+                    if client_addr == addr:
+                        return True
+            except ValueError:
+                if raw == client_ip:
+                    return True
+
+        return False
+

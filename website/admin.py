@@ -1,9 +1,20 @@
 from django.contrib import admin
-from .models import Page, SliderImage, News, Faculty, Department, Olympiad, Partner, Document, ContactMessage, LibraryCategory, LibraryBook, BilimNews, SiteSettings
+from .models import (
+    Page, SliderImage, News, Faculty, Department, Olympiad, Partner,
+    Document, ContactMessage, LibraryCategory, LibraryBook, BilimNews,
+    SiteSettings, AllowedIP
+)
+
+@admin.register(AllowedIP)
+class AllowedIPAdmin(admin.ModelAdmin):
+    list_display = ('ip_address', 'label', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('ip_address', 'label')
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'phone', 'email')
+    list_display = ('__str__', 'ip_restriction_enabled', 'phone', 'email')
 
 @admin.register(LibraryCategory)
 class LibraryCategoryAdmin(admin.ModelAdmin):

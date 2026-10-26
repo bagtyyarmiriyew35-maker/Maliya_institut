@@ -75,6 +75,15 @@ urlpatterns = [
     # Settings
     path('settings/', panel_views.panel_settings, name='panel_settings'),
 
+    # Security & Allowed IPs (IP Rugsatlary)
+    path('security/ips/', panel_views.panel_allowed_ips, name='panel_allowed_ips'),
+    path('security/ips/add/', panel_views.panel_allowed_ip_add, name='panel_allowed_ip_add'),
+    path('security/ips/add-current/', panel_views.panel_allowed_ip_add_current, name='panel_allowed_ip_add_current'),
+    path('security/ips/toggle-global/', panel_views.panel_allowed_ips_toggle_global, name='panel_allowed_ips_toggle_global'),
+    path('security/ips/<int:pk>/edit/', panel_views.panel_allowed_ip_edit, name='panel_allowed_ip_edit'),
+    path('security/ips/<int:pk>/delete/', panel_views.panel_allowed_ip_delete, name='panel_allowed_ip_delete'),
+    path('security/ips/<int:pk>/toggle/', panel_views.panel_allowed_ip_toggle, name='panel_allowed_ip_toggle'),
+
     # Logs & Activity Audit
     path('logs/', panel_views.panel_logs, name='panel_logs'),
     path('logs/clear/', panel_views.panel_logs_clear, name='panel_logs_clear'),

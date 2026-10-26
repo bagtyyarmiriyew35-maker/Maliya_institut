@@ -56,6 +56,18 @@ extra_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if extra_csrf:
     CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in extra_csrf.split(',') if origin.strip()])
 
+# IP Whitelist for Admin & Panel Access (Koddaky Hemişelik Rugsat Berlen IP-ler)
+ADMIN_ALWAYS_ALLOWED_IPS = [
+    '127.0.0.1',
+    '::1',
+    '20.20.21.143',    # Siziň häzirki kompýuteriňiz / Administrator IP
+    '216.250.9.135',   # Institut Serweri / Public IP 1
+    '216.250.10.252',  # Institut Serweri / Public IP 2
+]
+extra_admin_ips = os.environ.get('ADMIN_ALLOWED_IPS', '')
+if extra_admin_ips:
+    ADMIN_ALWAYS_ALLOWED_IPS.extend([ip.strip() for ip in extra_admin_ips.split(',') if ip.strip()])
+
 
 # Application definition
 
@@ -79,6 +91,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'website.middleware.DynamicHtmlNoCacheMiddleware',
+    'website.middleware.AdminIPRestrictionMiddleware',
     'website.middleware.VisitorTrackingMiddleware',
 ]
 

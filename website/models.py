@@ -652,6 +652,13 @@ class SiteSettings(models.Model):
         verbose_name="News Subtitle (RU)"
     )
 
+    # IP Restriction (Admin Paneline Giriş Çäklendirmesi)
+    ip_restriction_enabled = models.BooleanField(
+        default=False,
+        verbose_name="IP çäklendirmesini işletmek (IP Whitelist)",
+        help_text="Eger işledilse, diňe rugsat berlen IP salgylardan admin paneline girip bolar."
+    )
+
     def get_news_subtitle(self, lang='tm'):
         l = str(lang or 'tm').lower()
         if ('eng' in l or l == 'en') and self.news_subtitle_en:
@@ -799,5 +806,36 @@ class AdminAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.user_name} | {self.get_action_display()} | {self.module}: {self.object_repr} ({self.timestamp.strftime('%Y-%m-%d %H:%M')})"
+
+
+class AllowedIP(models.Model):
+    ip_address = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="IP Salgysy",
+        help_text="Mysal: 192.168.1.50, 216.250.9.135 ýa-da 192.168.1.0/24 (CIDR)"
+    )
+    label = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="Bellik / Enjam",
+        help_text="Mysal: Rektorlyk, Baş buhgalter, Öýdäki noutbuk"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Işjeňmi (Rugsat berlen)",
+        help_text="Bu IP-den admin paneline girmäge rugsat berilýärmi"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Goşulan wagty")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Üýtgedilen wagty")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Rugsat berlen IP"
+        verbose_name_plural = "Rugsat berlen IP-ler (Whitelist)"
+
+    def __str__(self):
+        return f"{self.ip_address} ({self.label or 'Bellik ýok'})"
+
 
 

@@ -1,0 +1,436 @@
+{% extends 'panel/base.html' %}
+{% block title %}IP Rugsatlary & Howpsuzlyk{% endblock %}
+{% block breadcrumb %}Dolandyryş / IP Rugsatlary{% endblock %}
+
+{% block content %}
+<div class="panel-page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+  <div>
+    <h1 style="margin:0; display:flex; align-items:center; gap:10px;">
+      <i class="fa-solid fa-shield-halved" style="color:var(--primary-color, #048848);"></i> IP Rugsatlary & Howpsuzlyk
+    </h1>
+    <p style="font-size:13px; color:var(--panel-text-muted); margin:4px 0 0 0;">
+      Admin paneline girip biljek tassyklanan IP salgylary dolandyryň (IP Whitelist).
+    </p>
+  </div>
+  
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <!-- Global Toggle Button -->
+    <form method="POST" action="{% url 'panel_allowed_ips_toggle_global' %}" style="display:inline-block;" onsubmit="return confirm('IP çäklendirmesiniň ýagdaýyny üýtgetmek isleýärsiňizmi?');">
+      {% csrf_token %}
+      {% if site_settings.ip_restriction_enabled %}
+      <button type="submit" class="btn-panel btn-panel-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #f87171; display:inline-flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-power-off"></i> Çäklendirme: <strong style="color:#dc2626;">IŞJEŇ</strong> (Öçürmek üçin basyň)
+      </button>
+      {% else %}
+      <button type="submit" class="btn-panel btn-panel-sm" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-power-off"></i> Çäklendirme: <strong>ÖÇÜRILEN</strong> (Işletmek üçin basyň)
+      </button>
+      {% endif %}
+    </form>
+
+    <button type="button" id="openAddIpBtn" class="btn-panel btn-panel-primary" onclick="openAddIpModal()">
+      <i class="fa-solid fa-plus"></i> Täze IP goş
+    </button>
+  </div>
+</div>
+
+<!-- Current IP Status Alert Card -->
+<div class="panel-card" style="margin-bottom:22px; padding:18px 22px; border-left:4px solid {% if current_ip_whitelisted %}#048848{% else %}#f59e0b{% endif %}; background:{% if current_ip_whitelisted %}#f0fdf4{% else %}#fffbeb{% endif %}; border-radius:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div style="display:flex; align-items:flex-start; gap:14px;">
+      <div style="font-size:28px; color:{% if current_ip_whitelisted %}#048848{% else %}#d97706{% endif %};">
+        <i class="fa-solid {% if current_ip_whitelisted %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %}"></i>
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:700; color:#1e293b;">
+          Siziň häzirki IP salgyňyz: 
+          <code style="background:#ffffff; padding:2px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px; font-weight:800; color:{% if current_ip_whitelisted %}#048848{% else %}#b45309{% endif %};">{{ current_ip }}</code>
+        </div>
+        <div style="font-size:12.5px; color:#475569; margin-top:4px;">
+          {% if current_ip_whitelisted %}
+            Bu IP salgy rugsat berlenler sanawynda bar. Admin paneline päsgelçiliksiz girip bilersiňiz.
+          {% else %}
+            Bu IP salgy sanawda ýok! IP çäklendirmesini işletmezden ozal häzirki IP-ňizi rugsat berlenlere goşmagyňyz maslahat berilýär.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      {% if not current_ip_whitelisted %}
+      <form method="POST" action="{% url 'panel_allowed_ip_add_current' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-panel btn-panel-sm" style="background:#048848; color:#ffffff; border:none; display:inline-flex; align-items:center; gap:6px;">
+          <i class="fa-solid fa-plus"></i> Häzirki IP salgymy sanawa goş
+        </button>
+      </form>
+      {% else %}
+      <span class="badge-panel badge-success" style="font-size:12px; padding:6px 12px;">
+        <i class="fa-solid fa-check"></i> Sanawda bar
+      </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="panel-stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:16px; margin-bottom:24px;">
+  <!-- Restriction Status -->
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:{% if site_settings.ip_restriction_enabled %}#dcfce7; color:#16a34a;{% else %}#f1f5f9; color:#64748b;{% endif %} display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">IP Goragy Ýagdaýy</div>
+      <div style="font-size:18px; font-weight:700; color:{% if site_settings.ip_restriction_enabled %}#16a34a{% else %}#64748b{% endif %};">
+        {% if site_settings.ip_restriction_enabled %}IŞJEŇ (Goragda){% else %}ÖÇÜRILEN (Erkin){% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Total IPs -->
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-list-check"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Jemi Rugsat Berlen IP</div>
+      <div style="font-size:24px; font-weight:700; color:var(--panel-text-color);">{{ total_count }}</div>
+    </div>
+  </div>
+
+  <!-- Active IPs -->
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#eefdf5; color:#048848; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Işjeň Rugsatlar</div>
+      <div style="font-size:24px; font-weight:700; color:#048848;">{{ active_count }}</div>
+    </div>
+  </div>
+
+  <!-- Your IP -->
+  <div class="stat-card-panel" style="background:var(--panel-surface, #fff); border:1px solid var(--panel-border, #e2e8f0); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px;">
+    <div style="width:48px; height:48px; border-radius:12px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+      <i class="fa-solid fa-laptop-code"></i>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--panel-text-muted); font-weight:600; text-transform:uppercase;">Siziň Enjamyňyz</div>
+      <div style="font-size:15px; font-weight:700; color:#1e293b; font-family:monospace;">{{ current_ip }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Table Card -->
+<div class="panel-card" style="padding:20px;">
+  <!-- Search & Filter Form -->
+  <form method="GET" action="{% url 'panel_allowed_ips' %}" style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center;">
+    <div style="flex:1; min-width:240px; position:relative;">
+      <input type="text" name="q" value="{{ q }}" placeholder="IP salgysy ýa-da düşündiriş boýunça gözleg..." class="form-control-panel" style="padding-left:36px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:13px;"></i>
+    </div>
+
+    <div style="min-width:160px;">
+      <select name="status" class="form-control-panel" onchange="this.form.submit()">
+        <option value="">Ähli ýagdaýlar</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Diňe işjeňler</option>
+        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Diňe öçürilenler</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-panel btn-panel-primary btn-panel-sm">
+      <i class="fa-solid fa-filter"></i> Süzgüç
+    </button>
+    {% if q or status_filter %}
+    <a href="{% url 'panel_allowed_ips' %}" class="btn-panel btn-panel-ghost btn-panel-sm">
+      <i class="fa-solid fa-xmark"></i> Arassala
+    </a>
+    {% endif %}
+  </form>
+
+  <form method="POST" action="{% url 'panel_allowed_ips' %}" id="bulkActionForm">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_selected">
+
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th style="width:36px; text-align:center;">
+              <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+            </th>
+            <th style="width:50px;">#</th>
+            <th>IP Salgysy</th>
+            <th>Bellik / Enjamyň ady</th>
+            <th style="width:140px;">Ýagdaýy</th>
+            <th style="width:160px;">Goşulan senesi</th>
+            <th style="width:140px; text-align:right;">Hereketler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in allowed_ips %}
+          <tr {% if item.ip_address == current_ip %}style="background:rgba(4, 136, 72, 0.04);"{% endif %}>
+            <td style="text-align:center;">
+              <input type="checkbox" name="selected_items" value="{{ item.pk }}" class="item-checkbox">
+            </td>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <code style="font-weight:700; font-size:13.5px; background:var(--panel-surface-2, #f1f5f9); padding:3px 8px; border-radius:6px; border:1px solid #cbd5e1;">{{ item.ip_address }}</code>
+                {% if item.ip_address == current_ip %}
+                <span class="badge-panel badge-success" style="font-size:10px; padding:2px 6px;">
+                  <i class="fa-solid fa-user-check"></i> Siziň IP-ňiz
+                </span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <strong>{{ item.label|default:"—" }}</strong>
+            </td>
+            <td>
+              <form method="POST" action="{% url 'panel_allowed_ip_toggle' item.pk %}" style="display:inline;">
+                {% csrf_token %}
+                {% if item.is_active %}
+                <button type="submit" class="badge-panel badge-success" style="border:none; cursor:pointer; font-size:11px; padding:4px 10px;" title="Öçürmek üçin basyň">
+                  <i class="fa-solid fa-check"></i> Işjeň
+                </button>
+                {% else %}
+                <button type="submit" class="badge-panel badge-danger" style="border:none; cursor:pointer; font-size:11px; padding:4px 10px; background:#fee2e2; color:#b91c1c;" title="Işletmek üçin basyň">
+                  <i class="fa-solid fa-xmark"></i> Öçürilen
+                </button>
+                {% endif %}
+              </form>
+            </td>
+            <td style="font-size:12px; color:var(--panel-text-muted);">
+              {{ item.created_at|date:"Y-m-d H:i" }}
+            </td>
+            <td style="text-align:right;">
+              <div class="panel-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-panel btn-panel-edit btn-panel-sm" onclick="openEditIpModal('{{ item.pk }}', '{{ item.ip_address }}', '{{ item.label|escapejs }}', {{ item.is_active|yesno:'true,false' }})">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button type="button" class="btn-panel btn-panel-delete btn-panel-sm btn-delete-trigger" data-form-id="del-ip-{{ item.pk }}">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center; padding:36px; color:var(--panel-text-muted);">
+              <i class="fa-solid fa-network-wired" style="font-size:32px; color:#cbd5e1; margin-bottom:10px; display:block;"></i>
+              Rugsat berlen IP salgy tapylmady. Täze IP goşmak üçin ýokardaky «Täze IP goş» düwmesine basyň.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bulk Action Button -->
+    {% if allowed_ips %}
+    <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
+      <button type="submit" class="btn-panel btn-panel-ghost btn-panel-sm" style="color:var(--panel-danger, #ef4444); border-color:#fca5a5;" onclick="return confirm('Saýlanan IP salgylary pozmak isleýärsiňizmi?');">
+        <i class="fa-solid fa-trash-can"></i> Saýlananlary poz
+      </button>
+      <span style="font-size:12px; color:#64748b;">Sanawdaky ähli belligi bir gezekde dolandyryp bilersiňiz.</span>
+    </div>
+    {% endif %}
+  </form>
+
+  <!-- Hidden Delete Forms for Each IP -->
+  {% for item in allowed_ips %}
+  <form id="del-ip-{{ item.pk }}" method="POST" action="{% url 'panel_allowed_ip_delete' item.pk %}" style="display:none;">
+    {% csrf_token %}
+  </form>
+  {% endfor %}
+</div>
+
+<!-- ── MODAL: TÄZE IP GOŞMAK ─────────────────────────────────── -->
+<div class="panel-modal-overlay" id="addIpModal" style="display:none; z-index:9999999 !important;">
+  <div class="panel-modal" style="max-width:520px; width:92%; text-align:left; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="margin:0; font-size:18px; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-shield-halved" style="color:#048848;"></i> Täze IP Salgysy Goşmak
+      </h3>
+      <button type="button" onclick="closeAddIpModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#94a3b8; line-height:1;">
+        &times;
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'panel_allowed_ip_add' %}">
+      {% csrf_token %}
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-weight:600; font-size:13px; margin-bottom:0;">IP Salgysy (hökmany) *</label>
+          <button type="button" class="btn-panel btn-panel-sm btn-panel-ghost" style="font-size:11px; padding:2px 8px;" onclick="document.getElementById('addIpInput').value='{{ current_ip }}';">
+            <i class="fa-solid fa-laptop"></i> Häzirki IP-mi goý
+          </button>
+        </div>
+        <input type="text" name="ip_address" id="addIpInput" class="form-control-panel" placeholder="Mysal: 192.168.1.50 ýa-da 216.250.9.135" required autocomplete="off">
+        <small style="color:#64748b; font-size:11.5px; display:block; margin-top:4px;">
+          Birkelle IP (mysal: <code>216.250.9.135</code>) ýa-da tor aralygy (mysal: <code>192.168.1.0/24</code>) girizip bilersiňiz.
+        </small>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label style="font-weight:600; font-size:13px;">Bellik / Enjamyň ady</label>
+        <input type="text" name="label" class="form-control-panel" placeholder="Mysal: Rektoryň kabineti, Baş buhgalter, Öýdäki noutbuk">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" name="is_active" value="1" checked style="width:16px; height:16px; accent-color:#048848;">
+          <span><strong>Işjeň (Girişe rugsat berilsin)</strong></span>
+        </label>
+      </div>
+
+      <div class="panel-modal-actions" style="margin-top:0; justify-content:flex-end;">
+        <button type="button" class="btn-panel btn-panel-ghost" onclick="closeAddIpModal()">
+          Ýatyr
+        </button>
+        <button type="submit" class="btn-panel btn-panel-primary">
+          <i class="fa-solid fa-plus"></i> Sanawa goş
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── MODAL: IP ÜÝTGETMEK ───────────────────────────────────── -->
+<div class="panel-modal-overlay" id="editIpModal" style="display:none; z-index:9999999 !important;">
+  <div class="panel-modal" style="max-width:520px; width:92%; text-align:left; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="margin:0; font-size:18px; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-pen" style="color:#0284c7;"></i> IP Salgysyny Üýtgetmek
+      </h3>
+      <button type="button" onclick="closeEditIpModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#94a3b8; line-height:1;">
+        &times;
+      </button>
+    </div>
+
+    <form method="POST" id="editIpForm" action="">
+      {% csrf_token %}
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label style="font-weight:600; font-size:13px;">IP Salgysy *</label>
+        <input type="text" name="ip_address" id="editIpInput" class="form-control-panel" required autocomplete="off">
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label style="font-weight:600; font-size:13px;">Bellik / Enjamyň ady</label>
+        <input type="text" name="label" id="editLabelInput" class="form-control-panel">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" name="is_active" id="editIsActiveInput" value="1" style="width:16px; height:16px; accent-color:#048848;">
+          <span><strong>Işjeň (Girişe rugsat berilsin)</strong></span>
+        </label>
+      </div>
+
+      <div class="panel-modal-actions" style="margin-top:0; justify-content:flex-end;">
+        <button type="button" class="btn-panel btn-panel-ghost" onclick="closeEditIpModal()">
+          Ýatyr
+        </button>
+        <button type="submit" class="btn-panel btn-panel-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Ýatda sakla
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  window.openAddIpModal = function() {
+    var modal = document.getElementById('addIpModal');
+    if (modal) {
+      modal.classList.add('active');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      var inp = document.getElementById('addIpInput');
+      if (inp) setTimeout(function() { inp.focus(); }, 60);
+    }
+  };
+
+  window.closeAddIpModal = function() {
+    var modal = document.getElementById('addIpModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('opacity', '0', 'important');
+      modal.style.setProperty('visibility', 'hidden', 'important');
+    }
+  };
+
+  window.openEditIpModal = function(id, ip, label, isActive) {
+    var modal = document.getElementById('editIpModal');
+    var form = document.getElementById('editIpForm');
+    if (modal && form) {
+      form.action = '/panel/security/ips/' + id + '/edit/';
+      document.getElementById('editIpInput').value = ip;
+      document.getElementById('editLabelInput').value = label;
+      document.getElementById('editIsActiveInput').checked = isActive;
+      modal.classList.add('active');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      var inp = document.getElementById('editIpInput');
+      if (inp) setTimeout(function() { inp.focus(); }, 60);
+    }
+  };
+
+  window.closeEditIpModal = function() {
+    var modal = document.getElementById('editIpModal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('opacity', '0', 'important');
+      modal.style.setProperty('visibility', 'hidden', 'important');
+    }
+  };
+
+  window.toggleSelectAll = function(master) {
+    document.querySelectorAll('.item-checkbox').forEach(function(cb) {
+      cb.checked = master.checked;
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var addBtn = document.getElementById('openAddIpBtn');
+    if (addBtn) {
+      addBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.openAddIpModal();
+      });
+    }
+
+    var addModal = document.getElementById('addIpModal');
+    var editModal = document.getElementById('editIpModal');
+
+    if (addModal) {
+      addModal.addEventListener('click', function(e) {
+        if (e.target === this) window.closeAddIpModal();
+      });
+    }
+
+    if (editModal) {
+      editModal.addEventListener('click', function(e) {
+        if (e.target === this) window.closeEditIpModal();
+      });
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        window.closeAddIpModal();
+        window.closeEditIpModal();
+      }
+    });
+  });
+</script>
+{% endblock %}
+

@@ -60,7 +60,9 @@ if extra_csrf:
 ADMIN_ALWAYS_ALLOWED_IPS = [
     '127.0.0.1',
     '::1',
-    '95.85.108.94',    # Siziň hakyky daşky IP salgyňyz (Public IP)
+    '95.85.109.26',    # Siziň häzirki täze daşky IP salgyňyz (Screenshot-daky IP)
+    '95.85.108.94',    # Öňki daşky IP salgyňyz
+    '95.85.108.0/22',  # Türkmentelekom / Institut dinamiki IP diapazony (95.85.108.* - 95.85.111.*)
     '20.20.21.143',    # Siziň içerki tor IP salgyňyz (LAN IP)
     '216.250.9.135',   # Institut Serweri / Public IP 1
     '216.250.10.252',  # Institut Serweri / Public IP 2

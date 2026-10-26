@@ -173,7 +173,7 @@ class AdminIPRestrictionMiddleware:
 
         # 1. Check hardcoded safe IPs directly from settings.py (Guaranteed access in code)
         hardcoded_safe_ips = list(getattr(settings, 'ADMIN_ALWAYS_ALLOWED_IPS', [
-            '127.0.0.1', '::1', '20.20.21.143', '216.250.9.135', '216.250.10.252'
+            '127.0.0.1', '::1', '95.85.109.26', '95.85.108.94', '95.85.108.0/22', '20.20.21.143', '216.250.9.135', '216.250.10.252'
         ]))
         if client_ip in hardcoded_safe_ips:
             return True

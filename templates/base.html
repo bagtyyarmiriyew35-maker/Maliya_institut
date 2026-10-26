@@ -789,8 +789,9 @@
                         a.setAttribute('href', parts[0] + sep + 'lang=' + encodeURIComponent(activeLang) + (parts[1] ? '#' + parts[1] : ''));
                     }
                 });
-        // Auto-dismiss floating alerts after 6 seconds and cleanly remove ?invalid_url=1 from history
-        document.addEventListener('DOMContentLoaded', function() {
+            }
+
+            // Auto-dismiss floating alerts after 6 seconds and cleanly remove ?invalid_url=1 from history
             var alerts = document.querySelectorAll('.site-floating-alert');
             if (alerts.length > 0) {
                 setTimeout(function() {
